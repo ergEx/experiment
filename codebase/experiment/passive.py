@@ -68,6 +68,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True):
                                   'passive', extension='input.tsv')
 
     trialFile = pd.read_csv(trialInfoPath, sep='\t')
+
     noTR = calculate_number_of_images(trialFile[['iti', 'fractal_duration']],
                                     fixed_timings=[pcfg.timeToReminder, pcfg.timeWealthUpdate,
                                     pcfg.timeFinalDisplay, pcfg.wheelSpinTime], TR=expInfo['TR'])
@@ -152,22 +153,22 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
         SyncGen = SyncGenerator(TR=expInfo['TR'], TA=expInfo['TR'] / 10, volumes=noTR)
     ###################### Preloading Images #######################################
     initialization = visual.TextStim(win=win, name='initialization',
-                                    text='Initializing!!', pos=pcfg.textPos,
+                                    text='Initializing!', pos=pcfg.centerPos,
                                     height=pcfg.textHeight, ori=0.0, color='white')
     initialization.setAutoDraw(True)
     win.flip()
 
     fractals = {}
     for nFl, fl in enumerate(fractalList):
-        fractals[nFl] = visual.ImageStim(win=win, pos=pcfg.imgPos, size=pcfg.imgSize,
+        fractals[nFl] = visual.ImageStim(win=win, pos=pcfg.centerPos, size=pcfg.imgSize,
                                         opacity=0,
                                         image=pcfg.imagePath + os.sep + 'fractals' + os.sep + fl + '.png')
         fractals[nFl].pos += offset
         fractals[nFl].setAutoDraw(True)
 
     Wheel = visual.ImageStim(win=win, name='wheel', image=pcfg.imagePath + os.sep + 'wheel.png',
-                            mask='circle', ori=0.0, pos=pcfg.wheelPos,
-                            size=pcfg.wheelSize, color=[1,1,1])
+                             mask='circle', ori=0.0, pos=pcfg.centerPos,
+                             size=pcfg.wheelSize, color=[1,1,1])
     Wheel.pos += offset
     Wheel.setAutoDraw(False)
 
@@ -179,21 +180,21 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     Stopper.setAutoDraw(False)
 
     MoneyFrame = visual.Rect(win=win, name='MoneyFrame', width=pcfg.boxSize[0],
-                            height=pcfg.boxSize[1], ori=0.0, pos=pcfg.boxPos,
+                            height=pcfg.boxSize[1], pos=pcfg.centerPos,
                             lineWidth=pcfg.boxWidth, lineColor=None, fillColor='grey',
                             opacity=0.8)
     MoneyFrame.pos += offset
     MoneyFrame.setAutoDraw(False)
 
     MoneyBox = visual.TextStim(win=win, name='MoneyBox',
-                            text=format_wealth(wealth), pos=pcfg.textPos,
+                            text=format_wealth(wealth), pos=pcfg.centerPos,
                             height=pcfg.textHeight,  color='white')
     MoneyBox.pos += offset
     MoneyBox.setAutoDraw(False)
 
     Reminder = visual.TextStim(win=win, name='Reminder',
                             text='press\n\n\nearlier',
-                            pos=pcfg.textPos, height=pcfg.textHeight, color='white')
+                            pos=pcfg.centerPos, height=pcfg.textHeight, color='white')
     Reminder.pos += offset
     Reminder.setAutoDraw(False)
 
@@ -205,7 +206,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     ########################### Instruction Screen #################################
     Instructions = visual.TextStim(win=win, name='instruction',
                                 text=f'Press {keyList[0]} to continue!',
-                                pos=pcfg.textPos, height=pcfg.textHeight, color='white')
+                                pos=pcfg.centerPos, height=pcfg.textHeight, color='white')
     Instructions.pos += offset
     Instructions.setAutoDraw(True)
 
@@ -431,7 +432,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
             fractals[imL][nFl] = visual.ImageStim(win=win, pos=[acfg.imgLocPos[imL][0], 0],
                                                 size=acfg.imgSize, opacity=0,
                                                 image=acfg.imagePath + os.sep + 'fractals' + os.sep + fl + '.png')
-
             fractals[imL][nFl].pos += offset
             fractals[imL][nFl].setAutoDraw(True)
 
@@ -479,9 +479,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     Logger.logEvent({"event_type": "BeginningNobrainers"})
 
     for nbTrial in range(nTrial_noBrainer):
-        # abbreviate parameter names if possible (e.g. rgb = thisTrial.rgb)
+
         thisTrial = trials.iloc[nbTrial].to_dict()
-        # abbreviate parameter names if possible (e.g. rgb = thisTrial.rgb)
+
         if thisTrial != None:
             fractal1, fractal2 = thisTrial['fractal1'], thisTrial['fractal2']
             gamma1, gamma2 = thisTrial['gamma1'], thisTrial['gamma2']
@@ -641,7 +641,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     ############################### Nobrainer over #################################
     Outro = visual.TextStim(win=win, name='outro',
                                 text='Thanks!',
-                                pos=pcfg.textPos, height=pcfg.textHeight, color='white')
+                                pos=pcfg.centerPos, height=pcfg.textHeight, color='white')
     Outro.pos += offset
     Outro.setAutoDraw(True)
 

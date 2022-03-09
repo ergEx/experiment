@@ -1,3 +1,8 @@
+"""Active part of the experiment. Contains two parts:
+- active_gui: does a bit of input checking and allows to load data of previous
+runs or to continue from previous state of experiment.
+- active_run: starts the experiment.
+"""
 from psychopy import visual, core
 from psychopy.hardware.emulator import SyncGenerator
 import numpy as np
@@ -12,9 +17,9 @@ from ..utils import wealth_change
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import active_configs as acfg
 from typing import Optional, Dict
-from .exp.helper import assign_fractals, format_wealth, gui_update_dict, DebugTimer, make_filename
+from .exp.helper import format_wealth, gui_update_dict, DebugTimer, make_filename
 
-####################### Setup GUI ##############################################
+
 def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
     if expInfo is None:
         expInfo = {'participant': '0',
@@ -84,7 +89,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
     expInfo['responseMapping'] = responseMapping
 
     return expInfo
-################# Initialize Window and get Framereate #########################
+
 
 def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                fractalList:List[str] = None):
