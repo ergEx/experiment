@@ -27,11 +27,12 @@ def pandas_save_loader(filename, task='passive'):
                       'participant_id': str, 'TR': float, 'no_response': float,
                       'chosen_expected_gamma': float, 'realized_gamma': float,
                       'expected_duration': float, 'selected_side': str}
+
     elif task == 'passive':
         cat_dtypes = {'onset': float, 'duration': float, 'trial_type': str,
                       'event_type': str, 'response_time': float,
-                      'response_button': str, 'response_late': float, 'response_correct': float,
-                      'no_response': float,
+                      'response_button': str, 'response_late': float,
+                      'response_correct': float, 'no_response': float,
                       'wealth': float, 'delta_wealth': float, 'trial': float,
                       'gamma': float, 'fractal': str, 'eta': float,
                       'trial_time': float, 'participant_id': str, 'TR': float,
@@ -41,23 +42,9 @@ def pandas_save_loader(filename, task='passive'):
                       'selected_side': str, 'run': float, 'part': float}
 
     else:
-        raise ValueError('task has to be passive, active or nobrainer!')
-
+        raise ValueError('task has to be passive or active!')
 
     dataframe = pd.read_csv(filename, sep='\t', na_values='n/a', dtype=cat_dtypes)
-
-    return dataframe
-
-
-def add_last_response(path, save=False, task='active'):
-    dataframe = pandas_save_loader(path, task=task)
-
-    responses = dataframe.query('event_type == "Response"').copy()
-    idx = responses.groupby(["trial"])["onset"].idxmax()
-    dataframe.loc[idx, 'response_is_last'] = True
-
-    if save:
-        dataframe.to_csv(path, sep='\t', index=False, na_rep='n/a')
 
     return dataframe
 
@@ -125,7 +112,6 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
 
 def plot_prob_heads(dataframe, ax):
     coin_tosses = dataframe.query('event_type=="Coin"').gamble_up
-
 
     ct_vc = coin_tosses.value_counts()
     ax.bar(np.arange(len(ct_vc)), ct_vc)
@@ -347,6 +333,32 @@ def plot_rt_versus_difficulty(dataframe, ax, task='active'):
 
     return ax
 
+
+def plot_choice_probability(dataframe, ax):
+
+    gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
+
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
+
+    button = gammas.selected_side == 'left'
+
+    choices = np.unique(gammas_1)
+    probs = np.zeros(choices.shape)
+
+    for n, ch in enumerate(choices):
+        probs[n] = np.mean(button[gammas_1==ch])
+
+    ax.bar(choices, probs)
+    ax.plot(choices, probs)
+
+    ax.set(title='Choice Probability', xlabel='Unique Gammas',
+           ylabel='Probability')
+
+    return ax
+
+
+
+
 def plot_to_trajectory(dataframe, ax):
     gammas = dataframe.query('event_type == "TrialEnd"')
     optimal_path = (gammas[['gamma_left_up', 'gamma_left_down']].mean(1) <
@@ -431,7 +443,7 @@ def passive_report(fname, target_dir='data/reports'):
 
 def active_report(fname, target_dir='data/reports'):
 
-    dataframe = add_last_response(fname)
+    dataframe = pandas_save_loader(fname, task='active')
 
     fig, axes = plt.subplots(7, 3, figsize=(12.5, 17), sharex=False, sharey=False)
 
@@ -496,7 +508,7 @@ def active_report(fname, target_dir='data/reports'):
     ax = plot_late_responses(dataframe, axes[ii], task='active')
     ii += 1
     print(ii)
-    ax = plot_type_bar(dataframe, axes[ii], ex_type='Trial')
+    ax = plot_choice_probability(dataframe, axes[ii])
     ii += 1 # 19
     print(ii, 'trial')
     ax = plot_rt_versus_difficulty(dataframe, axes[ii])
@@ -549,15 +561,3 @@ def nobrainer_report(fname, target_dir='data/reports'):
     plt.suptitle(fname_bare)
     plt.tight_layout()
     plt.savefig(target_dir + os.sep +  fname_bare + '.png')
-
-
-if __name__ == "__main__":
-
-    import os
-    thisDir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(thisDir)
-
-    passive_report('data/sub-0/sub-0_ses-eta0.0_task-passive_run-1_events.tsv')
-    #active_report('data/sub-agentEta1.0/sub-agentEta1.0_ses-eta1.0_task-active_run-1_events.tsv')
-    #active_report('data/sub-agentEta0.5/sub-agentEta0.5_ses-eta0.0_task-active_run-1_events.tsv')
-    #active_report('data/sub-agentEta0.5/sub-agentEta0.5_ses-eta1.0_task-active_run-1_events.tsv')
