@@ -45,10 +45,10 @@ active_configs = DotDict()
 imgX = 312 # Img, coin, and frame position.
 imgY = 200
 
-active_configs['imgPos'] = [(-imgX, imgY), (-imgX, -imgY), (imgX, imgY), (imgX, -imgY)] # Pos list
-active_configs['imgLocation'] = ['leftUp', 'leftDown', 'rightUp', 'rightDown']
-active_configs['imgLocPos'] = {imL: imP for imL, imP in zip(active_configs.imgLocation, active_configs.imgPos)} # Dict for pos
+IMG_POS = [(-imgX, imgY), (-imgX, -imgY), (imgX, imgY), (imgX, -imgY)] # Pos list
 
+active_configs['imgLocation'] = ['leftUp', 'leftDown', 'rightUp', 'rightDown']
+active_configs['imgLocPos'] = {imL: imP for imL, imP in zip(active_configs.imgLocation, IMG_POS)} # Dict for pos
 active_configs['imgSize'] = IMGSIZE
 
 active_configs['coinSize'] = (100, 100)
@@ -60,7 +60,6 @@ active_configs['textHeight'] = TEXT_HEIGHT
 # Timings
 active_configs['waitTR'] = 1
 active_configs['timeResponse'] = 2.5 # Response Window
-active_configs['timeCursorEvent'] = 0 # time of highlight
 active_configs['timeSideHighlight'] = 1.0 # Time after fractals are removed
 active_configs['timeCoinToss'] = 0.75 # Time after Coin appears
 active_configs['timeFractalSelection'] = 0.5 # Time after last fractal disappeared.
