@@ -1,4 +1,4 @@
-X0 = 1000 #not used atm
+X0 = 1000 
 N_REPEATS_PASSIVE = 10 #not used atm
 N_TRIALS_ACTIVE = 100 #not used atm
 INDIFFERENCE_ETAS = [-1.5,-0.5,0.5,1.5,2.5]
