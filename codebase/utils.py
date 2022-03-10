@@ -1,5 +1,3 @@
-# Util functions stolen from https://github.com/kbonna/ergodicity-experiments
-
 import numpy as np
 import math
 from itertools import combinations,combinations_with_replacement
@@ -115,29 +113,6 @@ def random_reorder_axis(a, axis):
     return np.take(a, idx, axis=axis)
 
 
-def create_gambles(c, n_fractals=9):
-    """Create list of all gambles.
-
-    Args:
-        c (float):
-            Max growth rate for gamble space.
-        n_fractals (int):
-            Number of growth rate samples.
-    Returns:
-        List of arrays. Each gamble is represented as (2, ) array with growth
-        rates. For n fractals, n(n+1)/2 gambles are created. Order of growth
-        rates doesn't matter since probabilities are assigned equally to both
-        wealth changes.
-    """
-    gamma_range = np.linspace(-c, c, n_fractals)
-    fractal_dict = {ii : n for n, ii in enumerate(gamma_range)}
-    return [
-        np.array([gamma_1, gamma_2])
-        for gamma_1, gamma_2
-        in combinations_with_replacement(gamma_range, 2)
-    ], fractal_dict
-
-
 def calculate_dx1(eta:float, dx2:int, x:int):
     """Calculate change in wealth that corresponds to given indifference-eta
        given dx2 and x.
@@ -158,7 +133,7 @@ def calculate_dx1(eta:float, dx2:int, x:int):
         return (2 * x ** (1 - eta) - (x + dx2) ** (1 - eta)) ** (1 / (1 - eta)) - x
 
 
-def create_gambles_v2(etas:list, dynamic:float, dx2:int, x:int):
+def create_gambles(etas:list, dynamic:float, dx2:int, x:int):
     """Create list of all gambles.
 
     Args:
@@ -189,25 +164,6 @@ def create_gambles_v2(etas:list, dynamic:float, dx2:int, x:int):
 
 
 def create_gamble_pairs(gambles):
-    """Create list of all unique gamble pairs.
-
-    Args:
-        gambles (list of arrays):
-            List of gambles.
-
-    Returns:
-        List of arrays. Each gamble pair is represented as (2, 2) array with
-        four growth rates for both gambles. Rows corresponds to gambles, columns
-        correspond to individual growth rates within a gamble. All pairs contain
-        two unique gambles. For n gambles, n(n-1)/2 gamble pairs are created.
-    """
-    return [
-        np.concatenate((gamble_1[np.newaxis], gamble_2[np.newaxis]), axis=0)
-        for gamble_1, gamble_2 in combinations(gambles, 2)
-        ]
-
-
-def create_gamble_pairs_v2(gambles):
     """Dummy function to make v2 compatable with v1
 
     Args:
@@ -264,91 +220,3 @@ def create_experiment(gamble_pairs):
         gamble pair, third dimension correspond to subsequent trials.
     """
     return np.stack(gamble_pairs, axis=2)
-
-
-def is_nobrainer(gamble_pair):
-    """Decision if a gamble pair is nobrainer."""
-    return len(set(gamble_pair[0]).intersection(set(gamble_pair[1]))) != 0
-
-
-def is_statewise_dominated(gamble_pair):
-    """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
-    return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
-           np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )
-
-
-def is_stochastically_dominated(gamble_pair):
-    """Decision if one gamble is first order stochastically dominated by the other in a gamble pair"""
-    F_1 = np.cumsum(np.sort(gamble_pair[0]))
-    F_2 = np.cumsum(np.sort(gamble_pair[1]))
-    return all(x >= y for x, y in zip(F_1, F_2)) or all(x >= y for x, y in zip(F_2, F_1))
-
-
-def is_g_deterministic(gamble):
-    """Decision if gamble is deterministic, i.e., composed of two same fractals.
-
-    Args:
-        gamble (np.array):
-            Gamble array of shape (2, 0).
-
-    Returns:
-        Boolean decision value.
-    """
-    return gamble[0] == gamble[1]
-
-
-def growth_factor_to_fractal(gamma, c, n_fractals):
-    """Converting growthfactor to associated fractal
-
-    Args:
-        gamma (float):
-            Growthfactor
-        c (float):
-            Max/min value of growthfactors
-        n_fractals (int)
-            Number of fractals used
-
-    returns:
-        Fractal (int) associated with given growth factor
-    """
-    return list(np.linspace(-c,c,n_fractals)).index(gamma)
-
-
-def calculate_c(eta):
-    """Function to that provides a c-value based purely on eta
-
-    This is just a dummy function - will be rewritten!
-
-    """
-    c_values = {0: 428, 1: 0.806}
-    if eta not in c_values.keys():
-        return ValueError(f"Eta value of {eta} cannot be chosen, choose between: {list(c_values.keys())}")
-    return c_values[eta]
-
-
-def plot_sequence(part_sum, idx, g_l ,g_u, x_l, x_u, eta, x0):
-
-    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-    ax1.plot(range(len(part_sum)),part_sum)
-    ax1.hlines(g_l, 0, len(part_sum),colors='red')
-    ax1.hlines(g_u, 0, len(part_sum),colors='red')
-    ax1.set_ylabel(f"$\gamma$ (Growth rate)")
-    ax1.set_xlabel("Trials")
-    ax1.set_title("Growth rate")
-
-    x = [inverse_isoelastic_utility(isoelastic_utility(x0, eta)+ g,eta) for g in part_sum]
-    ax2.plot(range(len(part_sum)),list(x))
-    ax2.hlines(x_l, 0, len(part_sum),colors='red',label="Lower limit")
-    ax2.hlines(x_u, 0, len(part_sum),colors='red',linestyles='--', label="Max lower")
-    ax2.set_ylabel("DKK")
-    ax2.set_xlabel("Trials")
-    ax2.set_title("DKK")
-
-    box = ax2.get_position()
-    ax2.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-
-    # Put a legend to the right of the current axis
-    ax2.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    f.suptitle(f"Partial sum for accepted sequence - idx = {idx}")
-    f.tight_layout()
-    plt.show()
