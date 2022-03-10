@@ -172,38 +172,26 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
 
     gamma_list = gamma1_list + gamma2_list + [0]
 
-    return gamma_list, gamma1_list, gamma2_list
+    fractal_dict = {}
+    for i, gamma in enumerate(gamma_list):
+        fractal_dict[gamma] = i
 
-def create_gambles(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
+    return gamma_list, gamma1_list, gamma2_list, fractal_dict
+
+def create_gambles(gamma1_list, gamma2_list):
     """Create list of all gambles.
 
     Args:
-        indifference_etas (array):
-            Array of indifference-etas, ie. riskpreferences being tested.
-        lambd (float): 
-            Wealth dynamic.
-        dx2 (int):
-            Wealth change of other fractal.
-        x (array):
-            Array of reference wealth levels; 0th entry is main reference and 1st is secondary reference.
+        gamma1_list (array):
+            Array of positive growth-rates.
+        gamma2_list (float): 
+            Array of negative growth-rates.
     Returns:
         List of arrays. Each gamble is represented as (2, ) array with growth
         rates.
     """
 
-    _, gamma1_list, gamma2_list = calculate_growth_rates(indifference_etas, lambd, dx2, x)
-    
-    gambles = np.array(list(itertools.product(gamma1_list, gamma2_list)))
-
-    fractal_dict = {}
-    for i, gamma in enumerate(gamma1_list):
-        fractal_dict[gamma] = i
-    for i, gamma in enumerate(gamma2_list):
-        fractal_dict[gamma] = i
-
-    fractal_dict[0] = i + 2
-
-    return gambles,fractal_dict
+    return np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
 
 def create_gamble_pairs(gambles:np.array):
