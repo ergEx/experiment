@@ -70,11 +70,10 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
     trialFile = pd.read_csv(trialInfoPath, sep='\t')
 
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
-                                    fixed_timings=[acfg.timeResponse, acfg.timeCursorEvent,
+                                    fixed_timings=[acfg.timeResponse,
                                                     acfg.timeSideHighlight, acfg.timeCoinToss,
                                                     acfg.timeFractalSelection,
                                                     acfg.timeWealthUpdate,
-                                                    acfg.timeNoResponse,
                                                     acfg.timeFinalDisplay], TR=expInfo['TR'],
                                                     wriggle_room=0)
 
@@ -288,26 +287,32 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
         Logger.keyStrokes(win)
         gambOnset = Logger.getTime()
 
-        logDict.update({'fractal_left_up': fractalList[fractal1], 'fractal_left_down': fractalList[fractal2],
-                        'gamma_left_up': gamma1, 'gamma_left_down': gamma2})
+        logDict.update({'fractal_left_up': fractalList[fractal1],
+                        'fractal_left_down': fractalList[fractal2],
+                        'gamma_left_up': gamma1,
+                        'gamma_left_down': gamma2})
 
         if expInfo['active_mode'] != 2:
             win.flip()
+            Logger.keyStrokes(win)
+
             Wait.wait(onset_gamble1, gambOnset)
 
-        Logger.logEvent({"event_type": "GambleLeft", "expected_duration": onset_gamble1,
-                        **logDict}, onset=gambOnset)
+            Logger.logEvent({"event_type": "GambleLeft", "expected_duration": onset_gamble1,
+                            **logDict}, onset=gambOnset)
 
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
         fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['active_mode'] != 2))
         win.flip()
-
         Logger.keyStrokes(win)
+
         gambOnset = Logger.getTime()
 
-        logDict.update({'fractal_right_up': fractalList[fractal3], 'fractal_right_down': fractalList[fractal4],
-                        'gamma_right_up': gamma3, 'gamma_right_down': gamma4})
+        logDict.update({'fractal_right_up': fractalList[fractal3],
+                        'fractal_right_down': fractalList[fractal4],
+                        'gamma_right_up': gamma3,
+                        'gamma_right_down': gamma4})
 
         Logger.logEvent({"event_type": "GambleRight", "expected_duration": onset_gamble2,
                         **logDict}, onset=gambOnset)
@@ -344,7 +349,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                     else:
                         responseTo = False
 
-                # Response is last, currently not used...
                 Logger.logEvent({"event_type": "Response",
                                 'response_button': presses[0],
                                 'response_time': presses[1] - respOnset,
@@ -353,15 +357,15 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                                 **logDict})
 
                 win.flip()
+                Logger.keyStrokes(win)
 
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
             ######################### Side Selection ###############################
-            logDict.update({'no_response': False, 'response_time_optimal': responseTo,
+            logDict.update({'no_response': False,
+                            'response_time_optimal': responseTo,
                             'selected_side': response})
-
-            Logger.keyStrokes(win)
 
             if response == 'left':
                 logDict.update({'chosen_expected_gamma': np.mean(currentGammas[:2])})
@@ -414,9 +418,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                 fractals['rightUp'][fractal3].setOpacity(0)
 
             if response == 'left':
-                logDict.update({'realized_gamma': currentGammas[:2][np.abs(coin_toss -1)]})
+                ch_gamma = currentGammas[:2][np.abs(coin_toss -1)]
+                logDict.update({'realized_gamma': ch_gamma})
             elif response == 'right':
-                logDict.update({'realized_gamma': currentGammas[2:][np.abs(coin_toss -1)]})
+                ch_gamma = currentGammas[2:][np.abs(coin_toss -1)]
+                logDict.update({'realized_gamma': ch_gamma})
 
             win.flip()
             Logger.keyStrokes(win)
@@ -428,19 +434,18 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                             **logDict},
                             onset=fractalOnset)
 
-            ############################ Coin Wait #################################
-            new_wealth = wealth_calculator(wealth, response, coin_toss, currentGammas,
-                                        eta).item()
-
         else:
             ############################# No Response ##############################
             Reminder.setAutoDraw(True)
-            win.flip()
+
             logDict.update({'no_response': True})
+
             worst_fractal = np.argmin(currentGammas)
+
             for kk, imL in enumerate(acfg.imgLocation):
                 if kk != worst_fractal:
                     fractals[imL][currentFractals[kk]].setOpacity(0)
+
             win.flip()
             Logger.keyStrokes(win)
 
@@ -451,18 +456,22 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                             "expected_duration": fractalOnset, **logDict},
                             onset=fractalOnset)
 
-            new_wealth = wealth_change(wealth, currentGammas[worst_fractal], eta).item()
-            logDict.update({'realized_gamma': currentGammas[worst_fractal]})
+            ch_gamma = currentGammas[worst_fractal]
+
+            logDict.update({'realized_gamma': ch_gamma})
 
             Reminder.setAutoDraw(False)
             win.flip()
         ################################# Wealth Update ############################
+        new_wealth = wealth_change(wealth, ch_gamma, eta)
+
         up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur))
 
         wealth_steps = np.linspace(wealth, new_wealth, up_steps)
         wealth = new_wealth
 
         wealthOnset = Logger.getTime()
+
         for ws in wealth_steps:
             MoneyBox.setText(format_wealth(ws))
             Logger.keyStrokes(win)

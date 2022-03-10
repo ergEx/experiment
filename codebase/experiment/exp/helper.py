@@ -11,42 +11,6 @@ import re
 import json
 
 
-def wealth_calculator(wealth:float, response:str, gambleUp:bool,
-                      gammas:Union[List[float], np.ndarray],
-                      etas:Union[float, Union[List[float], np.ndarray]]) -> float:
-    """Calculate wealth update depending on response and coin toss.
-
-    Args:
-        wealth (float): The current wealth.
-        response (str): Which side has been selected, "left" or "right".
-        gambleUp (bool): Cointoss, True means "Up".
-        gammas (Union[List[float], np.ndarray]): List of growth rate. Order:
-            left up, left down, right up, right down. Same for below.
-        etas (float): The dynamic that is used for the wealth update.
-
-    Returns:
-        float: The updated wealth.
-    """
-
-    if not isinstance(etas, list):
-        # Check if a single eta is used or multiple.
-        etas = [etas] * 4
-
-    if response == "left":
-        if gambleUp:
-            nwealth = wealth_change(wealth, gammas[0], etas[0])
-        else:
-            nwealth = wealth_change(wealth, gammas[1], etas[1])
-
-    if response == "right":
-        if gambleUp:
-            nwealth = wealth_change(wealth, gammas[2], etas[2])
-        else:
-            nwealth = wealth_change(wealth, gammas[3], etas[3])
-
-    return nwealth
-
-
 def get_frame_timings(win:visual.Window) -> Tuple[float, float]:
     """Gets frame timings from the current window.
 

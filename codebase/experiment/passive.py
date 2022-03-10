@@ -37,7 +37,6 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True):
                 'TR': 0.592,
                 'maxDuration': 60,
                 'maxTrial': np.inf,
-                'maxRun': 4,
                 'nTrial_NoBrainer': 10}
 
     if spawnGui:
@@ -377,17 +376,15 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                         **logDict},
                         onset=fractalOnset)
         ########################### Wealth Update ##################################
-        new_wealth = wealth_change(wealth, gamma, eta).item()
-
-        new_wealth = exp_wealth
         up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
-        wealth_steps = np.linspace(wealth, new_wealth, up_steps)
-        wealth = new_wealth
+
+        wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
+        wealth = exp_wealth
 
         moneyOnset = Logger.getTime()
         for ws in wealth_steps:
-            MoneyBox.setText(format_wealth(ws))
             Logger.keyStrokes(win)
+            MoneyBox.setText(format_wealth(ws))
             win.flip()
             Logger.keyStrokes(win)
 
@@ -396,10 +393,10 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                         **logDict}, wealth=wealth, onset=moneyOnset)
 
         MoneyBox.setText(format_wealth(wealth))
-        Wait.wait(pcfg.timeFinalDisplay)
+        win.flip()
 
         fractals[fractal].setOpacity(0)
-        win.flip()
+        Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
 
         Logger.keyStrokes(win)
