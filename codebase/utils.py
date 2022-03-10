@@ -144,8 +144,7 @@ def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
     else:
         return round((2 * x_0 ** (1 - indifference_eta) - (x_0 + dx2) ** (1 - indifference_eta)) ** (1 / (1 - indifference_eta)) - x_0)
 
-
-def create_gambles(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
+def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
     """Create list of all gambles.
 
     Args:
@@ -170,6 +169,29 @@ def create_gambles(indifference_etas:np.array, lambd:float, dx2:int, x:np.array)
 
     dx2_list = [dx2. calculate_dx1(0.5, calculate_dx1(0.5, dx2, x[0]), x[1])] if len(x)==2 else [dx2]
     gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
+
+    gamma_list = gamma1_list + gamma2_list + [0]
+
+    return gamma_list, gamma1_list, gamma2_list
+
+def create_gambles(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
+    """Create list of all gambles.
+
+    Args:
+        indifference_etas (array):
+            Array of indifference-etas, ie. riskpreferences being tested.
+        lambd (float): 
+            Wealth dynamic.
+        dx2 (int):
+            Wealth change of other fractal.
+        x (array):
+            Array of reference wealth levels; 0th entry is main reference and 1st is secondary reference.
+    Returns:
+        List of arrays. Each gamble is represented as (2, ) array with growth
+        rates.
+    """
+
+    _, gamma1_list, gamma2_list = calculate_growth_rates(indifference_etas, lambd, dx2, x)
     
     gambles = np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
