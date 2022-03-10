@@ -16,14 +16,13 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '0',
-               'eta': 0.0,
+               'lambd': 0.0,
                'n_repeats_passive': 6,
                'n_trials_active': 45,
                'test_mode': True,
                'fullScreen': False,
                'calibration': False,
                'passive_mode': 1,
-               'active_mode': 2,
                'is_simulation' : False,
                'TR': 2.0}
 

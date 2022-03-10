@@ -8,16 +8,18 @@ from ..sequences import generate_dataframes
 from ..file_handler import make_filename
 
 
-def run(eta:float, c:float, n_repeats_passive:int, n_trials_active:int,
-        save_path:str, passive_mode:int = 1, active_mode:int = 1,
-        speed_up:int = 1):
+def run(lambd:float, x_0:int, n_repeats_passive:int, n_trials_active:int,
+        save_path:str, passive_mode:int = 1, speed_up:int = 1):
 
-    p_df, a_df, meta = generate_dataframes(eta=eta, c=c,
+    p_df, a_df, meta = generate_dataframes(lambd=lambd,
+                                           x_0=x_0,
                                            n_trials_active=n_trials_active,
                                            n_repeats_passive=n_repeats_passive,
-                                           passive_mode = passive_mode,
-                                           active_mode = active_mode,
-                                           speed_up=speed_up)
+                                           passive_mode=passive_mode,
+                                           speed_up=speed_up,
+                                           indifference_etas = con.INDIFFERENCE_ETAS, 
+                                           indiffrence_x_0 = con.INDIFFERENCE_X_0, 
+                                           indifference_dx2 = con.INDIFFERENCE_DX2)
 
     p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
     a_df.to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv'), index=False, sep='\t')
@@ -53,11 +55,14 @@ def run_with_dict(expInfo):
     if reply:
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
-        run(eta=expInfo['eta'], c=c, n_repeats_passive=expInfo['n_repeats_passive'],
+        run(lambd=expInfo['lambd'], 
+            x_0=expInfo['x_0'], 
+            n_repeats_passive=expInfo['n_repeats_passive'], 
             n_trials_active=expInfo['n_trials_active'],
-            passive_mode=expInfo['passive_mode'],
-            active_mode=expInfo['active_mode'],
-            speed_up=speed_up, save_path=save_path)
+            save_path=expInfo['save_path'], 
+            passive_mode=expInfo['passive_mode'], 
+            speed_up=expInfo['speed_up'])
+
     else:
         print(f"Not creating new inputs for participant {expInfo['participant']}")
         pass
