@@ -28,7 +28,7 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         i.e., specicfic lower bound is returned.
     """
     if eta >= 2:
-        return ValueError("Not implemented for eta geq 2!")
+        return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(x):
         x = np.asarray((x, ))
@@ -38,13 +38,9 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
     if np.isclose(eta, 1):
         u[x > 0] = np.log(x[x > 0])
         u[x <= 0] = np.finfo(float).min
-    elif eta < 1:
+    else:
         bound = (-1) / (1 - eta)
         u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
-        u[x <= 0] = bound
-    elif 1 < eta < 2:
-        bound = (-1) / (1 - (eta-1))
-        u[x > 0] = (np.power(np.log(x[x > 0]), 1 - (eta - 1))) / (1 - (eta - 1))
         u[x <= 0] = bound
     return u
 
@@ -63,7 +59,7 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
     """
 
     if eta >= 2:
-        return ValueError("Not implemented for eta geq 2!")
+        return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(u):
         u = np.asarray((u, ))
@@ -72,12 +68,9 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
 
     if np.isclose(eta, 1):
         x = np.exp(u)
-    elif eta < 1:
+    else:
         bound = (-1) / (1 - eta)
         x[u > bound] = np.power(u[u > bound] * (1 - eta) + 1, 1 / (1 - eta))
-    elif 1 < eta < 2:
-        bound = (-1) / (1 - (eta - 1))
-        x[u > bound] = np.exp(np.power(u[u > bound] * (1 - (eta - 1)) , 1 / (1 - (eta - 1))))
     return x
 
 
