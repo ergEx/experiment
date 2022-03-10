@@ -1,8 +1,6 @@
 import numpy as np
 import math
-from itertools import combinations,combinations_with_replacement
-import matplotlib.pyplot as plt
-
+import itertools
 
 class DotDict(dict):
     """Small helper class, so attributed of dictionary can be accessed using
@@ -19,7 +17,7 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         x (array):
             Wealth vector.
         eta (float):
-            Risk-aversion parameter.
+            Risk-aversion.
 
     Returns:
         Vector of utilities corresponding to wealths. For log utility if wealth
@@ -52,10 +50,10 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
         u (array):
             Utility vector.
         eta (float):
-            Risk-aversion parameter.
+            Risk-aversion.
 
     Returns:
-        Vector of wealths coresponding to utilities. For
+        Vector of wealths coresponding to utilities.
     """
 
     if eta >= 2:
@@ -74,90 +72,120 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
     return x
 
 
-def wealth_change(x, gamma, eta):
+def wealth_change(x:np.array, gamma:np.array, lambd:float):
     """Apply isoelastic wealth change.
 
     Args:
-        x (float):
+        x (array):
             Initial wealth vector.
-        gamma (float):
-            Growth rate.
-        eta (float):
-            Wealth dynamic parameter.
+        gamma (gamma):
+            Growth rates.
+        lambd (float):
+            Wealth dynamic.
+
+    Returns:
+        Vector of updated wealths.
     """
-    return inverse_isoelastic_utility(isoelastic_utility(x, eta) + gamma, eta)
+
+    if np.isscalar(x):
+        x = np.asarray((x, ))
+
+    if np.isscalar(gamma):
+        gamma = np.asarray((gamma, ))
+
+    return inverse_isoelastic_utility(isoelastic_utility(x, lambd) + gamma, lambd)
 
 
-def shuffle_along_axis(a, axis):
-    """Randomly shuffle multidimentional array along specified axis."""
+def shuffle_along_axis(a:np.array, axis:int):
+    """Randomly shuffle multidimentional array along specified axis.
+        
+    Args:
+        a (array)
+        axis (int)
+
+    Returns:
+        array    
+    """
     idx = np.random.rand(*a.shape).argsort(axis=axis)
     return np.take_along_axis(a, idx, axis=axis)
 
 
-def random_reorder_axis(a, axis):
+def random_reorder_axis(a:np.array, axis:int):
     """Shuffle along axis, keeping all other axis intact.
 
     Args:
-        a ([type]): [description]
-        axis ([type]): [description]
+        a (array)
+        axis (int)
+
+    Returns:
+        array 
     """
     idx = np.arange(a.shape[axis])
     np.random.shuffle(idx)
     return np.take(a, idx, axis=axis)
 
 
-def calculate_dx1(eta:float, dx2:int, x:int):
+def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
     """Calculate change in wealth that corresponds to given indifference-eta
        given dx2 and x.
 
     Args:
-        eta (float):
-            Indifference-eta, ie. riskpreference being tested.
+        indifference_eta (float):
+            Indifference-etas, ie. riskpreference being tested.
         dx2 (int):
-            Wealth change of other fractals.
-        x (int):
+            Wealth change of other fractal.
+        x_0 (int):
             Wealth level investigated.
     Returns:
-        wealth change (float)
+        additive wealth change (dx1; float)
     """
-    if np.isclose(eta, 1):
-        return math.exp(1*math.log(x)-math.log(x + dx2)) - x
+    if np.isclose(indifference_eta, 1):
+        return round(math.exp(1*math.log(x_0)-math.log(x_0 + dx2)) - x_0)
     else:
-        return (2 * x ** (1 - eta) - (x + dx2) ** (1 - eta)) ** (1 / (1 - eta)) - x
+        return round((2 * x_0 ** (1 - indifference_eta) - (x_0 + dx2) ** (1 - indifference_eta)) ** (1 / (1 - indifference_eta)) - x_0)
 
 
-def create_gambles(etas:list, dynamic:float, dx2:int, x:int):
+def create_gambles(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
     """Create list of all gambles.
 
     Args:
-        eta (list):
-            List of indifference-etas, ie. riskpreferences being tested.
+        indifference_etas (array):
+            Array of indifference-etas, ie. riskpreferences being tested.
+        lambd (float): 
+            Wealth dynamic.
         dx2 (int):
-            Wealth change of other fractals.
-        x (int):
-            Wealth level investigated.
+            Wealth change of other fractal.
+        x (array):
+            Array of reference wealth levels; 0th entry is main reference and 1st is secondary reference.
     Returns:
         List of arrays. Each gamble is represented as (2, ) array with growth
         rates.
     """
-    dx1_list = [calculate_dx1(eta, dx2, x) for eta in etas]
-    gamma_list = [float(isoelastic_utility(x + dx1, dynamic)-isoelastic_utility(x, dynamic)) for dx1 in dx1_list]
-    gamma_2 = float(isoelastic_utility(x + dx2, dynamic)-isoelastic_utility(x, dynamic))
-    gamble_list = [np.array(
-        [gamma_1, gamma_2]) for gamma_1 in gamma_list]
+
+    if len(x) > 2:
+        return ValueError("You can choose max two reference wealths!")
+
+    dx1_list = [calculate_dx1(eta, dx2, x[0]) for eta in indifference_etas]
+    gamma1_list = [float(isoelastic_utility(x[0] + dx1, lambd)-isoelastic_utility(x[0], lambd)) for dx1 in dx1_list]
+
+    dx2_list = [dx2. calculate_dx1(0.5, calculate_dx1(0.5, dx2, x[0]), x[1])] if len(x)==2 else [dx2]
+    gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
+    
+    gambles = np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
     fractal_dict = {}
-    for i, gamma in enumerate(gamma_list):
+    for i, gamma in enumerate(gamma1_list):
+        fractal_dict[gamma] = i
+    for i, gamma in enumerate(gamma2_list):
         fractal_dict[gamma] = i
 
-    fractal_dict[gamma_2] = i + 1
     fractal_dict[0] = i + 2
 
-    return gamble_list,fractal_dict
+    return gambles,fractal_dict
 
 
-def create_gamble_pairs(gambles):
-    """Dummy function to make v2 compatable with v1
+def create_gamble_pairs(gambles:np.array):
+    """Pair each gamble with the null-gamble
 
     Args:
         gamble (list of arrays):
@@ -173,8 +201,8 @@ def create_gamble_pairs(gambles):
         ]
 
 
-def create_trial_order(n_simulations, n_gamble_pairs, n_trials):
-    """Generates randomized trial order for paralell simulations.
+def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
+    """Generates randomized trial order allowing for paralell simulations.
 
     Args:
         n_simulations (int):
@@ -201,7 +229,7 @@ def create_trial_order(n_simulations, n_gamble_pairs, n_trials):
     return trial_order
 
 
-def create_experiment(gamble_pairs):
+def create_experiment(gamble_pairs:np.array):
     """Creates experiment array.
 
     Args:
