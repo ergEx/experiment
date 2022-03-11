@@ -1,14 +1,19 @@
-from cgi import test
-from distutils.command.config import config
-from tkinter import CENTER
 from typing import Dict
 from ..utils import DotDict
 
 STIMULUSPATH = 'data/stimuli/'
+"""Path to stimulus folder"""
 IMGSIZE = (425, 319)
+""" Image Size """
 DEFAULT_FRACTALS = ['F000', 'F001', 'F002', 'F003', 'F004', 'F005', 'F006', 'F007', 'F008']
+""" Default fractals  """
 CENTER_POS = (0, 0)
+""" Center location on screen """
 TEXT_HEIGHT = 20
+""" Height of text """
+STEP_TIME = 40 / 1000
+""" Variable to fix timing issues with win.flip (to replace frame dur) """
+
 
 passive_configs = DotDict()
 
@@ -24,10 +29,6 @@ passive_configs['revolution'] = 5 # Rotation angle of wheel
 
 passive_configs['stopperSize'] = (30, 30) # Positon of blue triangle
 passive_configs['stopperPos'] = (0, 160)
-
-# TODO: Possible redefine or make variable as well.
-passive_configs['imagePath'] = STIMULUSPATH
-passive_configs['fractalList'] = DEFAULT_FRACTALS
 
 # Timings
 passive_configs['waitTR'] = 1 # How many TRs to wait
@@ -66,9 +67,6 @@ active_configs['timeFractalSelection'] = 0.5 # Time after last fractal disappear
 active_configs['timeWealthUpdate'] = 1.0 # Time the wealth takes to roll up.
 active_configs['timeNoResponse'] = 1.25  # Time where only the worst fractal is present.
 active_configs['timeFinalDisplay'] = 1.0 # Time after wealth update
-
-active_configs['imagePath'] = STIMULUSPATH
-active_configs['fractalList'] = DEFAULT_FRACTALS
 
 
 def check_attribute_present(config_dict:Dict, key_val:str,

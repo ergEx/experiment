@@ -1,4 +1,3 @@
-from copy import deepcopy
 from psychopy import visual, core, event
 import itertools
 from psychopy.hardware.emulator import SyncGenerator
@@ -6,7 +5,6 @@ import numpy as np
 import pandas as pd
 import os
 import gc
-import typing
 from typing import Type, List
 from .exp import ExperimentLogger, PassiveAutoPilot, DebugLogger, ActiveAutoPilot
 from .. import wealth_change
@@ -15,29 +13,13 @@ from .exp import WaitTime, get_frame_timings, passive_report
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import passive_configs as pcfg
 from .configs import active_configs as acfg
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH, STEP_TIME
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
-from .exp.helper import assign_fractals, gui_update_dict, DebugTimer, make_filename, format_wealth
+from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth
 
 ####################### Setup GUI ##############################################
 def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True):
-
-    if expInfo is None:
-        expInfo = {'participant': '0',
-                'run': '01',
-                'eta': 0.0,
-                'agentActive': True,
-                'wealth': con.X0,
-                'simulateMR': ['Simulate', 'MRI', 'None', 'MRIDebug'],
-                'responseButton': 'space',
-                'responseLeft': 'left',
-                'responseRight': 'right',
-                'fullScreen': False,
-                'overwrite': True,
-                'TR': 0.592,
-                'maxDuration': 60,
-                'maxTrial': np.inf,
-                'nTrial_NoBrainer': 10}
 
     if spawnGui:
         expInfo = gui_update_dict(expInfo, 'ergEx_Passive')
@@ -60,7 +42,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True):
     offset = load_calibration(filePath, expInfo['participant'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
-                                                    expInfo['overwrite'])
+                                                       expInfo['overwrite'])
 
     # Pre-Calculate Number of MR-Images:
     trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
@@ -86,13 +68,8 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True):
     return expInfo
 
 ################# Initialize Window and Classes ################################
-def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
+def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                fractalList:List[str] = None):
-
-    if win is None:
-        win = visual.Window(size=[3072 / 2, 1920 / 2], fullscr=expInfo['fullScreen'],
-                            screen=0, winType='pyglet', allowGUI=True, monitor=None,
-                            color=[-1,-1,-1], colorSpace='rgb', units='pix')
 
     # Currently testing if the supposed ones are better.
     frameRate, frameDur =  get_frame_timings(win)
@@ -107,7 +84,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     nTrial_noBrainer = expInfo['nTrial_noBrainer']
 
     if fractalList is None:
-        fractalList = pcfg.fractalList
+        fractalList = DEFAULT_FRACTALS
         print("Using default fractals")
     else:
         if len(fractalList) != con.N_FRACTALS:
@@ -159,13 +136,14 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
 
     fractals = {}
     for nFl, fl in enumerate(fractalList):
-        fractals[nFl] = visual.ImageStim(win=win, pos=pcfg.centerPos, size=pcfg.imgSize,
-                                        opacity=0,
-                                        image=pcfg.imagePath + os.sep + 'fractals' + os.sep + fl + '.png')
+        fractals[nFl] = visual.ImageStim(win=win, pos=pcfg.centerPos,
+                                         size=pcfg.imgSize, opacity=0,
+                                        image=os.path.join(STIMULUSPATH, 'fractals', fl + '.png'))
         fractals[nFl].pos += offset
         fractals[nFl].setAutoDraw(True)
 
-    Wheel = visual.ImageStim(win=win, name='wheel', image=pcfg.imagePath + os.sep + 'wheel.png',
+    Wheel = visual.ImageStim(win=win, name='wheel',
+                             image=os.path.join(STIMULUSPATH, 'wheel.png'),
                              mask='circle', ori=0.0, pos=pcfg.centerPos,
                              size=pcfg.wheelSize, color=[1,1,1])
     Wheel.pos += offset
@@ -347,16 +325,16 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
             # Reduce spin duration by (right now) 1 s.
             spinDuration = pcfg.wheelSpinTime - (pcfg.timeResponseWindow - pcfg.timeToReminder)
 
-        steps = int(np.rint(spinDuration / frameDur)) - 1
+        steps = int(np.rint(spinDuration / STEP_TIME))
+
         wheelOnset = Logger.getTime()
         for ii in range(steps):
+            rotOns = Logger.getTime()
 
-            if ii < steps - 4:
+            if ii < steps - 3:
                 Wheel.setOri(np.mod(Wheel.ori + pcfg.revolution, 360))
 
-            Logger.keyStrokes(win)
-            win.flip()
-            Logger.keyStrokes(win)
+            Wait.wait(STEP_TIME, rotOns)
 
         Logger.logEvent({"event_type": "WheelSpin",
                         "expected_duration": spinDuration,
@@ -376,17 +354,16 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
                         **logDict},
                         onset=fractalOnset)
         ########################### Wealth Update ##################################
-        up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
+        up_steps = int(np.rint(pcfg.timeWealthUpdate / STEP_TIME)) - 1
 
         wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
         wealth = exp_wealth
 
         moneyOnset = Logger.getTime()
         for ws in wealth_steps:
-            Logger.keyStrokes(win)
+            rotOns = Logger.getTime()
             MoneyBox.setText(format_wealth(ws))
-            win.flip()
-            Logger.keyStrokes(win)
+            Wait.wait(STEP_TIME, rotOns)
 
         Logger.logEvent({"event_type": "WealthUpdate",
                         "expected_duration": pcfg.timeWealthUpdate,
@@ -428,7 +405,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
         for nFl, fl in enumerate(fractalList):
             fractals[imL][nFl] = visual.ImageStim(win=win, pos=[acfg.imgLocPos[imL][0], 0],
                                                 size=acfg.imgSize, opacity=0,
-                                                image=acfg.imagePath + os.sep + 'fractals' + os.sep + fl + '.png')
+                                                image=os.path.join(acfg.imagePath, 'fractals', fl + '.png'))
             fractals[imL][nFl].pos += offset
             fractals[imL][nFl].setAutoDraw(True)
 
@@ -605,16 +582,16 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window = None,
 
         new_wealth = wealth_change(wealth, ch_gamma, eta).item()
 
-        up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur))
+        up_steps = int(np.rint(acfg.timeWealthUpdate / STEP_TIME))
 
         wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
 
         wealthOnset = Logger.getTime()
 
         for ws in wealth_steps:
+            rotOns = Logger.getTime()
             MoneyBox.setText(format_wealth(ws))
-            Logger.keyStrokes(win)
-            win.flip()
+            Wait.wait(STEP_TIME, rotOns)
 
         Logger.logEvent({"event_type": "WealthUpdate",
                         "expected_duration": acfg.timeWealthUpdate, **logDict},

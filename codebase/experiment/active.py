@@ -3,6 +3,7 @@
 runs or to continue from previous state of experiment.
 - active_run: starts the experiment.
 """
+from tarfile import DEFAULT_FORMAT
 from psychopy import visual, core
 from psychopy.hardware.emulator import SyncGenerator
 import numpy as np
@@ -11,42 +12,21 @@ import os
 import gc
 from typing import Optional, Type, List
 from .. import constants as con
-from .exp import ExperimentLogger, ActiveAutoPilot, WaitTime, wealth_calculator
+from .exp import ExperimentLogger, ActiveAutoPilot, WaitTime
 from .exp import active_report, get_frame_timings, DebugLogger
 from ..utils import wealth_change
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
-from .configs import active_configs as acfg
+from .configs import DEFAULT_FRACTALS, STEP_TIME, STIMULUSPATH, active_configs as acfg
 from typing import Optional, Dict
 from .exp.helper import format_wealth, gui_update_dict, DebugTimer, make_filename
 
 
 def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
-    if expInfo is None:
-        expInfo = {'participant': '0',
-                'run': 1,
-                'eta': 0.0,
-                'agentMode': ['time_optimal', 'random', 'eta_-1.0', 'eta_1.0',
-                                'eta_0.0', 'soft_-1.0', 'soft_0.0', 'soft_1.0'],
-                'agentActive': True,
-                'simulateMR': ['None' , 'MRIDebug', 'Simulate', 'MRI'],
-                'responseLeft': 'left',
-                'responseRight': 'right',
-                'fullScreen': False,
-                'overwrite': True,
-                'wealth' : con.X0,
-                'TR': 0.592,
-                'maxDuration': 60,
-                'maxTrial': np.inf,
-                'maxRun': 4}
 
     if spawnGui:
         expInfo = gui_update_dict(expInfo, 'ergEx_Active')
 
     offset = load_calibration(filePath, expInfo['participant'], expInfo['eta'])
-
-    # Gui again, to check name and previous data.
-    if spawnGui:
-        expInfo = gui_update_dict(expInfo, 'ergEx_Active')
 
     # Buttons to str:
     expInfo['responseLeft'] = str(expInfo['responseLeft'])
@@ -71,7 +51,8 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
 
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
                                     fixed_timings=[acfg.timeResponse,
-                                                    acfg.timeSideHighlight, acfg.timeCoinToss,
+                                                    acfg.timeSideHighlight,
+                                                    acfg.timeCoinToss,
                                                     acfg.timeFractalSelection,
                                                     acfg.timeWealthUpdate,
                                                     acfg.timeFinalDisplay], TR=expInfo['TR'],
@@ -90,13 +71,8 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True):
     return expInfo
 
 
-def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
+def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                fractalList:List[str] = None):
-
-    if win is None:
-        win = visual.Window(size=[3072 / 2, 1920 / 2], fullscr=expInfo['fullScreen'],
-                            screen=0, winType='pyglet', allowGUI=True, monitor=None,
-                            color=[-1,-1,-1], colorSpace='rgb', units='pix')
 
     wealth = expInfo['wealth']
     nTrial = expInfo['nTrial']
@@ -116,7 +92,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
     frameRate, frameDur = get_frame_timings(win) #- hard coded
 
     if fractalList is None:
-        fractalList = acfg.fractalList
+        fractalList = DEFAULT_FRACTALS
         print("Using default fractals")
     else:
         if len(fractalList) != 9:
@@ -174,12 +150,12 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
 
             fractals[imL][nFl] = visual.ImageStim(win=win, pos=pos,
                                                 size=acfg.imgSize, opacity=0,
-                                                image=acfg.imagePath + os.sep + 'fractals' + os.sep + fl + '.png')
+                                                image=os.path.join(STIMULUSPATH, 'fractals', fl + '.png'))
             fractals[imL][nFl].pos += offset
             fractals[imL][nFl].setAutoDraw(True)
 
         coins[imL] = visual.ImageStim(win=win, pos=acfg.imgLocPos[imL], size=acfg.coinSize, opacity=0,
-                                    image=acfg.imagePath + os.sep + acfg.coinPos[imL] + '.png')
+                                    image=os.path.join(STIMULUSPATH, acfg.coinPos[imL] + '.png'))
         coins[imL].pos += offset
         coins[imL].setAutoDraw(True)
 
@@ -465,7 +441,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
         ################################# Wealth Update ############################
         new_wealth = wealth_change(wealth, ch_gamma, eta)
 
-        up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur))
+        up_steps = int(np.rint(acfg.timeWealthUpdate / STEP_TIME))
 
         wealth_steps = np.linspace(wealth, new_wealth, up_steps)
         wealth = new_wealth
@@ -473,9 +449,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window = None,
         wealthOnset = Logger.getTime()
 
         for ws in wealth_steps:
+            rotOns = Logger.getTime()
             MoneyBox.setText(format_wealth(ws))
-            Logger.keyStrokes(win)
-            win.flip()
+            Wait.wait(STEP_TIME, rotOns)
 
         Logger.logEvent({"event_type": "WealthUpdate",
                         "expected_duration": acfg.timeWealthUpdate, **logDict},
