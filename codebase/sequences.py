@@ -1,15 +1,10 @@
-import math
 import numpy as np
+import math
 import pandas as pd
-import pathlib
-import os
 from . import constants as con
-from .utils import isoelastic_utility,inverse_isoelastic_utility, shuffle_along_axis, plot_sequence, calculate_dx1
-from .utils import create_experiment, create_trial_order
-from .utils import create_gambles, create_gamble_pairs, create_gambles_v2, create_gamble_pairs_v2
-from .utils import is_g_deterministic, is_nobrainer, is_statewise_dominated, is_stochastically_dominated
-from .utils import growth_factor_to_fractal, random_reorder_axis
-
+from .utils import (isoelastic_utility, inverse_isoelastic_utility, shuffle_along_axis, create_gambles, 
+                    create_gamble_pairs, create_experiment, create_trial_order, is_g_deterministic, 
+                    is_nobrainer, is_statewise_dominated, is_stochastically_dominated)
 
 def passive_sequence_v1(eta:float, 
                         c:float, 
@@ -43,7 +38,7 @@ def passive_sequence_v2(eta:float,
     fractals = []
     part_sum = []
 
-    gamma_0 = isoelastic_utility(x0, eta)
+    gamma_0 = isoelastic_utility(x_0, eta)
     fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0) 
 
     for fractal in fractal_order:
@@ -154,8 +149,7 @@ def generate_dataframes(eta:float,
 
     p_seq_fractals, seq_gamma, p_seq_gamma, p_seq_wealth, _, _ = passive_sequence(eta=eta,
                                                     c=c,
-                                                    repeats=n_repeats_passive,
-                                                    active_mode= active_mode)
+                                                    repeats=n_repeats_passive)
     # Calculate number of trials:
     n_trials_passive = len(p_seq_fractals)
     p_df = pd.DataFrame(data={'trial': range(n_trials_passive),
@@ -184,7 +178,6 @@ def generate_dataframes(eta:float,
 
     meta = ("Passive: \n______________________ \n"
             + f"Sequence generated using passive version {passive_mode}"
-            + f" and active version {active_mode} \n"
             + f"Trials: {n_trials_passive}\nmin: {min(p_seq_wealth)}\nmax: {max(p_seq_wealth)}"
             + "\n\n\nActive: \n______________________ \n"
             + f"n. trials: {n_trials_active} \n"
