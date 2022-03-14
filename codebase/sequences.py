@@ -11,133 +11,77 @@ from .utils import is_g_deterministic, is_nobrainer, is_statewise_dominated, is_
 from .utils import growth_factor_to_fractal, random_reorder_axis
 
 
-def passive_sequence_v1(eta:float, c:float, repeats:int, active_mode:int, n_fractals:int=con.N_FRACTALS,
-                     x_0:int=con.X0, x_lower:int=0.001, x_upper:int=10**9, debug:bool=False, bound=False):
-    if active_mode == 1:
-        gamma_range = np.linspace(-c, c, n_fractals)
-    elif active_mode == 2:
-        dx1_list = [calculate_dx1(eta,-100,1000) for eta in [-2.0, -1.5, -0.5, -0.25, 0.5, 1.5, 2.5]]
-        gamma_range = [float(isoelastic_utility(1000+dx1,eta)-isoelastic_utility(1000,eta)) for dx1 in dx1_list]
-        gamma_range.append(float(isoelastic_utility(1000-100,eta)-isoelastic_utility(1000,eta)))
-        gamma_range.append(0)
-    else:
-        raise ValueError('Only v1 and v2 are supported in the active phase')
+def passive_sequence_v1(eta:float, 
+                        c:float, 
+                        repeats:int, 
+                        n_fractals:int=con.N_FRACTALS,
+                        x_0:int=con.X0):
 
-    gamma_range = np.array(gamma_range)
-    gamma_lower = isoelastic_utility(x_lower, eta) #- isoelastic_utility(x_0,eta)
-    gamma_upper = isoelastic_utility(x_upper, eta) #- isoelastic_utility(x_0,eta)
+    gamma_range = np.array(np.linspace(-c, c, n_fractals))
     gamma_0     = isoelastic_utility(x_0, eta)
 
-    accepted = False
-    n_rejected = 0
-    idx = 0
-    while not accepted:
-        idx += 1
+    n_trials = n_fractals * repeats #Might change this to be an input instad of 'repeats'
+    fractals = np.random.randint(n_fractals, size=n_trials)
+    gamma_array = gamma_range[fractals]
+    part_sum =  gamma_0 + np.cumsum(gamma_range[fractals])
+    part_wealth_sum = inverse_isoelastic_utility(part_sum,eta)
 
-        n_trials = n_fractals * repeats #Might change this to be an input instad of 'repeats'
-        fractals = np.random.randint(n_fractals, size=n_trials)
-        gamma_array = gamma_range[fractals]
-        part_sum =  gamma_0 + np.cumsum(gamma_range[fractals])
-        part_wealth_sum = inverse_isoelastic_utility(part_sum,eta)
-        if bound:
-            if  all(i > gamma_lower for i in part_sum)  \
-            and all(i < gamma_upper for i in part_sum):
-                accepted = True
-                #print(f"Sequence n. {idx} was accepted!")
-            else:
-                n_rejected += 1
-        else:
-            accepted = True
-
-        if debug:
-            plot_sequence(part_sum, idx, gamma_lower, gamma_upper,
-                            x_lower, x_upper, eta, x_0)
-
-    return fractals, gamma_array, part_sum, part_wealth_sum, gamma_lower, gamma_upper
+    return fractals, gamma_array, part_sum, part_wealth_sum
 
 
-def passive_sequence_v2(eta:float, c:float, repeats:int,
-                        active_mode:int=1,
-                        n_fractals:int = con.N_FRACTALS, x_0:int = con.X0,
-                        x_lower:int = 0.001, x_upper:int = 10**9,
-                        debug:bool = False, bound = True):
+def passive_sequence_v2(eta:float, 
+                        c:float, 
+                        repeats:int, 
+                        n_fractals:int=con.N_FRACTALS,
+                        x_0:int=con.X0):
 
-    if active_mode == 1:
-        gamma_range = np.linspace(-c, c, n_fractals).tolist()
-        gamma_range.append(999)
-    elif active_mode == 2:
-        dx1_list = [calculate_dx1(eta,-100,1000) for eta in [-2.0, -1.5, -0.5, -0.25 , 0.5, 1.5, 2.5]]
-        gamma_range = [float(isoelastic_utility(1000+dx1,eta)-isoelastic_utility(1000,eta)) for dx1 in dx1_list]
-        gamma_range.append(float(isoelastic_utility(1000-100,eta)-isoelastic_utility(1000,eta)))
-        gamma_range.append(0)
-        gamma_range.append(999)
-    else:
-        raise ValueError('Only v1 and v2 are supported in the active phase')
-
+    gamma_range = np.linspace(-c, c, n_fractals).tolist()
+    gamma_range.append(999)
     gamma_range = np.array(gamma_range)
-    gamma_lower = isoelastic_utility(x_lower, eta) #- isoelastic_utility(x_0,eta)
-    gamma_upper = isoelastic_utility(x_upper, eta) #- isoelastic_utility(x_0,eta)
+
 
     fractals = []
     part_sum = []
 
-    for x0 in [x_0, x_0 / 10,  x_0 * 10]:
+    gamma_0 = isoelastic_utility(x0, eta)
+    fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0) 
 
-        gamma_0 = isoelastic_utility(x0, eta)
+    for fractal in fractal_order:
+        tmp_seq = [fractal] * repeats
+        fractals.extend(tmp_seq)
+        tmp_cum_sum = gamma_0 + np.cumsum(gamma_range[tmp_seq])
+        part_sum.extend(tmp_cum_sum)
+        part_sum.extend(gamma_0) #Reset wealth
 
-        # if ((gamma_0 + repeats * c) > gamma_upper
-        #   or (gamma_0 + repeats * (-c)) < gamma_lower):
-        #    raise ValueError('Number of repeats is too high for given c-value')
-
-        fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0) if active_mode == 1 else shuffle_along_axis(np.array(range(n_fractals)), 0)
-
-        for fractal in fractal_order:
-            tmp_seq = [fractal] * repeats
-            fractals.extend(tmp_seq)
-            tmp_cum_sum = gamma_0 + np.cumsum(gamma_range[tmp_seq])
-            part_sum.extend(tmp_cum_sum)
-            part_sum.extend(gamma_0) #Reset wealth
-
-            fractals.append(n_fractals) #Show blank fractal
+        fractals.append(n_fractals) #Show blank fractal
 
     gamma_array = gamma_range[fractals]
     part_wealth_sum = inverse_isoelastic_utility(np.array(part_sum),eta)
 
-    if debug:
-        plot_sequence(part_sum, 1, gamma_lower, gamma_upper,
-                        x_lower, x_upper, eta, x_0)
-
-    return fractals, gamma_array, part_sum, part_wealth_sum, gamma_lower, gamma_upper
+    return fractals, gamma_array, part_sum, part_wealth_sum
 
 
-def active_sequence(c:float,eta:float, n_trials:int, n_fractals:int=con.N_FRACTALS,
-                    simulation:bool = False, n_simulations:int = 1, pilot_mode:int = 1):
+def active_sequence(c:float, 
+                    n_trials:int, 
+                    n_fractals:int=con.N_FRACTALS,
+                    n_simulations:int = 1):
 
-    if pilot_mode == 1: #Original version (symetric growth rates)
-        gambles, fractal_dict = create_gambles(c,n_fractals)
-        gambles = [
-            gamble for gamble in gambles
-            if not is_g_deterministic(gamble)
-            ]
-        gamble_pairs = create_gamble_pairs(gambles)
-        gamble_pairs = [
-            gamble_pair for gamble_pair in gamble_pairs
-            if not is_statewise_dominated(gamble_pair)
-            and not is_nobrainer(gamble_pair)
-            ]
-    elif pilot_mode == 2: #Non parametric approach
-        gambles,fractal_dict = create_gambles_v2(etas=[-2.0, -1.5, -0.5, -0.25, 0.5, 1.5, 2.5],dynamic=eta,dx2=-100,x=1000)
-        gamble_pairs = create_gamble_pairs_v2(gambles)
-    else:
-        raise ValueError('Only v1 and v2 are supported in the active phase')
-
-    # gamble_pairs = shuffle_along_axis(np.array(gamble_pairs),axis=2) #Shuffeling growth_rates within gambles
-    # gamble_pairs = random_reorder_axis(np.array(gamble_pairs),axis=1) #Shuffeling gambles with gamble_pairs
+    gambles, fractal_dict = create_gambles(c,n_fractals)
+    gambles = [
+        gamble for gamble in gambles
+        if not is_g_deterministic(gamble)
+        ]
+    gamble_pairs = create_gamble_pairs(gambles)
+    gamble_pairs = [
+        gamble_pair for gamble_pair in gamble_pairs
+        if not is_statewise_dominated(gamble_pair)
+        and not is_nobrainer(gamble_pair)
+        ]
 
     experiment  = create_experiment(gamble_pairs)
 
     trial_order = create_trial_order(
-            n_simulations=1,
+            n_simulations=n_simulations,
             n_gamble_pairs=experiment.shape[-1],
             n_trials=n_trials
         )
@@ -158,7 +102,7 @@ def active_sequence(c:float,eta:float, n_trials:int, n_fractals:int=con.N_FRACTA
         tmp = experiment[:,:,trial].flatten()
 
 
-        fractals[ii, :] = [growth_factor_to_fractal(g, c, n_fractals) for g in tmp] if pilot_mode == 1 else [fractal_dict[g] for g in tmp]
+        fractals[ii, :] = [fractal_dict[g] for g in tmp]
 
         gamma_array[ii, :] = tmp
         flags[ii, 0] = is_nobrainer(gamble_pairs[trial_order[ii][0]])
@@ -172,7 +116,6 @@ def generate_dataframes(eta:float,
                         n_trials_active:int,
                         n_repeats_passive:int,
                         passive_mode:int = 1,
-                        active_mode:int = 1,
                         speed_up:float = 1):
 
     if passive_mode == 1:
@@ -185,9 +128,7 @@ def generate_dataframes(eta:float,
     #Do everything for the active phase
     (a_seq_fractals, a_seq_gamma,
      a_seq_cointoss, a_seq_flags, a_seq_timings, _) = active_sequence(c=c,
-                                                                   eta=eta,
-                                                                   n_trials=n_trials_active,
-                                                                   pilot_mode=active_mode)
+                                                                      n_trials=n_trials_active)
 
     a_df_fractals = pd.DataFrame(a_seq_fractals,
                                  columns=['fractal_left_up', 'fractal_left_down',
