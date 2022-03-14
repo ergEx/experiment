@@ -1,5 +1,10 @@
+"""
+Configs for the experiment, change of global properties (sizes, positions, timing.)
+"""
 from typing import Dict
 from ..utils import DotDict
+from .. import constants as con
+import numpy as np
 
 STIMULUSPATH = 'data/stimuli/'
 """Path to stimulus folder"""
@@ -11,7 +16,7 @@ CENTER_POS = (0, 0)
 """ Center location on screen """
 TEXT_HEIGHT = 20
 """ Height of text """
-STEP_TIME = 40 / 1000
+STEP_TIME = 20 / 1000
 """ Variable to fix timing issues with win.flip (to replace frame dur) """
 
 
@@ -119,3 +124,57 @@ def check_attribute_type(config_dict:Dict, key_val:str, test_type=None) -> None:
         raise ValueError(f"{key_val} has to be of type: {test_type}")
 
 
+def check_configs(config_dict:Dict, task='passive') -> Dict:
+    """Checks configs, adds default values.
+
+    Args:
+        config_dict (Dict): Configs for the experiment.
+        task (str, optional): The task to check for. Defaults to 'passive'.
+
+    Returns:
+        Dict: Changed config.
+    """
+
+    default_dict = {'participant': None, 'eta': None, 'run': None,
+                    'responseLeft': 'left', 'responseRight': 'right',
+                    'wealth': con.X0,  'overwrite': True, 'agentActive': False,
+                    'simulateMR': 'Simulate', 'TR': 2.0, 'maxTrial': np.inf,
+                    'maxDuration': np.inf}
+
+    if task =='passive':
+        default_dict.update({'nTrial_noBrainer': 10, 'responseButton': 'space'})
+    elif task == 'config':
+        default_dict.update({'responseUp': 'up', 'responseDown': 'down'})
+
+    type_dict_options = {
+        'participant': str, 'eta': float, 'run': int,
+        'responseLeft': str, 'responseRight': str, 'responseButtion': str,
+        'wealth': float, 'overwrite': bool, 'agentActive': bool, 'simulateMR': str,
+        'TR': float, 'maxTrial': [int, float], 'maxDuration': [int, float]}
+
+    for dc in default_dict.keys():
+        config_dict = check_attribute_present(config_dict, dc, default_dict[dc])
+
+    for cd in config_dict.keys():
+        if cd in [type_dict_options.keys()]:
+            check_attribute_type(config_dict, cd, type_dict_options[cd])
+
+    return config_dict
+
+
+def get_labels(config_dict:Dict) -> Dict:
+    """NOT IMPLEMENTED
+
+    Args:
+        config_dict (Dict): _description_
+
+    Returns:
+        Dict: _description_
+    """
+
+    label_dict_options = {
+        'participant': 'The participant ID.',
+        'eta': 'The dynamic of the experiment.'}
+
+    labels = {}
+    return labels
