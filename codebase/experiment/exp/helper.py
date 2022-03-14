@@ -21,9 +21,10 @@ def get_frame_timings(win:visual.Window) -> Tuple[float, float]:
         Tuple[float, float]: frame rate in Hz and frame duration in 1/Hz
     """
     # store frame rate of monitor if we can measure it from psychopy builder.
-    frameRate = win.getActualFrameRate()
+    frameRate = win.getActualFrameRate(nIdentical=20, nMaxFrames=200,
+                                       nWarmUpFrames=15, threshold=1)
     if frameRate != None:
-        frameDur = 1.0 / round(frameRate)
+        frameDur = 1.0 / frameRate
     else:
         frameDur = 1.0 / 60.0  # could not measure, so guess
 
