@@ -138,56 +138,6 @@ def create_gambles(c, n_fractals=9):
     ], fractal_dict
 
 
-def calculate_dx1(eta:float, dx2:int, x:int):
-    """Calculate change in wealth that corresponds to given indifference-eta
-       given dx2 and x.
-
-    Args:
-        eta (float):
-            Indifference-eta, ie. riskpreference being tested.
-        dx2 (int):
-            Wealth change of other fractals.
-        x (int):
-            Wealth level investigated.
-    Returns:
-        wealth change (float)
-    """
-    if np.isclose(eta, 1):
-        return math.exp(1*math.log(x)-math.log(x + dx2)) - x
-    else:
-        return (2 * x ** (1 - eta) - (x + dx2) ** (1 - eta)) ** (1 / (1 - eta)) - x
-
-
-def create_gambles_v2(etas:list, dynamic:float, dx2:int, x:int):
-    """Create list of all gambles.
-
-    Args:
-        eta (list):
-            List of indifference-etas, ie. riskpreferences being tested.
-        dx2 (int):
-            Wealth change of other fractals.
-        x (int):
-            Wealth level investigated.
-    Returns:
-        List of arrays. Each gamble is represented as (2, ) array with growth
-        rates.
-    """
-    dx1_list = [calculate_dx1(eta, dx2, x) for eta in etas]
-    gamma_list = [float(isoelastic_utility(x + dx1, dynamic)-isoelastic_utility(x, dynamic)) for dx1 in dx1_list]
-    gamma_2 = float(isoelastic_utility(x + dx2, dynamic)-isoelastic_utility(x, dynamic))
-    gamble_list = [np.array(
-        [gamma_1, gamma_2]) for gamma_1 in gamma_list]
-
-    fractal_dict = {}
-    for i, gamma in enumerate(gamma_list):
-        fractal_dict[gamma] = i
-
-    fractal_dict[gamma_2] = i + 1
-    fractal_dict[0] = i + 2
-
-    return gamble_list,fractal_dict
-
-
 def create_gamble_pairs(gambles):
     """Create list of all unique gamble pairs.
 
@@ -204,23 +154,6 @@ def create_gamble_pairs(gambles):
     return [
         np.concatenate((gamble_1[np.newaxis], gamble_2[np.newaxis]), axis=0)
         for gamble_1, gamble_2 in combinations(gambles, 2)
-        ]
-
-
-def create_gamble_pairs_v2(gambles):
-    """Dummy function to make v2 compatable with v1
-
-    Args:
-        gamble (list of arrays):
-            List of gambles.
-
-    Returns:
-        List of arrays. Each gamble pair is represented as (2, 2) array with
-        four growth rates, but where growth rates of gamble 2 is always 0.
-        """
-    return [
-        np.concatenate((gamble_1[np.newaxis], np.array([[0, 0]])), axis=0)
-        for gamble_1 in gambles
         ]
 
 
@@ -297,23 +230,6 @@ def is_g_deterministic(gamble):
     return gamble[0] == gamble[1]
 
 
-def growth_factor_to_fractal(gamma, c, n_fractals):
-    """Converting growthfactor to associated fractal
-
-    Args:
-        gamma (float):
-            Growthfactor
-        c (float):
-            Max/min value of growthfactors
-        n_fractals (int)
-            Number of fractals used
-
-    returns:
-        Fractal (int) associated with given growth factor
-    """
-    return list(np.linspace(-c,c,n_fractals)).index(gamma)
-
-
 def calculate_c(eta):
     """Function to that provides a c-value based purely on eta
 
@@ -325,30 +241,3 @@ def calculate_c(eta):
         return ValueError(f"Eta value of {eta} cannot be chosen, choose between: {list(c_values.keys())}")
     return c_values[eta]
 
-
-def plot_sequence(part_sum, idx, g_l ,g_u, x_l, x_u, eta, x0):
-
-    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-    ax1.plot(range(len(part_sum)),part_sum)
-    ax1.hlines(g_l, 0, len(part_sum),colors='red')
-    ax1.hlines(g_u, 0, len(part_sum),colors='red')
-    ax1.set_ylabel(f"$\gamma$ (Growth rate)")
-    ax1.set_xlabel("Trials")
-    ax1.set_title("Growth rate")
-
-    x = [inverse_isoelastic_utility(isoelastic_utility(x0, eta)+ g,eta) for g in part_sum]
-    ax2.plot(range(len(part_sum)),list(x))
-    ax2.hlines(x_l, 0, len(part_sum),colors='red',label="Lower limit")
-    ax2.hlines(x_u, 0, len(part_sum),colors='red',linestyles='--', label="Max lower")
-    ax2.set_ylabel("DKK")
-    ax2.set_xlabel("Trials")
-    ax2.set_title("DKK")
-
-    box = ax2.get_position()
-    ax2.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-
-    # Put a legend to the right of the current axis
-    ax2.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    f.suptitle(f"Partial sum for accepted sequence - idx = {idx}")
-    f.tight_layout()
-    plt.show()
