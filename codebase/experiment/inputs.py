@@ -8,15 +8,19 @@ from ..sequences import generate_dataframes
 from ..file_handler import make_filename
 
 
-def run(eta:float, c:float, n_repeats_passive:int, n_trials_active:int,
-        save_path:str, passive_mode:int = 1, active_mode:int = 1,
+def run(eta:float, 
+        c:float, 
+        n_repeats_passive:int, 
+        n_trials_active:int,
+        save_path:str, 
+        passive_mode:int = 1, 
         speed_up:int = 1):
 
-    p_df, a_df, meta = generate_dataframes(eta=eta, c=c,
+    p_df, a_df, meta = generate_dataframes(eta=eta, 
+                                           c=c,
                                            n_trials_active=n_trials_active,
                                            n_repeats_passive=n_repeats_passive,
                                            passive_mode = passive_mode,
-                                           active_mode = active_mode,
                                            speed_up=speed_up)
 
     p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
@@ -53,11 +57,13 @@ def run_with_dict(expInfo):
     if reply:
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
-        run(eta=expInfo['eta'], c=c, n_repeats_passive=expInfo['n_repeats_passive'],
+        run(eta=expInfo['eta'], 
+            c=c, 
+            n_repeats_passive=expInfo['n_repeats_passive'],
             n_trials_active=expInfo['n_trials_active'],
             passive_mode=expInfo['passive_mode'],
-            active_mode=expInfo['active_mode'],
-            speed_up=speed_up, save_path=save_path)
+            speed_up=speed_up, 
+            save_path=save_path)
     else:
         print(f"Not creating new inputs for participant {expInfo['participant']}")
         pass
