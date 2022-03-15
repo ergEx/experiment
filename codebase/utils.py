@@ -163,11 +163,10 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
 
     if len(x) > 2:
         return ValueError("You can choose max two reference wealths!")
-
     dx1_list = [calculate_dx1(eta, dx2, x[0]) for eta in indifference_etas]
     gamma1_list = [float(isoelastic_utility(x[0] + dx1, lambd)-isoelastic_utility(x[0], lambd)) for dx1 in dx1_list]
 
-    dx2_list = [dx2. calculate_dx1(0.5, calculate_dx1(0.5, dx2, x[0]), x[1])] if len(x)==2 else [dx2]
+    dx2_list = [dx2, calculate_dx1(0.5, calculate_dx1(0.5, dx2, x[0]), x[1])] if len(x)==2 else [dx2]
     gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
 
     gamma_list = gamma1_list + gamma2_list + [0]

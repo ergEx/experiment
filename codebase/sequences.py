@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import math
-from . import constants as con
-from .utils import (isoelastic_utility, inverse_isoelastic_utility, calculate_growth_rates, 
+import constants as con
+from utils import (isoelastic_utility, inverse_isoelastic_utility, calculate_growth_rates, 
                     shuffle_along_axis, create_gambles, create_gamble_pairs, create_experiment, 
                     create_trial_order)
 
@@ -13,14 +13,17 @@ def passive_sequence_v1(lambd:float,
                         indiffrence_x_0:np.array, 
                         indifference_dx2:int):
     
-    gamma_range, gamma1_list, gamma2_list, fractal_dict= calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indiffrence_x_0)
+    gamma_range, gamma1_list, gamma2_list, fractal_dict= calculate_growth_rates(indifference_etas=indifference_etas, 
+                                                                                lambd=lambd, 
+                                                                                dx2=indifference_dx2, 
+                                                                                x=indiffrence_x_0)
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
     n_trials = n_fractals * repeats 
     fractals = np.random.randint(n_fractals, size=n_trials)
-    gamma_array = gamma_range[fractals]
-    part_sum =  gamma_0 + np.cumsum(gamma_range[fractals])
+    gamma_array = [gamma_range[fractal] for fractal in fractals]
+    part_sum =  gamma_0 + np.cumsum(gamma_array)
     part_wealth_sum = inverse_isoelastic_utility(part_sum,lambd)
 
     return fractals, gamma_array, part_sum, part_wealth_sum,gamma1_list, gamma2_list, fractal_dict
@@ -110,7 +113,7 @@ def generate_dataframes(lambd:float,
 
     (p_seq_fractals, p_seq_gamma, 
     p_seq_part_sum, p_seq_part_wealth_sum,
-    gamma1_list, gamma2_list, fractal_dict) = passive_sequence(lambd-lambd, 
+    gamma1_list, gamma2_list, fractal_dict) = passive_sequence(lambd=lambd, 
                                                             repeats=n_repeats_passive, 
                                                             x_0=x_0, 
                                                             indifference_etas=indifference_etas, 
