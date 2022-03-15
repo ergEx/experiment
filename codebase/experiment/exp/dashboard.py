@@ -530,6 +530,8 @@ def nobrainer_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_event_duration_error(dataframe, axes[ii], event='ITI')
     ii += 1
+    ax = plot_event_duration_error(dataframe, axes[ii], event='WealthUpdate')
+    ii += 1
     ax = plot_expected_gamma(dataframe, axes[ii], direction='nobrainer')
     ii += 1
     ax = plot_rt_versus_difficulty(dataframe, axes[ii], 'nobrainer')
