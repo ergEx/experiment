@@ -11,11 +11,11 @@ import numpy as np
 from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 
-N_REPEATS_PASSIVE = 6
+N_REPEATS_PASSIVE = 10
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
 N_TRIALS_ACTIVE = 90
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 10
+N_TRIALS_NOBRAINER = 15
 """ Number of nobrainer trials after the passive phase ends."""
 
 PASSIVE_MODE = 1
@@ -33,9 +33,9 @@ MAX_RUN_PASSIVE = 2
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 27
+MAX_TRIALS_PASSIVE = 45
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = 54 # np.inf
+MAX_TRIALS_ACTIVE = 90 # np.inf
 """ Number of trials per run in he active phase. """
 
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     core.wait(2)
     win.flip()
 
-    if CALIBRATION:
+    if expInfo['calibration']:
         calib_conf = check_configs(expInfo.copy(), task='calibration')
         calibration_run(filePath, calib_conf, win=win)
 
