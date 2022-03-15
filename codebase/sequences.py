@@ -1,8 +1,8 @@
 import numpy as np
 import math
 import pandas as pd
-from . import constants as con
-from .utils import (isoelastic_utility, inverse_isoelastic_utility, shuffle_along_axis, create_gambles, 
+import constants as con
+from utils import (isoelastic_utility, inverse_isoelastic_utility, shuffle_along_axis, create_gambles, 
                     create_gamble_pairs, create_experiment, create_trial_order, is_g_deterministic, 
                     is_nobrainer, is_statewise_dominated, is_stochastically_dominated)
 
@@ -120,7 +120,20 @@ def generate_dataframes(eta:float,
     else:
         raise ValueError("Passive sequence has to be 1 or 2")
 
-    #Do everything for the active phase
+    p_seq_fractals, seq_gamma, p_seq_gamma, p_seq_wealth = passive_sequence(eta=eta,
+                                                    c=c,
+                                                    repeats=n_repeats_passive)
+    # Calculate number of trials:
+    n_trials_passive = len(p_seq_fractals)
+    p_df = pd.DataFrame(data={'trial': range(n_trials_passive),
+                            'eta': [eta] * n_trials_passive,
+                            'gamma': seq_gamma,
+                            'fractal': p_seq_fractals,
+                            'iti': np.zeros(n_trials_passive) + 3 / speed_up, # to debug
+                            'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
+                            'p_seq_gamma': p_seq_gamma,
+                            'p_seq_wealth':p_seq_wealth})
+
     (a_seq_fractals, a_seq_gamma,
      a_seq_cointoss, a_seq_flags, a_seq_timings, _) = active_sequence(c=c,
                                                                       n_trials=n_trials_active)
@@ -146,20 +159,6 @@ def generate_dataframes(eta:float,
 
     a_df = pd.concat([a_df_misc,a_df_fractals, a_df_gamma, a_df_cointoss,
                       a_df_flags, a_df_timings], axis=1)
-
-    p_seq_fractals, seq_gamma, p_seq_gamma, p_seq_wealth, _, _ = passive_sequence(eta=eta,
-                                                    c=c,
-                                                    repeats=n_repeats_passive)
-    # Calculate number of trials:
-    n_trials_passive = len(p_seq_fractals)
-    p_df = pd.DataFrame(data={'trial': range(n_trials_passive),
-                            'eta': [eta] * n_trials_passive,
-                            'gamma': seq_gamma,
-                            'fractal': p_seq_fractals,
-                            'iti': np.zeros(n_trials_passive) + 3 / speed_up, # to debug
-                            'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
-                            'p_seq_gamma': p_seq_gamma,
-                            'p_seq_wealth':p_seq_wealth})
 
     ## Meta Info written here
     l_avg_u = a_df_gamma[['gamma_left_up']].sum(axis=0)
