@@ -18,7 +18,7 @@ from .exp import WaitTime, get_frame_timings, passive_report
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import passive_configs as pcfg
 from .configs import active_configs as acfg
-from .configs import DEFAULT_FRACTALS, STIMULUSPATH, STEP_TIME
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
 from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth
