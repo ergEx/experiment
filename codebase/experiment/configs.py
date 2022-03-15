@@ -18,9 +18,6 @@ CENTER_POS = (0, 0)
 """ Center location on screen """
 TEXT_HEIGHT = 20
 """ Height of text """
-STEP_TIME = 0.017
-""" Variable to fix timing issues with win.flip (to replace frame dur) """
-
 
 passive_configs = DotDict()
 
