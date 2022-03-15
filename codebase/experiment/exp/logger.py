@@ -1,3 +1,5 @@
+""" Logger classes used by the experiment."""
+
 from psychopy import core, visual, event
 import numpy as np
 import os

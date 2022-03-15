@@ -1,4 +1,6 @@
-# %%
+"""
+Plotting functions used in the dashboard.
+"""
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
