@@ -15,7 +15,7 @@ N_REPEATS_PASSIVE = 10
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
 N_TRIALS_ACTIVE = 90
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 15
+N_TRIALS_NOBRAINER = 20
 """ Number of nobrainer trials after the passive phase ends."""
 
 PASSIVE_MODE = 1
@@ -38,6 +38,17 @@ MAX_TRIALS_PASSIVE = 45
 MAX_TRIALS_ACTIVE = 90 # np.inf
 """ Number of trials per run in he active phase. """
 
+
+def set_up_win(fscreen, gui=False):
+    win = visual.Window(size=[3072 / 2, 1920 / 2], fullscr=fscreen,
+                    screen=0, winType='pyglet', allowGUI=gui, monitor=None,
+                    color=[-1,-1,-1], colorSpace='rgb', units='pix',
+                    waitBlanking=False)
+
+    refreshRate, frameDur = get_frame_timings(win)
+    print(f"Frame duration = {frameDur}, refreshRate = {refreshRate}")
+
+    return win, frameDur
 
 if __name__ == '__main__':
 
@@ -70,14 +81,7 @@ if __name__ == '__main__':
 
     run_with_dict(expInfo=expInfo)
 
-    win = visual.Window(size=[3072 / 2, 1920 / 2], fullscr=expInfo['fullScreen'],
-                        screen=0, winType='pyglet', allowGUI=True, monitor=None,
-                        color=[-1,-1,-1], colorSpace='rgb', units='pix',
-                        waitBlanking=False)
-
-    refreshRate, frameDur = get_frame_timings(win)
-    print(f"Frame duration = {frameDur}, refreshRate = {refreshRate}")
-    frameDur = None
+    win, frameDur = set_up_win(expInfo['fullScreen'], False)
 
     Between = visual.TextStim(win=win, name='between',
                                 text=f'Experiment set up, starting with passive task.',
@@ -103,14 +107,21 @@ if __name__ == '__main__':
 
     passive_conf = check_configs(passive_conf, task='passive')
 
+    win.close()
 
     for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
 
+        win, frameDur = set_up_win(expInfo['fullScreen'], False)
         passive_conf['run'] = run
 
         passive_conf = passive_gui(filePath, passive_conf, False)
         event.clearEvents()
         wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
+
+        win.close()
+
+
+    win, frameDur = set_up_win(expInfo['fullScreen'], False)
 
     expInfo.update({'wealth' : con.X0})
 
@@ -128,19 +139,24 @@ if __name__ == '__main__':
     Between.draw()
     win.flip()
     core.wait(2)
-    win.flip()
+
+    win.close()
 
     for run in range(active_conf['run'],  MAX_RUN_ACTIVE + 1):
 
+        win, frameDur = set_up_win(expInfo['fullScreen'], False)
         active_conf['run'] = run
         active_conf = active_gui(filePath, active_conf, False)
         event.clearEvents()
         wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
+        win.close()
+
+    win, frameDur = set_up_win(expInfo['fullScreen'], False)
 
     Between.setText("You are done, thank you.")
     Between.draw()
     win.flip()
     core.wait(2)
-    win.flip()
 
+    win.close()
     core.quit()

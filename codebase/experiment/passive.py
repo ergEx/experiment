@@ -1,8 +1,6 @@
 """
 Functions to run the passive task of the experiment.
 """
-
-from curses.ascii import DC1
 from psychopy import visual, core, event
 import itertools
 from psychopy.hardware.emulator import SyncGenerator
@@ -367,8 +365,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
             win.flip()
 
-            if (Logger.getTime() - wheelOnset) >= spinDuration:
-                break
+            # if (Logger.getTime() - wheelOnset) >= spinDuration:
+            #    break
 
         Logger.keyStrokes(win)
         Logger.logEvent({"event_type": "WheelSpin",
@@ -401,8 +399,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
             win.flip()
 
-            if (Logger.getTime() - moneyOnset) >= pcfg.timeWealthUpdate:
-                break
+            # if (Logger.getTime() - moneyOnset) >= pcfg.timeWealthUpdate:
+            #    break
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
@@ -632,8 +630,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
             win.flip()
 
-            if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-                break
+            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
+            #     break
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))

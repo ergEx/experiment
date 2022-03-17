@@ -4,3 +4,5 @@ __pycache__
 *.pyc
 # for now
 html
+test_dashboard.py
+docs

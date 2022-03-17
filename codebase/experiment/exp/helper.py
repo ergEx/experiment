@@ -26,7 +26,7 @@ def get_frame_timings(win:visual.Window) -> Tuple[float, float]:
     frameRate = win.getActualFrameRate(nIdentical=20, nMaxFrames=200,
                                        nWarmUpFrames=15, threshold=1)
     if frameRate != None:
-        frameDur = 1.0 / np.round(frameRate)
+        frameDur = 1.0 / frameRate
     else:
         frameDur = 1.0 / 60.0  # could not measure, so guess
 

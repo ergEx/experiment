@@ -478,8 +478,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
             win.flip()
 
-            if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-                break
+            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
+            #    break
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
