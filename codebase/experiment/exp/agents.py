@@ -1,4 +1,6 @@
-# %%
+""" Agents for passive and active phase, so that experiments can be run without
+User input.
+"""
 import numpy as np
 from psychopy import event
 from typing import List, Union

@@ -1,3 +1,6 @@
+"""File handling utilities, creates BIDS compatible path names and checks if
+lambda is in correct name. Can also extract important info from pathname.
+"""
 import os
 import re
 import numpy as np
