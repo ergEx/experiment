@@ -1,4 +1,6 @@
-# %%
+"""
+Plotting functions used in the dashboard.
+"""
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,12 +9,12 @@ from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
 
 # %%
-def rand_jitter(arr):
+def rand_jitter(arr:np.ndarray):
     stdev = .02 * (np.nanmax(arr) - np.nanmin(arr))
     return arr + np.random.randn(len(arr)) * stdev
 
 # %%
-def pandas_save_loader(filename, task='passive'):
+def pandas_save_loader(filename:str, task:str = 'passive'):
     if task == 'active':
         cat_dtypes = {'onset': float, 'duration': float, 'trial_type': str,
                       'event_type': str, 'response_time': float,
@@ -27,11 +29,12 @@ def pandas_save_loader(filename, task='passive'):
                       'participant_id': str, 'TR': float, 'no_response': float,
                       'chosen_expected_gamma': float, 'realized_gamma': float,
                       'expected_duration': float, 'selected_side': str}
+
     elif task == 'passive':
         cat_dtypes = {'onset': float, 'duration': float, 'trial_type': str,
                       'event_type': str, 'response_time': float,
-                      'response_button': str, 'response_late': float, 'response_correct': float,
-                      'no_response': float,
+                      'response_button': str, 'response_late': float,
+                      'response_correct': float, 'no_response': float,
                       'wealth': float, 'delta_wealth': float, 'trial': float,
                       'gamma': float, 'fractal': str, 'eta': float,
                       'trial_time': float, 'participant_id': str, 'TR': float,
@@ -41,23 +44,9 @@ def pandas_save_loader(filename, task='passive'):
                       'selected_side': str, 'run': float, 'part': float}
 
     else:
-        raise ValueError('task has to be passive, active or nobrainer!')
-
+        raise ValueError('task has to be passive or active!')
 
     dataframe = pd.read_csv(filename, sep='\t', na_values='n/a', dtype=cat_dtypes)
-
-    return dataframe
-
-
-def add_last_response(path, save=False, task='active'):
-    dataframe = pandas_save_loader(path, task=task)
-
-    responses = dataframe.query('event_type == "Response"').copy()
-    idx = responses.groupby(["trial"])["onset"].idxmax()
-    dataframe.loc[idx, 'response_is_last'] = True
-
-    if save:
-        dataframe.to_csv(path, sep='\t', index=False, na_rep='n/a')
 
     return dataframe
 
@@ -98,9 +87,7 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
         raise ValueError('Diretion must be in ["horizontal", "vertical"]')
 
     ax.hist(gammas_1.values, alpha=0.5, density=True, color='b')
-    # gammas_1.plot.kde(ax=ax, color='b')
     ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange')
-    # gammas_2.plot.kde(ax=ax, color='orange')
 
     legend = ax.get_legend_handles_labels()
 
@@ -126,7 +113,6 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
 def plot_prob_heads(dataframe, ax):
     coin_tosses = dataframe.query('event_type=="Coin"').gamble_up
 
-
     ct_vc = coin_tosses.value_counts()
     ax.bar(np.arange(len(ct_vc)), ct_vc)
     ax.set_xticks(np.arange(len(ct_vc)))
@@ -143,7 +129,6 @@ def plot_wealth_trajectory(dataframe, ax):
 
     wealth_traj = wealth_trajectory.reset_index()
     ax.plot(wealth_traj.wealth)
-    # wealth_traj.wealth.plot(ax=ax)
 
     ax.set(ylabel='Wealth', xlabel='Trial',
         title=f'Wealth Trjactory over Trials')
@@ -159,7 +144,6 @@ def plot_event_durations(dataframe, ax, event='ITI'):
             color='blue', alpha=0.5)
 
     xlim = ax.get_xlim()
-    # durations.plot.kde(ax=ax)
 
     ax.set(ylabel='Duration in s', xlabel='s',
         title=f'Durations for {event}', xlim=xlim)
@@ -347,6 +331,30 @@ def plot_rt_versus_difficulty(dataframe, ax, task='active'):
 
     return ax
 
+
+def plot_choice_probability(dataframe, ax):
+
+    gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
+
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
+
+    button = gammas.selected_side == 'left'
+
+    choices = np.unique(gammas_1)
+    probs = np.zeros(choices.shape)
+
+    for n, ch in enumerate(choices):
+        probs[n] = np.mean(button[gammas_1==ch])
+
+    ax.bar(choices, probs)
+    ax.plot(choices, probs)
+
+    ax.set(title='Choice Probability', xlabel='Unique Gammas',
+           ylabel='Probability')
+
+    return ax
+
+
 def plot_to_trajectory(dataframe, ax):
     gammas = dataframe.query('event_type == "TrialEnd"')
     optimal_path = (gammas[['gamma_left_up', 'gamma_left_down']].mean(1) <
@@ -390,7 +398,7 @@ def plot_to_trajectory(dataframe, ax):
     return ax
 # %%
 
-def passive_report(fname, target_dir='data/reports'):
+def passive_report(fname:str, target_dir:str = 'data/reports'):
     dataframe = pandas_save_loader(fname, 'passive')
     dataframe = dataframe.query('part == 0')
 
@@ -431,7 +439,7 @@ def passive_report(fname, target_dir='data/reports'):
 
 def active_report(fname, target_dir='data/reports'):
 
-    dataframe = add_last_response(fname)
+    dataframe = pandas_save_loader(fname, task='active')
 
     fig, axes = plt.subplots(7, 3, figsize=(12.5, 17), sharex=False, sharey=False)
 
@@ -450,58 +458,44 @@ def active_report(fname, target_dir='data/reports'):
         axes[ii].axis('off')
 
     ii += 1
-    print(ii, 'tr')
     ax = plot_type_bar(dataframe, axes[ii], ex_type='Event')
     ii += 1
-    print(ii, 'event')
     ax = plot_wealth_trajectory(dataframe, axes[ii])
     ii += 1
-    print(ii, 'wealth')
     ax = plot_event_duration_error(dataframe, axes[ii], event='ITI')
     ii += 1
-    print(ii, 'iti')
-    ax = plot_event_duration_error(dataframe, axes[ii], event='GambleLeft')
+    try:
+        ax = plot_event_duration_error(dataframe, axes[ii], event='GambleLeft')
+    except IndexError:
+        axes[ii].axis('off')
+
     ii += 1
-    print(ii, 'gleft')
     ax = plot_event_duration_error(dataframe, axes[ii], event='GambleRight')
     ii += 1
-    print(ii)
     ax = plot_event_duration_error(dataframe, axes[ii], event='SideSelection')
     ii += 1
-    print(ii)
     ax = plot_event_duration_error(dataframe, axes[ii], event='Coin')
     ii += 1
-    print(ii, 'coin')
     ax = plot_event_duration_error(dataframe, axes[ii], event='FractalSelection')
     ii += 1
-    print(ii)
     ax = plot_event_duration_error(dataframe, axes[ii], event='WealthUpdate')
     ii += 1
-    print(ii)
     ax = plot_prob_heads(dataframe, axes[ii])
     ii += 1
-    print(ii, 'heads')
     ax = plot_expected_gamma(dataframe, axes[ii], direction='horizontal')
     ii += 1
-    print(ii)
     ax = plot_expected_gamma(dataframe, axes[ii], direction='vertical')
     ii += 1
-    print(ii, 'direction')
     ax = plot_time_optimal_responses(dataframe, axes[ii])
     ii += 1
-    print(ii)
     ax = plot_realized_gambles(dataframe, axes[ii])
     ii += 1
-    print(ii, 'realized')
     ax = plot_late_responses(dataframe, axes[ii], task='active')
     ii += 1
-    print(ii)
-    ax = plot_type_bar(dataframe, axes[ii], ex_type='Trial')
+    ax = plot_choice_probability(dataframe, axes[ii])
     ii += 1 # 19
-    print(ii, 'trial')
     ax = plot_rt_versus_difficulty(dataframe, axes[ii])
     ii += 1 # 20
-    print(ii)
     ax = plot_to_trajectory(dataframe, axes[ii])
 
     fname_bare = os.path.split(fname)[-1][:-4]
@@ -516,6 +510,7 @@ def nobrainer_report(fname, target_dir='data/reports'):
     dataframe = dataframe.query('part == 1')
     trials_data = dataframe.query('event_type == "TrialEnd"')
     to_answer = trials_data.response_correct
+
     print(f"Proportion correct: {(to_answer.mean() * 100):4.2f} % || "
           f"Correct responses: {np.int(to_answer.sum())} / {to_answer.shape[0]}")
 
@@ -537,27 +532,17 @@ def nobrainer_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_event_duration_error(dataframe, axes[ii], event='ITI')
     ii += 1
+    ax = plot_event_duration_error(dataframe, axes[ii], event='WealthUpdate')
+    ii += 1
     ax = plot_expected_gamma(dataframe, axes[ii], direction='nobrainer')
-    ii += 1# 19
+    ii += 1
     ax = plot_rt_versus_difficulty(dataframe, axes[ii], 'nobrainer')
     ii += 1
-
     ax = plot_time_optimal_responses(dataframe, axes[ii], 'nobrainer')
+
     fname_bare = os.path.split(fname)[-1][:-4]
     fname_bare = fname_bare.replace('passive', 'nobrainer')
 
     plt.suptitle(fname_bare)
     plt.tight_layout()
     plt.savefig(target_dir + os.sep +  fname_bare + '.png')
-
-
-if __name__ == "__main__":
-
-    import os
-    thisDir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(thisDir)
-
-    passive_report('data/sub-0/sub-0_ses-eta0.0_task-passive_run-1_events.tsv')
-    #active_report('data/sub-agentEta1.0/sub-agentEta1.0_ses-eta1.0_task-active_run-1_events.tsv')
-    #active_report('data/sub-agentEta0.5/sub-agentEta0.5_ses-eta0.0_task-active_run-1_events.tsv')
-    #active_report('data/sub-agentEta0.5/sub-agentEta0.5_ses-eta1.0_task-active_run-1_events.tsv')

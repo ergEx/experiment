@@ -1,3 +1,5 @@
+""" Helper functions for the experiment. Doing many different things
+like getting frame timings, waiting functions etc. """
 from psychopy import core, gui, visual
 from ...file_handler import extract_from_fname, make_filename
 from ...utils import wealth_change
@@ -11,42 +13,6 @@ import re
 import json
 
 
-def wealth_calculator(wealth:float, response:str, gambleUp:bool,
-                      gammas:Union[List[float], np.ndarray],
-                      etas:Union[float, Union[List[float], np.ndarray]]) -> float:
-    """Calculate wealth update depending on response and coin toss.
-
-    Args:
-        wealth (float): The current wealth.
-        response (str): Which side has been selected, "left" or "right".
-        gambleUp (bool): Cointoss, True means "Up".
-        gammas (Union[List[float], np.ndarray]): List of growth rate. Order:
-            left up, left down, right up, right down. Same for below.
-        etas (float): The dynamic that is used for the wealth update.
-
-    Returns:
-        float: The updated wealth.
-    """
-
-    if not isinstance(etas, list):
-        # Check if a single eta is used or multiple.
-        etas = [etas] * 4
-
-    if response == "left":
-        if gambleUp:
-            nwealth = wealth_change(wealth, gammas[0], etas[0])
-        else:
-            nwealth = wealth_change(wealth, gammas[1], etas[1])
-
-    if response == "right":
-        if gambleUp:
-            nwealth = wealth_change(wealth, gammas[2], etas[2])
-        else:
-            nwealth = wealth_change(wealth, gammas[3], etas[3])
-
-    return nwealth
-
-
 def get_frame_timings(win:visual.Window) -> Tuple[float, float]:
     """Gets frame timings from the current window.
 
@@ -57,9 +23,10 @@ def get_frame_timings(win:visual.Window) -> Tuple[float, float]:
         Tuple[float, float]: frame rate in Hz and frame duration in 1/Hz
     """
     # store frame rate of monitor if we can measure it from psychopy builder.
-    frameRate = win.getActualFrameRate()
+    frameRate = win.getActualFrameRate(nIdentical=20, nMaxFrames=200,
+                                       nWarmUpFrames=15, threshold=1)
     if frameRate != None:
-        frameDur = 1.0 / round(frameRate)
+        frameDur = 1.0 / frameRate
     else:
         frameDur = 1.0 / 60.0  # could not measure, so guess
 
