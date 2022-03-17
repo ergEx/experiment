@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 from .. import constants as con
-from .. import calculate_c, DotDict
 from ..sequences import generate_dataframes
 from ..file_handler import make_filename
 
@@ -17,8 +16,8 @@ def run(lambd:float, x_0:int, n_repeats_passive:int, n_trials_active:int,
                                            n_repeats_passive=n_repeats_passive,
                                            passive_mode=passive_mode,
                                            speed_up=speed_up,
-                                           indifference_etas = con.INDIFFERENCE_ETAS, 
-                                           indiffrence_x_0 = con.INDIFFERENCE_X_0, 
+                                           indifference_etas = con.INDIFFERENCE_ETAS,
+                                           indiffrence_x_0 = con.INDIFFERENCE_X_0,
                                            indifference_dx2 = con.INDIFFERENCE_DX2)
 
     p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
@@ -29,8 +28,6 @@ def run(lambd:float, x_0:int, n_repeats_passive:int, n_trials_active:int,
 
 
 def run_with_dict(expInfo):
-
-    c = calculate_c(expInfo['eta'])
 
     try:
         speed_up = expInfo['speed_up']
@@ -55,13 +52,13 @@ def run_with_dict(expInfo):
     if reply:
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
-        run(lambd=expInfo['lambd'], 
-            x_0=expInfo['x_0'], 
-            n_repeats_passive=expInfo['n_repeats_passive'], 
+        run(lambd=expInfo['eta'],
+            x_0=con.X0,
+            n_repeats_passive=expInfo['n_repeats_passive'],
             n_trials_active=expInfo['n_trials_active'],
-            save_path=expInfo['save_path'], 
-            passive_mode=expInfo['passive_mode'], 
-            speed_up=expInfo['speed_up'])
+            save_path=save_path,
+            passive_mode=expInfo['passive_mode'],
+            speed_up=speed_up)
 
     else:
         print(f"Not creating new inputs for participant {expInfo['participant']}")

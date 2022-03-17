@@ -269,7 +269,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         thisTrial = trials.iloc[nTrial].to_dict()
         if thisTrial != None:
             gamma, fractal = thisTrial['gamma'], int(thisTrial['fractal'])
-            eta, iti = thisTrial['eta'], thisTrial['iti']
+            eta, iti = thisTrial['lambda'], thisTrial['iti']
             fractal_duration = thisTrial['fractal_duration']
             exp_wealth = thisTrial['p_seq_wealth']
 
