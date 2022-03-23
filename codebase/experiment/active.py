@@ -253,7 +253,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             fractal3, fractal4 = int(thisTrial['fractal_right_up']), int(thisTrial['fractal_right_down'])
             gamma1, gamma2 = thisTrial['gamma_left_up'], thisTrial['gamma_left_down']
             gamma3, gamma4 = thisTrial['gamma_right_up'], thisTrial['gamma_right_down']
-            iti, eta = thisTrial['iti'], thisTrial['eta']
+            iti, eta = thisTrial['iti'], thisTrial['lambda']
             onset_gamble1 = thisTrial['onset_gamble_pair_left']
             onset_gamble2 = thisTrial['onset_gamble_pair_right']
             coin_toss = np.int(thisTrial['gamble_up'])
