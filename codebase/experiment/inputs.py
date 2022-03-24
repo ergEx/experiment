@@ -5,7 +5,7 @@ import os
 from .. import constants as con
 from ..sequences import generate_dataframes
 from ..file_handler import make_filename
-
+from ..utils import calculate_c
 
 def run(eta:float,
         c:float,
@@ -55,7 +55,7 @@ def run_with_dict(expInfo):
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
         run(eta=expInfo['eta'],
-            c=c,
+            c=calculate_c(expInfo['eta']),
             n_repeats_passive=expInfo['n_repeats_passive'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,

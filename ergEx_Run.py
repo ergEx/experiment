@@ -15,12 +15,12 @@ N_REPEATS_PASSIVE = 10
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
 N_TRIALS_ACTIVE = 90
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 20
+N_TRIALS_NOBRAINER = 10
 """ Number of nobrainer trials after the passive phase ends."""
 
 PASSIVE_MODE = 1
 """ Mode for the passive phase 1 = trajectory, 2 = resets. """
-ACTIVE_MODE = 2
+ACTIVE_MODE = 1
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 TR = 2.0
 """ TR of the MR scanner (also for simulations) """

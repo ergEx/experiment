@@ -1,14 +1,14 @@
 import numpy as np
 import math
 import pandas as pd
-import constants as con
-from utils import (isoelastic_utility, inverse_isoelastic_utility, shuffle_along_axis, create_gambles, 
-                    create_gamble_pairs, create_experiment, create_trial_order, is_g_deterministic, 
+from . import constants as con
+from .utils import (isoelastic_utility, inverse_isoelastic_utility, shuffle_along_axis, create_gambles,
+                    create_gamble_pairs, create_experiment, create_trial_order, is_g_deterministic,
                     is_nobrainer, is_statewise_dominated, is_stochastically_dominated)
 
-def passive_sequence_v1(eta:float, 
-                        c:float, 
-                        repeats:int, 
+def passive_sequence_v1(eta:float,
+                        c:float,
+                        repeats:int,
                         n_fractals:int=con.N_FRACTALS,
                         x_0:int=con.X0):
 
@@ -24,9 +24,9 @@ def passive_sequence_v1(eta:float,
     return fractals, gamma_array, part_sum, part_wealth_sum
 
 
-def passive_sequence_v2(eta:float, 
-                        c:float, 
-                        repeats:int, 
+def passive_sequence_v2(eta:float,
+                        c:float,
+                        repeats:int,
                         n_fractals:int=con.N_FRACTALS,
                         x_0:int=con.X0):
 
@@ -39,7 +39,7 @@ def passive_sequence_v2(eta:float,
     part_sum = []
 
     gamma_0 = isoelastic_utility(x_0, eta)
-    fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0) 
+    fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0)
 
     for fractal in fractal_order:
         tmp_seq = [fractal] * repeats
@@ -56,8 +56,8 @@ def passive_sequence_v2(eta:float,
     return fractals, gamma_array, part_sum, part_wealth_sum
 
 
-def active_sequence(c:float, 
-                    n_trials:int, 
+def active_sequence(c:float,
+                    n_trials:int,
                     n_fractals:int=con.N_FRACTALS,
                     n_simulations:int = 1):
 
@@ -95,8 +95,6 @@ def active_sequence(c:float,
 
     for ii, trial in enumerate(trial_order):
         tmp = experiment[:,:,trial].flatten()
-
-
         fractals[ii, :] = [fractal_dict[g] for g in tmp]
 
         gamma_array[ii, :] = tmp
@@ -126,7 +124,7 @@ def generate_dataframes(eta:float,
     # Calculate number of trials:
     n_trials_passive = len(p_seq_fractals)
     p_df = pd.DataFrame(data={'trial': range(n_trials_passive),
-                            'eta': [eta] * n_trials_passive,
+                            'lambda': [eta] * n_trials_passive,
                             'gamma': seq_gamma,
                             'fractal': p_seq_fractals,
                             'iti': np.zeros(n_trials_passive) + 3 / speed_up, # to debug
@@ -151,7 +149,7 @@ def generate_dataframes(eta:float,
                                                     'stochasticly_dominated'])
 
     a_df_misc = pd.DataFrame(data={'trial': range(n_trials_active),
-                                   'eta': [eta]*n_trials_active})
+                                   'lambda': [eta]*n_trials_active})
 
     a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
                                                         'onset_gamble_pair_left',
