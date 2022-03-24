@@ -205,9 +205,10 @@ def extract_from_fname(filename:str) -> Tuple[str, str, float, str, int]:
     """
 
     run = int(re.search('run-\d', filename)[0][-1])
-    lambd = bids_to_lambd(re.search('ses-lambd[^[_\/\\]]{3,4}', filename)[0][9:])
-    sub = re.search('sub-[^_]{1,}', filename)[0].split('-')[-1]
-    task = re.search('task-[^_]{1,}', filename)[0].split('-')[-1]
+    lambda_regex = re.compile(r'ses-lambd[^_\/\\]{3,4}')
+    lambd = bids_to_lambd(re.search(lambda_regex, filename)[0][9:])
+    sub = re.search(r'sub-[^_]{1,}', filename)[0].split('-')[-1]
+    task = re.search(r'task-[^_]{1,}', filename)[0].split('-')[-1]
     filepath, _ = os.path.split(filename)
 
     return filepath, sub, lambd, task, run
