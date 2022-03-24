@@ -1,8 +1,10 @@
-# %%
+""" Agents for passive and active phase, so that experiments can be run without
+User input.
+"""
 import numpy as np
 from psychopy import event
 from typing import List, Union
-from ...utils import isoelastic_utility, wealth_change, calculate_c
+from ...utils import isoelastic_utility, wealth_change
 from ... import constants as con
 # %%
 def softmax(x, beta):
@@ -259,9 +261,10 @@ class ActiveAutoPilot(PassiveAutoPilot):
             bool: Which response key. True = Left, False = Right.
         """
 
+        c_eta = {0.0: 250, 1.0 : 0.4}
         beta =  calculate_beta(eta_dynamic=eta, eta_agent=eta_agent, x_0=con.X0,
                                x_limit=con.X_UPPER, p_threshold=self.p_threshold,
-                c=calculate_c(eta))
+                c=c_eta(eta))
 
         wealth_updates = np.array([wealth_change(self.wealth, g, eta)
                                    for g in gamblePairs])
