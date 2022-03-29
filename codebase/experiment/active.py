@@ -261,12 +261,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.setTrialTime()
         Logger.trial = nTrial
 
-        if thisTrial['no_brainer']:
-            Logger.trial_type = 'NOB'
-        elif thisTrial['stochasticly_dominated']:
-            Logger.trial_type = '1SD'
-        else:
-            Logger.trial_type = 'NSD'
+        Logger.trial_type = 'NSD'
 
         currentFractals = [fractal1, fractal2, fractal3, fractal4]
         currentGammas = [gamma1, gamma2, gamma3, gamma4]
