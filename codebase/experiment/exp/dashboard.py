@@ -346,8 +346,8 @@ def plot_choice_probability(dataframe, ax):
     for n, ch in enumerate(choices):
         probs[n] = np.mean(button[gammas_1==ch])
 
-    ax.bar(choices, probs)
-    ax.plot(choices, probs)
+    # ax.bar(choices, probs)
+    ax.plot(choices, probs, '--*')
 
     ax.set(title='Choice Probability', xlabel='Unique Gammas',
            ylabel='Probability')
