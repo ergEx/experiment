@@ -120,9 +120,9 @@ def continue_from_previous(filename:str, wealth:float,
         if os.path.exists(fname):
             try:
                 data = pd.read_csv(fname, sep='\t')
-
-                if len(data.query('event_type=="TrialEnd"').trial.values) > 1:
-                    trial = data.query('event_type=="TrialEnd"').trial.values[-1] + 1
+                data2 = data.query('part != 1')
+                if len(data2.query('event_type=="TrialEnd"').trial.values) > 1:
+                    trial = data2.query('event_type=="TrialEnd"').trial.values[-1] + 1
                     wealth = data.query('event_type=="TrialEnd"').wealth.values[-1]
 
                     print(f"Reading settings for sub-{sub},  run-{run-1}")
