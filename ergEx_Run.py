@@ -15,7 +15,7 @@ N_REPEATS_PASSIVE = 10
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
 N_TRIALS_ACTIVE = 90
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 10
+N_TRIALS_NOBRAINER = 20
 """ Number of nobrainer trials after the passive phase ends."""
 
 PASSIVE_MODE = 1
@@ -58,8 +58,8 @@ if __name__ == '__main__':
 
     expInfo = {'participant': '0', # Participant ID
                'eta': 1.0, # Dynamic of the experiment
-               'test_mode': True, # Whether an agent automatically presses buttons
-               'fullScreen': False, # Whether to use a full screen
+               'test_mode': False, # Whether an agent automatically presses buttons
+               'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1} # Which run of the active phase to start from (starts at 1)
