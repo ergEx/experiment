@@ -48,7 +48,14 @@ def set_up_win(fscreen, gui=False):
     refreshRate, frameDur = get_frame_timings(win)
     print(f"Frame duration = {frameDur}, refreshRate = {refreshRate}")
 
-    return win, frameDur
+    Between = visual.TextStim(win=win, name='between',
+                                text=f'Experiment set up, starting with passive task.',
+                                pos=acfg.textPos, height=acfg.textHeight,
+                                color='white')
+
+    return win, frameDur, Between
+
+
 
 if __name__ == '__main__':
 
@@ -81,12 +88,9 @@ if __name__ == '__main__':
 
     run_with_dict(expInfo=expInfo)
 
-    win, frameDur = set_up_win(expInfo['fullScreen'], False)
+    win, frameDur, Between = set_up_win(expInfo['fullScreen'], False)
 
-    Between = visual.TextStim(win=win, name='between',
-                                text=f'Experiment set up, starting with passive task.',
-                                pos=acfg.textPos, height=acfg.textHeight,
-                                color='white')
+
     Between.draw()
     win.flip()
     core.wait(2)
@@ -111,7 +115,7 @@ if __name__ == '__main__':
 
     for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
 
-        win, frameDur = set_up_win(expInfo['fullScreen'], False)
+        win, frameDur, _ = set_up_win(expInfo['fullScreen'], False)
         passive_conf['run'] = run
 
         passive_conf = passive_gui(filePath, passive_conf, False)
@@ -121,7 +125,7 @@ if __name__ == '__main__':
         win.close()
 
 
-    win, frameDur = set_up_win(expInfo['fullScreen'], False)
+    win, frameDur, Between = set_up_win(expInfo['fullScreen'], False)
 
     expInfo.update({'wealth' : con.X0})
 
@@ -144,14 +148,14 @@ if __name__ == '__main__':
 
     for run in range(active_conf['run'],  MAX_RUN_ACTIVE + 1):
 
-        win, frameDur = set_up_win(expInfo['fullScreen'], False)
+        win, frameDur, _ = set_up_win(expInfo['fullScreen'], False)
         active_conf['run'] = run
         active_conf = active_gui(filePath, active_conf, False)
         event.clearEvents()
         wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
         win.close()
 
-    win, frameDur = set_up_win(expInfo['fullScreen'], False)
+    win, frameDur, Between = set_up_win(expInfo['fullScreen'], False)
 
     Between.setText("You are done, thank you.")
     Between.draw()
