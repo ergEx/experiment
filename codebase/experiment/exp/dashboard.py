@@ -211,14 +211,16 @@ def plot_reaction_time_distribution(dataframe, ax, task='active'):
     # Get RT data
     rt = dataframe.query('event_type=="Response"').response_time
 
-    ax.hist(rt.values, density=True, bins=20, edgecolor='k', color='blue', alpha=0.5)
-    #rt.plot.kde(ax=ax)
-    xlim = ax.get_xlim()
 
     if task == 'active':
         xlim = [-0.05,  acfg.timeResponse + 0.05]
+        bins = np.arange(0, acfg.timeResponse, 0.1)
     elif task == 'passive':
         xlim = [-0.05, pcfg.timeResponseWindow + 0.05]
+        bins = np.arange(0, pcfg.timeResponse, 0.1)
+
+    ax.hist(rt.values, density=True, bins=bins, edgecolor='k', color='blue', alpha=0.5)
+
 
     ax.set(ylabel='Density', xlabel='RT in s', title='RT distribution', xlim=xlim)
 
@@ -230,6 +232,7 @@ def plot_response_button_distribution(dataframe, ax, task='active'):
     response_button = dataframe.query('event_type=="Response"').response_button
 
     rb_vc = response_button.value_counts()
+    print(rb_vc)
     ax.bar(np.arange(len(rb_vc)), rb_vc)
     ax.set_xticks(np.arange(len(rb_vc)))
     ax.set_xticklabels(list(rb_vc.index))
