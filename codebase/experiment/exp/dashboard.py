@@ -233,11 +233,9 @@ def plot_response_button_distribution(dataframe, ax, task='active'):
 
     rb_vc = response_button.value_counts()
     rb_vc.sort_index(inplace=True)
-    print(rb_vc)
     ax.bar(np.arange(len(rb_vc)), rb_vc)
     ax.set_xticks(np.arange(len(rb_vc)))
     ax.set_xticklabels(list(rb_vc.index))
-    print(rb_vc.iloc[0])
     proportion = rb_vc.iloc[0] / rb_vc.sum()
     ax.set(ylabel='Counts', xlabel=f'Button Presses',
            title=f'Buttons Pressed\n Left: {proportion * 100:4.2f} %')
@@ -337,10 +335,13 @@ def plot_rt_versus_difficulty(dataframe, ax, task='active'):
     button = gammas.selected_side == 'left'
     distance = np.abs(gammas_1.values - gammas_2.values)
 
-    ax.scatter(distance, rand_jitter(reaction), s=20, c=button, edgecolors='b')
+    ax.scatter(distance[button], rand_jitter(reaction[button]), s=20, edgecolors='grey')
+    ax.scatter(distance[button == 0], rand_jitter(reaction[button == 0]), s=20, edgecolors='grey')
 
-    ax.set(title='Reaction Time vs. Difficulty', xlabel='Gamble Distance',
+    ax.set(title='Reaction Time vs. Difficulty', xlabel=u'|Δ Ev(Gamma)|',
            ylabel='RT')
+
+    ax.legend(['left', 'right'])
 
     return ax
 
