@@ -86,8 +86,8 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
     else:
         raise ValueError('Diretion must be in ["horizontal", "vertical"]')
 
-    ax.hist(gammas_1.values, alpha=0.5, density=True, color='b')
-    ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange')
+    ax.hist(gammas_1.values, alpha=0.5, density=True, color='b', bins=10)
+    ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange', bins=10)
 
     legend = ax.get_legend_handles_labels()
 
@@ -104,8 +104,8 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
     xlim[0] = xlim[0] - np.abs(0.2 * xlim[0])
 
     xlim[1] = xlim[1] + np.abs(0.2 * xlim[1])
-    ax.set(ylabel='Density', xlabel='Average Gamma',
-            title=f'Average Gamma per Side ', xlim=xlim)
+    ax.set(ylabel='Density', xlabel='AVG Gamma',
+            title=f'AVG Gamma per Side ', xlim=xlim)
 
     return ax
 
@@ -350,21 +350,22 @@ def plot_choice_probability(dataframe, ax):
 
     gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
 
-    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
-
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1).values
+    gammas_2 = gammas[['gamma_right_up', 'gamma_right_down']].mean(1).values
     button = gammas.selected_side == 'left'
 
-    choices = np.unique(gammas_1)
+    choices = np.unique(gammas_1 - gammas_2)
     probs = np.zeros(choices.shape)
 
     for n, ch in enumerate(choices):
         probs[n] = np.mean(button[gammas_1==ch])
 
-    # ax.bar(choices, probs)
-    ax.plot(choices, probs, '--*')
+    ax.plot(choices, probs, '--o')
+    ax.axhline(0.5, linestyle='--', alpha=0.5)
+    ax.axvline(0.0, linestyle='--', alpha=0.5)
 
-    ax.set(title='Choice Probability', xlabel='Unique Gammas',
-           ylabel='Probability')
+    ax.set(title='Choice Probability', xlabel='Unique (Δ Ev(Gamma))',
+           ylabel='Probability\nselecting Left')
 
     return ax
 
@@ -405,7 +406,7 @@ def plot_to_trajectory(dataframe, ax):
     ax.plot(exp_gamma_path[:, np.newaxis])
     ax.plot(gammas['realized_gamma'].cumsum().values[:, np.newaxis])
 
-    ax.legend(['Max', 'Min', 'Expectation', 'Realized'], loc='upper center',
+    ax.legend(['TO: Max', 'TO: Min', 'TO EV(Gamma)', 'Realized'], loc='upper center',
               bbox_to_anchor=(0.5, 1.05), ncol=2, fancybox=True, shadow=False)
 
     ax.set(title='Gamma Trajectories', xlabel='Trial', ylabel='Cumulative Gamma')
