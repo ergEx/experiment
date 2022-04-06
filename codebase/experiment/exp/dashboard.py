@@ -232,11 +232,15 @@ def plot_response_button_distribution(dataframe, ax, task='active'):
     response_button = dataframe.query('event_type=="Response"').response_button
 
     rb_vc = response_button.value_counts()
+    rb_vc.sort_index(inplace=True)
     print(rb_vc)
     ax.bar(np.arange(len(rb_vc)), rb_vc)
     ax.set_xticks(np.arange(len(rb_vc)))
     ax.set_xticklabels(list(rb_vc.index))
-    ax.set(ylabel='Counts', xlabel='Button Presses', title='Buttons Pressed')
+    print(rb_vc.iloc[0])
+    proportion = rb_vc.iloc[0] / rb_vc.sum()
+    ax.set(ylabel='Counts', xlabel=f'Button Presses',
+           title=f'Buttons Pressed\n Left: {proportion * 100:4.2f} %')
 
     return ax
 
@@ -249,10 +253,14 @@ def plot_time_optimal_responses(dataframe, ax, task='active'):
         to_response = dataframe.query('event_type=="TrialEnd"').response_correct
 
     tr_vc = to_response.value_counts()
+    tr_vc.sort_index(inplace=True, ascending=False)
+    proportion = tr_vc.iloc[0] / tr_vc.sum()
+
     ax.bar(np.arange(len(tr_vc)), tr_vc)
     ax.set_xticks(np.arange(len(tr_vc)))
     ax.set_xticklabels(list(tr_vc.index))
-    ax.set(ylabel='Counts', xlabel='Time Optimal Responses', title='Time Optimal Choice')
+    ax.set(ylabel='Counts', xlabel='Time Optimal Responses',
+           title=f'Time Optimal Choice\n TO: {proportion * 100:4.2f} %')
 
     return ax
 
@@ -301,12 +309,14 @@ def plot_late_responses(dataframe, ax, task='passive'):
         responses = dataframe.query('event_type == "TrialEnd"').no_response
 
     rs_c = responses.value_counts()
+    rs_c.sort_index(inplace=True)
+    proportion = rs_c.iloc[0] / rs_c.sum()
     ax.bar(np.arange(len(rs_c)), rs_c) #.plot.bar(ax=ax)
     ax.set_xticks(np.arange(len(rs_c)))
     ax.set_xticklabels(list(rs_c.index))
 
     ax.set(ylabel='Count', xlabel='Pressed or Not',
-           title=f'None or Late Responses')
+           title=f'None or Late Responses\n In time: {proportion * 100:4.2f} %')
 
     return ax
 
