@@ -5,10 +5,39 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from scipy import misc
+from scipy.optimize import fsolve
+
 from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
+from ...utils import wealth_change
 
 # %%
+def indiference_eta(x1:float, x2:float, x3:float, x4:float, w:float) -> list:
+    if w+x1<0 or w+x2<0 or w+x3<0 or w+x4<0:
+        print(x1,x2,x3,x4)
+        raise ValueError(f"Isoelastic utility function not defined for negative values")
+
+    func = lambda x : (((((x1)**(1-x))/(1-x) + ((x2)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x))
+                    - ((((x3)**(1-x))/(1-x) + ((x4)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x)) )
+    root_initial_guess = -20
+    root = fsolve(func, root_initial_guess)
+
+    #if not np.isclose(func(root), [0.0], atol=0.1):
+    #    print(x1,x2,x3,x4)
+    #    print(root)
+    #    print(func(root))
+    #    raise ValueError(f"There's something wrong, the 'root' gives {func(root)}")
+
+    return root, func
+
+def calculate_min_v_max(root:float, func, choice:int) -> dict:
+    dx = misc.derivative(func,root)
+    if dx<0:
+        return {'color':'orange','sign':'>', 'val':'max'} if choice==0 else {'color':'b','sign':'<', 'val':'min'}
+    else:
+        return {'color':'orange','sign':'>', 'val':'max'} if choice==1 else {'color':'b','sign':'<', 'val':'min'}
+
 def rand_jitter(arr:np.ndarray):
     stdev = .02 * (np.nanmax(arr) - np.nanmin(arr))
     return arr + np.random.randn(len(arr)) * stdev
@@ -411,6 +440,30 @@ def plot_to_trajectory(dataframe, ax):
 
     ax.set(title='Gamma Trajectories', xlabel='Trial', ylabel='Cumulative Gamma')
     return ax
+
+
+def plot_nonparametric_indifference_eta(dataframe, ax):
+    trials = dataframe.query('event_type == "WealthUpdate"')
+
+    roots = []
+    min_max = []
+    for n, ii in enumerate(trials.index):
+        tmp_trial = trials.loc[ii, :]
+        x_updates = wealth_change(x=tmp_trial.wealth,
+                                  gamma=[tmp_trial.gamma_left_up, tmp_trial.gamma_left_down,
+                                        tmp_trial.gamma_right_up, tmp_trial.gamma_right_down],
+                                        lambd=tmp_trial.eta)
+        root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
+        roots.append(root_dyn)
+        min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
+        min_max.append(min_max)
+
+        ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
+
+    ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
+
+    ax.axvline(tmp_trial.eta,0, ls='--', color='k', alpha=0.5)
+
 # %%
 
 def passive_report(fname:str, target_dir:str = 'data/reports'):
@@ -499,7 +552,7 @@ def active_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_expected_gamma(dataframe, axes[ii], direction='horizontal')
     ii += 1
-    ax = plot_expected_gamma(dataframe, axes[ii], direction='vertical')
+    ax = plot_nonparametric_indifference_eta(dataframe, axes[ii]) #, direction='vertical')
     ii += 1
     ax = plot_time_optimal_responses(dataframe, axes[ii])
     ii += 1
