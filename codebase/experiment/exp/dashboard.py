@@ -5,10 +5,39 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from scipy import misc
+from scipy.optimize import fsolve
+
 from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
+from ...utils import wealth_change
 
 # %%
+def indiference_eta(x1:float, x2:float, x3:float, x4:float, w:float) -> list:
+    if w+x1<0 or w+x2<0 or w+x3<0 or w+x4<0:
+        print(x1,x2,x3,x4)
+        raise ValueError(f"Isoelastic utility function not defined for negative values")
+
+    func = lambda x : (((((x1)**(1-x))/(1-x) + ((x2)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x))
+                    - ((((x3)**(1-x))/(1-x) + ((x4)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x)) )
+    root_initial_guess = -20
+    root = fsolve(func, root_initial_guess)
+
+    #if not np.isclose(func(root), [0.0], atol=0.1):
+    #    print(x1,x2,x3,x4)
+    #    print(root)
+    #    print(func(root))
+    #    raise ValueError(f"There's something wrong, the 'root' gives {func(root)}")
+
+    return root, func
+
+def calculate_min_v_max(root:float, func, choice:int) -> dict:
+    dx = misc.derivative(func,root)
+    if dx<0:
+        return {'color':'orange','sign':'>', 'val':'max'} if choice==0 else {'color':'b','sign':'<', 'val':'min'}
+    else:
+        return {'color':'orange','sign':'>', 'val':'max'} if choice==1 else {'color':'b','sign':'<', 'val':'min'}
+
 def rand_jitter(arr:np.ndarray):
     stdev = .02 * (np.nanmax(arr) - np.nanmin(arr))
     return arr + np.random.randn(len(arr)) * stdev
@@ -86,8 +115,8 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
     else:
         raise ValueError('Diretion must be in ["horizontal", "vertical"]')
 
-    ax.hist(gammas_1.values, alpha=0.5, density=True, color='b')
-    ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange')
+    ax.hist(gammas_1.values, alpha=0.5, density=True, color='b', bins=10)
+    ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange', bins=10)
 
     legend = ax.get_legend_handles_labels()
 
@@ -104,8 +133,8 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
     xlim[0] = xlim[0] - np.abs(0.2 * xlim[0])
 
     xlim[1] = xlim[1] + np.abs(0.2 * xlim[1])
-    ax.set(ylabel='Density', xlabel='Average Gamma',
-            title=f'Average Gamma per Side ', xlim=xlim)
+    ax.set(ylabel='Density', xlabel='AVG Gamma',
+            title=f'AVG Gamma per Side ', xlim=xlim)
 
     return ax
 
@@ -211,14 +240,16 @@ def plot_reaction_time_distribution(dataframe, ax, task='active'):
     # Get RT data
     rt = dataframe.query('event_type=="Response"').response_time
 
-    ax.hist(rt.values, density=True, bins=20, edgecolor='k', color='blue', alpha=0.5)
-    #rt.plot.kde(ax=ax)
-    xlim = ax.get_xlim()
 
     if task == 'active':
         xlim = [-0.05,  acfg.timeResponse + 0.05]
+        bins = np.arange(0, acfg.timeResponse, 0.1)
     elif task == 'passive':
         xlim = [-0.05, pcfg.timeResponseWindow + 0.05]
+        bins = np.arange(0, pcfg.timeResponse, 0.1)
+
+    ax.hist(rt.values, density=True, bins=bins, edgecolor='k', color='blue', alpha=0.5)
+
 
     ax.set(ylabel='Density', xlabel='RT in s', title='RT distribution', xlim=xlim)
 
@@ -230,10 +261,13 @@ def plot_response_button_distribution(dataframe, ax, task='active'):
     response_button = dataframe.query('event_type=="Response"').response_button
 
     rb_vc = response_button.value_counts()
+    rb_vc.sort_index(inplace=True)
     ax.bar(np.arange(len(rb_vc)), rb_vc)
     ax.set_xticks(np.arange(len(rb_vc)))
     ax.set_xticklabels(list(rb_vc.index))
-    ax.set(ylabel='Counts', xlabel='Button Presses', title='Buttons Pressed')
+    proportion = rb_vc.iloc[0] / rb_vc.sum()
+    ax.set(ylabel='Counts', xlabel=f'Button Presses',
+           title=f'Buttons Pressed\n Left: {proportion * 100:4.2f} %')
 
     return ax
 
@@ -246,10 +280,14 @@ def plot_time_optimal_responses(dataframe, ax, task='active'):
         to_response = dataframe.query('event_type=="TrialEnd"').response_correct
 
     tr_vc = to_response.value_counts()
+    tr_vc.sort_index(inplace=True, ascending=False)
+    proportion = tr_vc.iloc[0] / tr_vc.sum()
+
     ax.bar(np.arange(len(tr_vc)), tr_vc)
     ax.set_xticks(np.arange(len(tr_vc)))
     ax.set_xticklabels(list(tr_vc.index))
-    ax.set(ylabel='Counts', xlabel='Time Optimal Responses', title='Time Optimal Choice')
+    ax.set(ylabel='Counts', xlabel='Time Optimal Responses',
+           title=f'Time Optimal Choice\n TO: {proportion * 100:4.2f} %')
 
     return ax
 
@@ -298,12 +336,14 @@ def plot_late_responses(dataframe, ax, task='passive'):
         responses = dataframe.query('event_type == "TrialEnd"').no_response
 
     rs_c = responses.value_counts()
+    rs_c.sort_index(inplace=True)
+    proportion = rs_c.iloc[0] / rs_c.sum()
     ax.bar(np.arange(len(rs_c)), rs_c) #.plot.bar(ax=ax)
     ax.set_xticks(np.arange(len(rs_c)))
     ax.set_xticklabels(list(rs_c.index))
 
     ax.set(ylabel='Count', xlabel='Pressed or Not',
-           title=f'None or Late Responses')
+           title=f'None or Late Responses\n In time: {proportion * 100:4.2f} %')
 
     return ax
 
@@ -324,10 +364,13 @@ def plot_rt_versus_difficulty(dataframe, ax, task='active'):
     button = gammas.selected_side == 'left'
     distance = np.abs(gammas_1.values - gammas_2.values)
 
-    ax.scatter(distance, rand_jitter(reaction), s=20, c=button, edgecolors='b')
+    ax.scatter(distance[button], rand_jitter(reaction[button]), s=20, edgecolors='grey')
+    ax.scatter(distance[button == 0], rand_jitter(reaction[button == 0]), s=20, edgecolors='grey')
 
-    ax.set(title='Reaction Time vs. Difficulty', xlabel='Gamble Distance',
+    ax.set(title='Reaction Time vs. Difficulty', xlabel=u'|Δ Ev(Gamma)|',
            ylabel='RT')
+
+    ax.legend(['left', 'right'])
 
     return ax
 
@@ -336,21 +379,22 @@ def plot_choice_probability(dataframe, ax):
 
     gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
 
-    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
-
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1).values
+    gammas_2 = gammas[['gamma_right_up', 'gamma_right_down']].mean(1).values
     button = gammas.selected_side == 'left'
 
-    choices = np.unique(gammas_1)
+    choices = np.unique(gammas_1 - gammas_2)
     probs = np.zeros(choices.shape)
 
     for n, ch in enumerate(choices):
         probs[n] = np.mean(button[gammas_1==ch])
 
-    # ax.bar(choices, probs)
-    ax.plot(choices, probs, '--*')
+    ax.plot(choices, probs, '--o')
+    ax.axhline(0.5, linestyle='--', alpha=0.5)
+    ax.axvline(0.0, linestyle='--', alpha=0.5)
 
-    ax.set(title='Choice Probability', xlabel='Unique Gammas',
-           ylabel='Probability')
+    ax.set(title='Choice Probability', xlabel='Unique (Δ Ev(Gamma))',
+           ylabel='Probability\nselecting Left')
 
     return ax
 
@@ -391,11 +435,35 @@ def plot_to_trajectory(dataframe, ax):
     ax.plot(exp_gamma_path[:, np.newaxis])
     ax.plot(gammas['realized_gamma'].cumsum().values[:, np.newaxis])
 
-    ax.legend(['Max', 'Min', 'Expectation', 'Realized'], loc='upper center',
+    ax.legend(['TO: Max', 'TO: Min', 'TO EV(Gamma)', 'Realized'], loc='upper center',
               bbox_to_anchor=(0.5, 1.05), ncol=2, fancybox=True, shadow=False)
 
     ax.set(title='Gamma Trajectories', xlabel='Trial', ylabel='Cumulative Gamma')
     return ax
+
+
+def plot_nonparametric_indifference_eta(dataframe, ax):
+    trials = dataframe.query('event_type == "WealthUpdate"')
+
+    roots = []
+    min_max = []
+    for n, ii in enumerate(trials.index):
+        tmp_trial = trials.loc[ii, :]
+        x_updates = wealth_change(x=tmp_trial.wealth,
+                                  gamma=[tmp_trial.gamma_left_up, tmp_trial.gamma_left_down,
+                                        tmp_trial.gamma_right_up, tmp_trial.gamma_right_down],
+                                        lambd=tmp_trial.eta)
+        root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
+        roots.append(root_dyn)
+        min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
+        min_max.append(min_max)
+
+        ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
+
+    ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
+
+    ax.axvline(tmp_trial.eta,0, ls='--', color='k', alpha=0.5)
+
 # %%
 
 def passive_report(fname:str, target_dir:str = 'data/reports'):
@@ -484,7 +552,7 @@ def active_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_expected_gamma(dataframe, axes[ii], direction='horizontal')
     ii += 1
-    ax = plot_expected_gamma(dataframe, axes[ii], direction='vertical')
+    ax = plot_nonparametric_indifference_eta(dataframe, axes[ii]) #, direction='vertical')
     ii += 1
     ax = plot_time_optimal_responses(dataframe, axes[ii])
     ii += 1
