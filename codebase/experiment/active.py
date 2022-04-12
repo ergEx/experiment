@@ -346,18 +346,12 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                     else:
                         responseTo = False
 
-                    TimerShape.setEnd(360)
-                    TimerShape.setAutoDraw(False)
-
                 if 'right' in responseMapping[presses[0]]:
                     response = 'right'
                     if np.mean(currentGammas[2:]) >= np.mean(currentGammas[:2]):
                         responseTo = True
                     else:
                         responseTo = False
-
-                    TimerShape.setEnd(360)
-                    TimerShape.setAutoDraw(False)
 
                 Logger.logEvent({"event_type": "Response",
                                 'response_button': presses[0],
@@ -378,6 +372,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                 except IndexError:
                     pass
 
+        TimerShape.setEnd(360)
+        TimerShape.setAutoDraw(False)
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
