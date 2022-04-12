@@ -194,6 +194,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.pos += offset
     Reminder.setAutoDraw(False)
 
+    TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
+                            fillColor='white', start=0, end=360)
+    TimerShape.pos += offset
+    TimerShape.setAutoDraw(False)
+
     trials = pd.read_csv(trialInfoPath, sep='\t')
 
     Initialization.setAutoDraw(False)
@@ -299,6 +304,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
         fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['active_mode'] != 2))
+        TimerShape.setAutoDraw(True)
         win.flip()
         Logger.keyStrokes(win)
 
@@ -314,6 +320,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Response Cue ###################################
         Logger.keyStrokes(win)
         ######################## Response Window ###################################
+        pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
+        pieCounter = 1
+
         respOnset = Logger.getTime()
 
         if Agent.active:
@@ -337,12 +346,18 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                     else:
                         responseTo = False
 
+                    TimerShape.setEnd(360)
+                    TimerShape.setAutoDraw(False)
+
                 if 'right' in responseMapping[presses[0]]:
                     response = 'right'
                     if np.mean(currentGammas[2:]) >= np.mean(currentGammas[:2]):
                         responseTo = True
                     else:
                         responseTo = False
+
+                    TimerShape.setEnd(360)
+                    TimerShape.setAutoDraw(False)
 
                 Logger.logEvent({"event_type": "Response",
                                 'response_button': presses[0],
@@ -353,6 +368,15 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
                 win.flip()
                 Logger.keyStrokes(win)
+
+            if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
+
+                try:
+                    TimerShape.setEnd(pieShapes[pieCounter])
+                    win.flip()
+                    pieCounter += 1
+                except IndexError:
+                    pass
 
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
@@ -458,23 +482,23 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             Reminder.setAutoDraw(False)
             win.flip()
         ################################# Wealth Update ############################
-        new_wealth = wealth_change(wealth, ch_gamma, eta).item()
+        wealth = wealth_change(wealth, ch_gamma, eta).item()
 
-        up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
+        # up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
 
-        wealth_steps = np.linspace(wealth, new_wealth, up_steps)
-        wealth = new_wealth
+        # wealth_steps = np.linspace(wealth, new_wealth, up_steps)
+        # wealth = new_wealth
 
         wealthOnset = Logger.getTime()
 
+        '''
         for ws in wealth_steps:
 
             MoneyBox.setText(format_wealth(ws))
             Logger.keyStrokes(win)
             win.flip()
 
-            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-            #    break
+        '''
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
@@ -505,11 +529,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         if Logger.getTime() > (expInfo['maxDuration'] - 10) or curTrial >= expInfo['maxTrial']:
             break
 
-        if new_wealth >= 1e9 or new_wealth <= 0:
+        '''
+        if wealth >= 1e9 or wealth <= 0:
             Logger.logEvent({"event_type": "WealthCeilingReached", **logDict},
                             wealth=wealth)
             terminateNormally = False
             break
+        '''
 
         nTrial += 1
 

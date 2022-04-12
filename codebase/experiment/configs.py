@@ -84,6 +84,9 @@ active_configs['textPos'] = CENTER_POS
 active_configs['textHeight'] = TEXT_HEIGHT
 """ Height of text. """
 
+active_configs['timerPos'] = (CENTER_POS[0], -25)
+""" Size of the timer"""
+
 # Timings
 active_configs['waitTR'] = 1
 """ How many TRs to wait before the experiment begins"""
