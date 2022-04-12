@@ -479,6 +479,10 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                   fractalGammaDict[pair[1]],
                                   fractalGammaDict[pair[0]]]
 
+    TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
+                            fillColor='white', start=0, end=360)
+    TimerShape.pos += offset
+    TimerShape.setAutoDraw(False)
     ############################ Setup Elements ####################################
     if expInfo['feedback']:
         MoneyBox.setAutoDraw(True)
@@ -523,6 +527,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Gamble Left ####################################
         fractals['leftUp'][fractal1].setOpacity(1)
         fractals['rightUp'][fractal2].setOpacity(1)
+        TimerShape.setAutoDraw(True)
+
         win.flip()
         ########################### Gamble Right ###################################
         Logger.keyStrokes(win)
@@ -541,6 +547,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         response = False
         responseTo = 'n/a'
+
+        pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
+        pieCounter = 1
 
         while (acfg.timeResponse + respOnset) > Logger.getTime() and not response:
 
@@ -571,6 +580,17 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                 'response_correct': responseTo,
                                 **logDict})
 
+            if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
+
+                try:
+                    TimerShape.setEnd(pieShapes[pieCounter])
+                    win.flip()
+                    pieCounter += 1
+                except IndexError:
+                    pass
+
+        TimerShape.setEnd(360)
+        TimerShape.setAutoDraw(False)
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
