@@ -16,7 +16,7 @@ DEFAULT_FRACTALS = ['F000', 'F001', 'F002', 'F003', 'F004', 'F005', 'F006', 'F00
 """ Default fractals  """
 CENTER_POS = (0, 0)
 """ Center location on screen """
-TEXT_HEIGHT = 20
+TEXT_HEIGHT = 25
 """ Height of text """
 
 passive_configs = DotDict()
