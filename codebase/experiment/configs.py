@@ -53,7 +53,7 @@ passive_configs['timeResponseWindow'] = 2.0 # time of the response window
 """ Maximal response time """
 passive_configs['wheelSpinTime'] = 2.0 # How long the wheel spins at base rate
 """ How long the wheel should spin. """
-passive_configs['timeWealthUpdate'] = 1.0 # Rolling of the wealth display
+passive_configs['timeWealthUpdate'] = 0.5 # Rolling of the wealth display
 """ How long wealth does take to roll up or down. """
 passive_configs['timeFinalDisplay'] = 1.0 # How long wealth image is staying on
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
@@ -101,7 +101,7 @@ active_configs['timeFractalSelection'] = 0.5 # Time after last fractal disappear
 """ Time where only the fractal is seen on the screen (i.e. after coin toss) """
 active_configs['timeNoResponse'] = 1.25  # Time where only the worst fractal is present.
 """ Time for a non-response trial"""
-active_configs['timeWealthUpdate'] = 1.0 # Time the wealth takes to roll up.
+active_configs['timeWealthUpdate'] = 0.5 # Time the wealth takes to roll up.
 """ Time the wealth takes to roll up or down. """
 active_configs['timeFinalDisplay'] = 1.0 # Time after wealth update
 """ How long the final display is shown (i.e. wealth and fractal before reset) """

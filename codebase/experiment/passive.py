@@ -387,23 +387,19 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                         **logDict},
                         onset=fractalOnset)
         ########################### Wealth Update ##################################
-        # up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
+        up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
 
-        # wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
+        wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
         wealth = exp_wealth
 
 
         moneyOnset = Logger.getTime()
-        '''
+
         for ws in wealth_steps:
             MoneyBox.setText(format_wealth(ws))
 
             Logger.keyStrokes(win)
             win.flip()
-
-            # if (Logger.getTime() - moneyOnset) >= pcfg.timeWealthUpdate:
-            #    break
-        '''
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
@@ -640,22 +636,16 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         ################################# Wealth Update ############################
 
+        up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
 
-        # up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
-
-        # wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
+        wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
 
         wealthOnset = Logger.getTime()
 
-        '''
         for ws in wealth_steps:
             MoneyBox.setText(format_wealth(ws))
             Logger.keyStrokes(win)
             win.flip()
-
-            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-            #     break
-        '''
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
