@@ -36,6 +36,8 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
     if np.isclose(eta, 1):
         u[x > 0] = np.log(x[x > 0])
         u[x <= 0] = np.finfo(float).min
+    elif np.isclose(eta, 0): #allow negative values in additive dynamic
+        u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
     else:
         bound = (-1) / (1 - eta)
         u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
@@ -66,6 +68,8 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
 
     if np.isclose(eta, 1):
         x = np.exp(u)
+    elif np.isclose(eta, 0): #allow for negative values in additive dynamic
+        x = np.power(u * (1 - eta) + 1, 1 / (1 - eta))
     else:
         bound = (-1) / (1 - eta)
         x[u > bound] = np.power(u[u > bound] * (1 - eta) + 1, 1 / (1 - eta))
