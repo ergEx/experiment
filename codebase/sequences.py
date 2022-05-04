@@ -55,7 +55,10 @@ def passive_sequence_v2(lambd:float,
         part_sum.extend(gamma_0) #Reset wealth
         fractals.append(n_fractals-1) #Show blank fractal
 
-    gamma_array = [gamma_range[fractal] for fractal in fractals]
+    gamma_array = np.array([gamma_range[fractal] for fractal in fractals])
+    fractals = np.array(fractals)
+    fractals[gamma_array == 999] = 9
+
     part_wealth_sum = inverse_isoelastic_utility(np.array(part_sum),lambd)
 
     return fractals, gamma_array, part_sum, part_wealth_sum, gamma1_list, gamma2_list, fractal_dict
