@@ -10,13 +10,13 @@ def passive_sequence_v1(lambd:float,
                         repeats:int,
                         x_0:int,
                         indifference_etas:np.array,
-                        indiffrence_x_0:np.array,
+                        indifference_x_0:np.array,
                         indifference_dx2:int):
 
     gamma_range, gamma1_list, gamma2_list, fractal_dict= calculate_growth_rates(indifference_etas=indifference_etas,
                                                                                 lambd=lambd,
                                                                                 dx2=indifference_dx2,
-                                                                                x=indiffrence_x_0)
+                                                                                x=indifference_x_0)
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
@@ -33,10 +33,10 @@ def passive_sequence_v2(lambd:float,
                         repeats:int,
                         x_0:int,
                         indifference_etas:np.array,
-                        indiffrence_x_0:np.array,
+                        indifference_x_0:np.array,
                         indifference_dx2:int):
 
-    gamma_range,gamma1_list,gamma2_list,fractal_dict = calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indiffrence_x_0)
+    gamma_range,gamma1_list,gamma2_list,fractal_dict = calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indifference_x_0)
     gamma_range.append(999) #blank fractal for resetting wealth
     n_fractals = len(gamma_range)
 
@@ -120,7 +120,7 @@ def generate_dataframes(lambd:float,
                                                             repeats=n_repeats_passive,
                                                             x_0=x_0,
                                                             indifference_etas=indifference_etas,
-                                                            indiffrence_x_0=indiffrence_x_0,
+                                                            indifference_x_0=indiffrence_x_0,
                                                             indifference_dx2=indifference_dx2)
 
     n_trials_passive = len(p_seq_fractals)
