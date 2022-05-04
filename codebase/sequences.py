@@ -43,17 +43,21 @@ def passive_sequence_v2(lambd:float,
     fractals = []
     part_sum = []
 
-    gamma_0 = isoelastic_utility(x_0,lambd)
+    for x0 in [x_0 / 10, x_0, x_0 * 10]:
 
-    fractal_order = shuffle_along_axis(np.array(range(n_fractals-1)), 0)
+        gamma_0 = isoelastic_utility(x0,lambd)
 
-    for fractal in fractal_order:
-        tmp_seq = [fractal] * repeats
-        fractals.extend(tmp_seq)
-        tmp_cum_sum = gamma_0 + np.cumsum([gamma_range[fractal]]*repeats)
-        part_sum.extend(tmp_cum_sum)
-        part_sum.extend(gamma_0) #Reset wealth
-        fractals.append(n_fractals-1) #Show blank fractal
+        fractal_order = shuffle_along_axis(np.array(range(n_fractals-1)), 0)
+
+        for fractal in fractal_order:
+
+            part_sum.extend(gamma_0) #Reset wealth
+            fractals.append(n_fractals-1) #Show blank fractal
+
+            tmp_seq = [fractal] * repeats
+            fractals.extend(tmp_seq)
+            tmp_cum_sum = gamma_0 + np.cumsum([gamma_range[fractal]]*repeats)
+            part_sum.extend(tmp_cum_sum)
 
     gamma_array = np.array([gamma_range[fractal] for fractal in fractals])
     fractals = np.array(fractals)
