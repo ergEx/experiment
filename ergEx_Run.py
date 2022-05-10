@@ -11,20 +11,23 @@ import numpy as np
 from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 
-N_REPEATS_PASSIVE = 10
+
+PASSIVE_MODE = 1
+""" Mode for the passive phase 1 = trajectory, 2 = resets. """
+ACTIVE_MODE = 2
+""" Mode for the active phase 1 = DRCMR, 2 = LML """
+
+N_REPEATS_PASSIVE = 12 if PASSIVE_MODE == 1 else 4
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
 N_TRIALS_ACTIVE = 90
 """ Number of trials in the active phaes"""
 N_TRIALS_NOBRAINER = 20
 """ Number of nobrainer trials after the passive phase ends."""
 
-PASSIVE_MODE = 1
-""" Mode for the passive phase 1 = trajectory, 2 = resets. """
-ACTIVE_MODE = 2
-""" Mode for the active phase 1 = DRCMR, 2 = LML """
-TR = 2.0
+
+TR = 2.5
 """ TR of the MR scanner (also for simulations) """
-SIMULATE_MR = 'Simulate'
+SIMULATE_MR = 'None'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
@@ -33,13 +36,13 @@ MAX_RUN_PASSIVE = 2
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 45
+MAX_TRIALS_PASSIVE = 45 if PASSIVE_MODE == 1 else (N_REPEATS_PASSIVE + 1) * 8
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = 90 # np.inf
+MAX_TRIALS_ACTIVE =  np.inf
 """ Number of trials per run in he active phase. """
 
 
-def set_up_win(fscreen, gui=False):
+def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 / 2, 1920 / 2], fullscr=fscreen,
                     screen=0, winType='pyglet', allowGUI=gui, monitor=None,
                     color=[-1,-1,-1], colorSpace='rgb', units='pix',
@@ -64,7 +67,7 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '0', # Participant ID
-               'eta': 1.0, # Dynamic of the experiment
+               'eta': 0.0, # Dynamic of the experiment
                'test_mode': False, # Whether an agent automatically presses buttons
                'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
@@ -88,7 +91,7 @@ if __name__ == '__main__':
 
     run_with_dict(expInfo=expInfo)
 
-    win, frameDur, Between = set_up_win(expInfo['fullScreen'], False)
+    win, frameDur, Between = set_up_win(expInfo['fullScreen'], True)
 
 
     Between.draw()
