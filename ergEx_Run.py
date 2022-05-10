@@ -36,7 +36,7 @@ MAX_RUN_PASSIVE = 2
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 45 if PASSIVE_MODE == 1 else (N_REPEATS_PASSIVE + 1) * 8
+MAX_TRIALS_PASSIVE = 45 if PASSIVE_MODE == 1 else (N_REPEATS_PASSIVE + 1) * 9
 """ Number of trials per run in the passive phase. """
 MAX_TRIALS_ACTIVE =  np.inf
 """ Number of trials per run in he active phase. """
@@ -57,7 +57,6 @@ def set_up_win(fscreen, gui=True):
                                 color='white')
 
     return win, frameDur, Between
-
 
 
 if __name__ == '__main__':
@@ -93,7 +92,6 @@ if __name__ == '__main__':
 
     win, frameDur, Between = set_up_win(expInfo['fullScreen'], True)
 
-
     Between.draw()
     win.flip()
     core.wait(2)
@@ -126,7 +124,6 @@ if __name__ == '__main__':
         wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
 
         win.close()
-
 
     win, frameDur, Between = set_up_win(expInfo['fullScreen'], False)
 

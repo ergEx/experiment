@@ -379,6 +379,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         win.flip()
         Logger.keyStrokes(win)
 
+        MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(exp_wealth-wealth)}')
+
         fractalOnset = Logger.getTime()
         Wait.wait(fractal_duration)
 
@@ -390,25 +392,29 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
 
         wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
+        old_wealth = wealth
         wealth = exp_wealth
 
+        MoneyBox.setText('\n' + format_wealth(old_wealth) + f'\n {np.int(wealth-old_wealth)}')
 
         moneyOnset = Logger.getTime()
 
         for ws in wealth_steps:
-            MoneyBox.setText(format_wealth(ws))
+            MoneyBox.setText('\n' + format_wealth(ws) + f'\n {np.int(wealth-old_wealth)}')
 
             Logger.keyStrokes(win)
             win.flip()
 
         Logger.keyStrokes(win)
-        MoneyBox.setText(format_wealth(wealth))
+        MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(wealth-old_wealth)}')
         win.flip()
 
         Logger.logEvent({"event_type": "WealthUpdate",
                         "expected_duration": pcfg.timeWealthUpdate,
                         **logDict}, wealth=wealth, onset=moneyOnset)
         fractals[fractal].setOpacity(0)
+        
+        MoneyBox.setText('\n' + format_wealth(wealth) + '\n')
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
 
@@ -643,7 +649,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         wealthOnset = Logger.getTime()
 
         for ws in wealth_steps:
-            MoneyBox.setText(format_wealth(ws))
+            MoneyBox.setText('\n' + format_wealth(ws) + '\n')
             Logger.keyStrokes(win)
             win.flip()
 

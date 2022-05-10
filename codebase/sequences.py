@@ -43,7 +43,7 @@ def passive_sequence_v2(lambd:float,
     fractals = []
     part_sum = []
 
-    for x0 in [x_0 / 10, x_0, x_0 * 10]:
+    for x0 in [x_0, x_0 * 10]:
 
         gamma_0 = isoelastic_utility(x0,lambd)
 
