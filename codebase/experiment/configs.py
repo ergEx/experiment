@@ -23,24 +23,24 @@ passive_configs = DotDict()
 
 passive_configs['centerPos'] = CENTER_POS
 """ Position of the center """
-passive_configs['imgSize'] = (IMGSIZE[0] * 2, IMGSIZE[1] * 2) # Size of the center image
+passive_configs['imgSize'] = (IMGSIZE[0] * 3, IMGSIZE[1] * 3) # Size of the center image
 """ Size of the image in the passive run"""
-passive_configs['textHeight'] = TEXT_HEIGHT # Height of text
+passive_configs['textHeight'] = TEXT_HEIGHT * 1.25 # Height of text
 """ Heights of the text."""
 
-passive_configs['boxSize'] = (180, 30)
+passive_configs['boxSize'] = (280 , 50)
 """ Size of the box in the center (i.e. the frame of the money)"""
 passive_configs['boxWidth'] = 3
 """ Linewidth of the money box."""
 
-passive_configs['wheelSize'] = (300, 300) # Size of the wheel image
+passive_configs['wheelSize'] = (450, 450) # Size of the wheel image
 """ Size of the wheel image. """
 passive_configs['revolution'] = 5 # Rotation angle of wheel
 """ Rotation angle of the wheel. """
 
-passive_configs['stopperSize'] = (30, 30) # Positon of blue triangle
+passive_configs['stopperSize'] = (50, 50) # Positon of blue triangle
 """ Size of the triangle, acting as a stopper of the wheel."""
-passive_configs['stopperPos'] = (0, 160)
+passive_configs['stopperPos'] = (0, 240)
 """ Position of above triangle. """
 
 # Timings
