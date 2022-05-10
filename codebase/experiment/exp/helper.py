@@ -272,7 +272,7 @@ def assign_fractals(participant_id:str, eta:Union[str, float, int],
     return fractal_dict[id_entry][eta]
 
 
-def format_wealth(wealth:float, fstring:str = "12,.0f") -> str:
+def format_wealth(wealth:float, fstring:str = "012,.0f") -> str:
     """Helper function to format wealth.
 
     Args:
