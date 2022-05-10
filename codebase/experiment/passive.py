@@ -413,7 +413,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                         "expected_duration": pcfg.timeWealthUpdate,
                         **logDict}, wealth=wealth, onset=moneyOnset)
         fractals[fractal].setOpacity(0)
-        
+
         MoneyBox.setText('\n' + format_wealth(wealth) + '\n')
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
@@ -455,12 +455,15 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
     fractalData = fractalData[['fractal', 'gamma']]
+    fractalData = fractalData.query('gamma > 0')
+    print(fractalData)
     unqFractals = np.unique(fractalData.fractal)
     unqFractals = unqFractals[unqFractals < con.N_FRACTALS]
-
+    print(unqFractals)
     fractalCombination = list(itertools.combinations(unqFractals, 2))
     fractalCombination = np.array(fractalCombination)
 
+    nTrial_noBrainer = np.min([len(fractalCombination), nTrial_noBrainer])
     fractalGammaDict = {}
     for kk in unqFractals:
             fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
@@ -481,6 +484,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                   fractalGammaDict[pair[1]],
                                   fractalGammaDict[pair[0]]]
 
+    print(trials)
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
     TimerShape.pos += offset
