@@ -192,8 +192,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     MoneyFrame.setAutoDraw(False)
 
     MoneyBox = visual.TextStim(win=win, name='MoneyBox',
-                            text=format_wealth(wealth), pos=pcfg.centerPos,
-                            height=pcfg.textHeight,  color='white')
+                            text=format_wealth(wealth), pos=pcfg.centerPos, wrapWidth=pcfg.boxSize[0],
+                            height=pcfg.textHeight,  color='white', alignText='right')
     MoneyBox.pos += offset
     MoneyBox.setAutoDraw(False)
 
@@ -379,7 +379,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         win.flip()
         Logger.keyStrokes(win)
 
-        MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(exp_wealth-wealth)}')
+        MoneyBox.setText(format_wealth(exp_wealth-wealth, "0.0f") + '\n' + format_wealth(wealth) + '\n')
 
         fractalOnset = Logger.getTime()
         Wait.wait(fractal_duration)
@@ -395,18 +395,21 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         old_wealth = wealth
         wealth = exp_wealth
 
-        MoneyBox.setText('\n' + format_wealth(old_wealth) + f'\n {np.int(wealth-old_wealth)}')
+        MoneyBox.setText(format_wealth(wealth-old_wealth, "0.0f") + '\n' + format_wealth(wealth) + '\n')
 
         moneyOnset = Logger.getTime()
 
         for ws in wealth_steps:
-            MoneyBox.setText('\n' + format_wealth(ws) + f'\n {np.int(wealth-old_wealth)}')
+            # MoneyBox.setText('\n' + format_wealth(ws) + f'\n {np.int(wealth-old_wealth)}')
+            MoneyBox.setText(format_wealth(wealth-old_wealth, "0.0f") + '\n' + format_wealth(ws) + '\n')
 
             Logger.keyStrokes(win)
             win.flip()
 
         Logger.keyStrokes(win)
-        MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(wealth-old_wealth)}')
+
+        MoneyBox.setText(format_wealth(wealth-old_wealth,"0.0f") + '\n' + format_wealth(wealth) + '\n')
+        # MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(wealth-old_wealth)}')
         win.flip()
 
         Logger.logEvent({"event_type": "WealthUpdate",
