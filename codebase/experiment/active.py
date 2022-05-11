@@ -161,16 +161,20 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
 
     fractals = {location: {} for location in acfg.imgLocation}
+    feedback = {location: {} for location in acfg.imgLocation}
+
     coins = {location: {} for location in acfg.imgLocation}
 
     for imL in acfg.imgLocation:
+
+        if "right" in imL and expInfo['active_mode'] == 2:
+            pos = list(acfg.imgLocPos[imL])
+            pos[1] = 0
+        else:
+            pos = acfg.imgLocPos[imL]
+
         for nFl, fl in enumerate(fractalList):
 
-            if "right" in imL and expInfo['active_mode'] == 2:
-                pos = list(acfg.imgLocPos[imL])
-                pos[1] = 0
-            else:
-                pos = acfg.imgLocPos[imL]
 
             fractals[imL][nFl] = visual.ImageStim(win=win, pos=pos,
                                                 size=acfg.imgSize, opacity=0,
@@ -178,10 +182,16 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             fractals[imL][nFl].pos += offset
             fractals[imL][nFl].setAutoDraw(True)
 
-        coins[imL] = visual.ImageStim(win=win, pos=acfg.imgLocPos[imL], size=acfg.coinSize, opacity=0,
+        coins[imL] = visual.ImageStim(win=win, pos=pos, size=acfg.coinSize, opacity=0,
                                     image=os.path.join(STIMULUSPATH, acfg.coinPos[imL] + '.png'))
         coins[imL].pos += offset
         coins[imL].setAutoDraw(True)
+
+        feedback[imL] = visual.TextStim(win=win, name='feddback',
+                            text='0', pos=pos, height=acfg.textHeight, color='white')
+
+        feedback[imL].pos += offset
+        feedback[imL].setAutoDraw(False)
 
     MoneyBox = visual.TextStim(win=win, name='MoneyBox', text=format_wealth(wealth),
                             pos=acfg.textPos, height=acfg.textHeight, color='white')
@@ -374,6 +384,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         TimerShape.setEnd(360)
         TimerShape.setAutoDraw(False)
+
+        for imL, gm in zip(acfg.imgLocation, currentGammas):
+
+            feedback[imL].setText(f'{wealth_change(wealth, gm, eta).item() - wealth:0,.0f}')
+            feedback[imL].setAutoDraw(True)
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
@@ -478,6 +493,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             Reminder.setAutoDraw(False)
             win.flip()
         ################################# Wealth Update ############################
+
         wealth = wealth_change(wealth, ch_gamma, eta).item()
 
         up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
@@ -511,6 +527,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         for imL in acfg.imgLocation:
                 coins[imL].setOpacity(0)
                 Logger.keyStrokes(win)
+                feedback[imL].setAutoDraw(False)
+
 
         win.flip()
         Logger.keyStrokes(win)
