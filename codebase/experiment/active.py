@@ -341,21 +341,21 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             if presses is not None:
                 if 'left' in responseMapping[presses[0]]:
                     response = 'left'
-                    if np.mean(currentGammas[:2]) > np.mean(currentGammas[2:]):
+                    if np.isclose(np.mean(currentGammas[:2]), np.mean(currentGammas[2:]), rtol=1e-5):
+                        responseTo = 0
+                    elif np.mean(currentGammas[:2]) > np.mean(currentGammas[2:]):
                         responseTo = 1
                     elif np.mean(currentGammas[:2]) < np.mean(currentGammas[2:]):
                         responseTo = -1
-                    else:
-                        responseTo = 0
 
                 if 'right' in responseMapping[presses[0]]:
                     response = 'right'
-                    if np.mean(currentGammas[2:]) > np.mean(currentGammas[:2]):
+                    if np.isclose(np.mean(currentGammas[2:]), np.mean(currentGammas[:2]), rtol=1e-5):
+                        responseTo = 0
+                    elif np.mean(currentGammas[2:]) > np.mean(currentGammas[:2]):
                         responseTo = 1
                     elif np.mean(currentGammas[2:]) < np.mean(currentGammas[:2]):
                         responseTo = -1
-                    else:
-                        responseTo = 0
 
                 Logger.logEvent({"event_type": "Response",
                                 'response_button': presses[0],

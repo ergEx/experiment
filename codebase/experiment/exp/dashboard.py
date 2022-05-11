@@ -278,7 +278,7 @@ def plot_time_optimal_responses(dataframe, ax, task='active'):
 
     tr_vc = to_response.value_counts()
     tr_vc.sort_index(inplace=True, ascending=False)
-    proportion = tr_vc.iloc[0] / tr_vc.iloc[[0, 2]].sum()
+    proportion = tr_vc.iloc[0] / tr_vc.iloc[[0, -1]].sum()
     ax.bar(np.arange(len(tr_vc)), tr_vc)
     ax.set_xticks(np.arange(len(tr_vc)))
     ax.set_xticklabels(list(tr_vc.index))
