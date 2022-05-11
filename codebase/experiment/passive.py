@@ -460,17 +460,26 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
     fractalData = fractalData[['fractal', 'gamma']]
-    fractalData = fractalData.query('gamma > 0')
-    print(fractalData)
-    unqFractals = np.unique(fractalData.fractal)
-    unqFractals = unqFractals[unqFractals < con.N_FRACTALS]
-    print(unqFractals)
-    fractalCombination = list(itertools.combinations(unqFractals, 2))
+    fractalData_pos = fractalData.query('gamma > 0')
+
+    unqFractals_pos = np.unique(fractalData_pos.fractal)
+    unqFractals_pos = unqFractals_pos[unqFractals_pos < con.N_FRACTALS]
+
+    fractalData_neg = fractalData.query('gamma < 0')
+    unqFractals_neg = np.unique(fractalData_neg.fractal)
+    unqFractals_neg = unqFractals_neg[unqFractals_neg < con.N_FRACTALS]
+
+
+    fractalCombination = list(itertools.combinations(unqFractals_pos, 2))
+    fractalCombination_neg = list(itertools.combinations(unqFractals_neg, 2))
+    fractalCombination += fractalCombination_neg
     fractalCombination = np.array(fractalCombination)
 
     nTrial_noBrainer = np.min([len(fractalCombination), nTrial_noBrainer])
     fractalGammaDict = {}
-    for kk in unqFractals:
+    print(fractalCombination)
+
+    for kk in np.hstack([unqFractals_pos.ravel(), unqFractals_neg.ravel()]):
             fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
 
     randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
