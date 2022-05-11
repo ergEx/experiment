@@ -81,7 +81,8 @@ if __name__ == '__main__':
         'passive_mode': PASSIVE_MODE,
         'active_mode': ACTIVE_MODE,
         'agentActive': expInfo['test_mode'],
-        'TR': TR})
+        'TR': TR,
+        'simulateMR': SIMULATE_MR})
 
     fractalList = assign_fractals(expInfo['participant'], expInfo['eta'])
 
@@ -103,8 +104,7 @@ if __name__ == '__main__':
 
     passive_conf = expInfo.copy()
 
-    passive_conf.update({'simulateMR': SIMULATE_MR,
-                          'run' : expInfo['startPassive'],
+    passive_conf.update({'run' : expInfo['startPassive'],
                           'agentMode': 'random',
                           'feedback': False,
                           'nTrial_noBrainer': N_TRIALS_NOBRAINER,
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     active_conf.update(
         {'run': expInfo['startActive'],
         'maxTrial': MAX_TRIALS_ACTIVE,
-        'agentMode': 'eta_0.0'})
+        'agentMode': 'time-optimal'})
 
     active_conf = check_configs(active_conf, task='active')
 
