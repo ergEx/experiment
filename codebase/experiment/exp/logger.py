@@ -35,6 +35,7 @@ class ExperimentLogger:
         self.part = self.na
         self.tr = 0
         self.run = 0
+        self.screenshot = 's'
         self.tmp_dict = {}
 
         self.categories = ['onset', 'duration', 'trial_type', 'event_type',
@@ -209,9 +210,13 @@ class ExperimentLogger:
 
                 if resp[0] == self.killSwitch:
                     # Closes the window, closes the file and quits psychopy.
-                    win.close()
                     self.close()
+                    win.saveMovieFrames(self.mode + '.tif')
+                    win.close()
                     core.quit()
+
+                elif resp[0] == self.screenshot:
+                    win.getMovieFrame()
 
                 elif resp[0] == self.mr_trigger:
                     # Timing based on trial time:
