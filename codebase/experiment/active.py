@@ -341,7 +341,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             if presses is not None:
                 if 'left' in responseMapping[presses[0]]:
                     response = 'left'
-                    if np.isclose(np.mean(currentGammas[:2]), np.mean(currentGammas[2:]), rtol=1e-5):
+                    if np.isclose(np.mean(currentGammas[:2]), np.mean(currentGammas[2:]), atol=0.001):
                         responseTo = 0
                     elif np.mean(currentGammas[:2]) > np.mean(currentGammas[2:]):
                         responseTo = 1
@@ -350,7 +350,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
                 if 'right' in responseMapping[presses[0]]:
                     response = 'right'
-                    if np.isclose(np.mean(currentGammas[2:]), np.mean(currentGammas[:2]), rtol=1e-5):
+                    if np.isclose(np.mean(currentGammas[2:]), np.mean(currentGammas[:2]), atol=0.001):
                         responseTo = 0
                     elif np.mean(currentGammas[2:]) > np.mean(currentGammas[:2]):
                         responseTo = 1
