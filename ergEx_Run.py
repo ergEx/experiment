@@ -135,7 +135,7 @@ if __name__ == '__main__':
     active_conf.update(
         {'run': expInfo['startActive'],
         'maxTrial': MAX_TRIALS_ACTIVE,
-        'agentMode': 'time-optimal'})
+        'agentMode': 'time_optimal'})
 
     active_conf = check_configs(active_conf, task='active')
 
