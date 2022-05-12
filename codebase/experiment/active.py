@@ -482,11 +482,12 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             Reminder.setAutoDraw(False)
             win.flip()
         ################################# Wealth Update ############################
-        wealth = wealth_change(wealth, ch_gamma, eta).item()
+        new_wealth = wealth_change(wealth, ch_gamma, eta).item()
 
         up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
 
-        wealth_steps = np.linspace(wealth, wealth, up_steps)
+        wealth_steps = np.linspace(wealth, new_wealth, up_steps)
+        wealth = new_wealth
 
         wealthOnset = Logger.getTime()
         for ws in wealth_steps:
