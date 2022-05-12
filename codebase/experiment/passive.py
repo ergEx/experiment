@@ -507,6 +507,35 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                             fillColor='white', start=0, end=360)
     TimerShape.pos += offset
     TimerShape.setAutoDraw(False)
+    ###
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        Instructions.setText(f'Please wait to continue\n with the second part.')
+        Instructions.setAutoDraw(True)
+        win.flip()
+        Wait.wait(2)
+
+    elif expInfo['simulateMR'] == 'None':
+        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\n with the second part.')
+        Instructions.setAutoDraw(True)
+        win.flip()
+        startResp = True
+
+        if Agent.active:
+            Agent.start_timer(0, 0, [0, 0, 0, 0], 0.0)
+        # Wait for response
+        while startResp:
+            # Loop until response is received
+            if Agent.active and Logger.getTime() > Agent.press_time:
+                Agent.press()
+
+            response = Logger.keyStrokes(win, keyList=responseKeyList)
+
+            if response:
+                startResp = False
+
+    Instructions.setAutoDraw(False)
+    win.flip()
     ############################ Setup Elements ####################################
     if expInfo['feedback']:
         MoneyBox.setAutoDraw(True)
