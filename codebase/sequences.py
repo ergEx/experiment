@@ -133,7 +133,7 @@ def generate_dataframes(lambd:float,
                               'lambda': [lambd] * n_trials_passive,
                               'gamma': p_seq_gamma,
                               'fractal': p_seq_fractals,
-                              'iti': np.zeros(n_trials_passive) + 3 / speed_up, # to debug
+                              'iti': np.zeros(n_trials_passive) + 2.5 / speed_up, # to debug
                               'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})

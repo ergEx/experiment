@@ -55,7 +55,7 @@ passive_configs['wheelSpinTime'] = 1.7 # How long the wheel spins at base rate
 """ How long the wheel should spin. """
 passive_configs['timeWealthUpdate'] = 0.5 # Rolling of the wealth display
 """ How long wealth does take to roll up or down. """
-passive_configs['timeFinalDisplay'] = 1.3 # How long wealth image is staying on
+passive_configs['timeFinalDisplay'] = 1.8 # How long wealth image is staying on
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
 
 ############################### Active settings
