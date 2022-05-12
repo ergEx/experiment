@@ -460,10 +460,22 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
     ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
 
     ax.axvline(tmp_trial.eta,0, ls='--', color='k', alpha=0.5)
+    xlim = [np.min(indif_etas) - 0.1, np.max(indif_etas) + 0.1]
+    choices = np.array(choices)
+    indif_etas = np.array(indif_etas)
 
-    # ax.hist()
+    choi_prob, binE, _ = stats.binned_statistic(indif_etas, choices, statistic='mean',
+                                                bins=np.linspace(xlim[0], xlim[1], 9))
 
-# %%
+    x_points = binE[:-1]
+
+    tmp_ax = ax.twinx()
+    tmp_ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.mean(np.diff(x_points)),
+                edgecolor=[0.0, 0.0, 0.25])
+    tmp_ax.axhline(0.5, ls=':', alpha=0.5)
+    tmp_ax.set(xlim=xlim, ylim=[0, 1.0])
+    ax.set(xlim=xlim)
+
 
 def passive_report(fname:str, target_dir:str = 'data/reports'):
     dataframe = pandas_save_loader(fname, 'passive')
