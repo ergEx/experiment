@@ -475,14 +475,19 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalCombination += fractalCombination_neg
     fractalCombination = np.array(fractalCombination)
 
-    nTrial_noBrainer = np.min([len(fractalCombination), nTrial_noBrainer])
     fractalGammaDict = {}
-    print(fractalCombination)
 
     for kk in np.hstack([unqFractals_pos.ravel(), unqFractals_neg.ravel()]):
             fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
 
     randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
+
+    if randomIdx.shape[0] < nTrial_noBrainer:
+        extendIdx = np.random.choice(len(fractalCombination),
+                                     nTrial_noBrainer - randomIdx.shape[0],
+                                     replace=True)
+        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
+
     trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
                           index=np.arange(nTrial_noBrainer))
 
@@ -498,7 +503,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                   fractalGammaDict[pair[1]],
                                   fractalGammaDict[pair[0]]]
 
-    print(trials)
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
     TimerShape.pos += offset
