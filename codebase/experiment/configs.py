@@ -33,14 +33,14 @@ passive_configs['boxSize'] = (180 , 30)
 passive_configs['boxWidth'] = 3
 """ Linewidth of the money box."""
 
-passive_configs['wheelSize'] = (790, 790) # Size of the wheel image
+passive_configs['wheelSize'] = (700, 700) # Size of the wheel image
 """ Size of the wheel image. """
 passive_configs['revolution'] = 5 # Rotation angle of wheel
 """ Rotation angle of the wheel. """
 
 passive_configs['stopperSize'] = (50, 50) # Positon of blue triangle
 """ Size of the triangle, acting as a stopper of the wheel."""
-passive_configs['stopperPos'] = (0, 790 // 2)
+passive_configs['stopperPos'] = (0, 750 // 2)
 """ Position of above triangle. """
 
 # Timings

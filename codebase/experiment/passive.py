@@ -171,8 +171,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[nFl].setAutoDraw(True)
 
     Wheel = visual.ImageStim(win=win, name='wheel',
-                             image=os.path.join(STIMULUSPATH, 'wheel.png'),
-                             mask='circle', ori=0.0, pos=pcfg.centerPos,
+                             image=os.path.join(STIMULUSPATH, 'wheel_slim.png'),
+                             mask=None, ori=0.0, pos=pcfg.centerPos,
                              size=pcfg.wheelSize, color=[1,1,1])
     Wheel.pos += offset
     Wheel.setAutoDraw(False)
