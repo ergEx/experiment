@@ -89,7 +89,7 @@ def active_sequence(n_trials:int,
                                                    np.ones([math.ceil(n_trials/2), 1], dtype=int)),
                                                    axis=0)[: n_trials], 0)
     timings = np.empty([n_trials, 3], dtype=float)
-    timings[:, 0] = np.zeros(n_trials) + 3 # ITI
+    timings[:, 0] = np.zeros(n_trials) + 2.5 # ITI
     timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
     timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
     timings = shuffle_along_axis(timings, 0)
