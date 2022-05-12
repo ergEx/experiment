@@ -74,6 +74,7 @@ def active_sequence(n_trials:int,
                     n_simulations:int=1):
 
     gambles = create_gambles(gamma1_list, gamma2_list)
+    gambles = shuffle_along_axis(gambles,1)
     gamble_pairs = create_gamble_pairs(gambles)
     experiment  = create_experiment(gamble_pairs)
     trial_order = create_trial_order(
