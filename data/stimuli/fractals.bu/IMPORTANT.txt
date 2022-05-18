@@ -1,0 +1,8 @@
+Stimuli were retrieved from https://github.com/smathot/materials_for_P0010.5/tree/master/stimuli/exp2/images
+Distributed under a Attribution 3.0 Unported (CC BY 3.0)  License.
+The stimuli were used in:
+Mathôt, S., Siebold, A., Donk, M., & Vitu, F. (2015). Large Pupils Predict Goal-Driven Eye Movements. Journal of Experimental Psychology General, 144. https://doi.org/10.1037/a0039168
+
+
+The images were processed using the script "preprocess.py" which was used to resize / rescale the images to a common size.
+

@@ -16,31 +16,31 @@ DEFAULT_FRACTALS = ['F000', 'F001', 'F002', 'F003', 'F004', 'F005', 'F006', 'F00
 """ Default fractals  """
 CENTER_POS = (0, 0)
 """ Center location on screen """
-TEXT_HEIGHT = 20
+TEXT_HEIGHT = 25
 """ Height of text """
 
 passive_configs = DotDict()
 
 passive_configs['centerPos'] = CENTER_POS
 """ Position of the center """
-passive_configs['imgSize'] = (IMGSIZE[0] * 2, IMGSIZE[1] * 2) # Size of the center image
+passive_configs['imgSize'] = (IMGSIZE[0], IMGSIZE[1]) # Size of the center image
 """ Size of the image in the passive run"""
-passive_configs['textHeight'] = TEXT_HEIGHT # Height of text
+passive_configs['textHeight'] = TEXT_HEIGHT * 1 # Height of text
 """ Heights of the text."""
 
-passive_configs['boxSize'] = (180, 30)
+passive_configs['boxSize'] = (180 , 30)
 """ Size of the box in the center (i.e. the frame of the money)"""
 passive_configs['boxWidth'] = 3
 """ Linewidth of the money box."""
 
-passive_configs['wheelSize'] = (300, 300) # Size of the wheel image
+passive_configs['wheelSize'] = (700, 700) # Size of the wheel image
 """ Size of the wheel image. """
 passive_configs['revolution'] = 5 # Rotation angle of wheel
 """ Rotation angle of the wheel. """
 
-passive_configs['stopperSize'] = (30, 30) # Positon of blue triangle
+passive_configs['stopperSize'] = (50, 50) # Positon of blue triangle
 """ Size of the triangle, acting as a stopper of the wheel."""
-passive_configs['stopperPos'] = (0, 160)
+passive_configs['stopperPos'] = (0, 750 // 2)
 """ Position of above triangle. """
 
 # Timings
@@ -51,11 +51,11 @@ passive_configs['timeToReminder'] = 1.0 # How much time until reminder is shown
 """ Time after which the press-earlier reminder is shown. """
 passive_configs['timeResponseWindow'] = 2.0 # time of the response window
 """ Maximal response time """
-passive_configs['wheelSpinTime'] = 2.0 # How long the wheel spins at base rate
+passive_configs['wheelSpinTime'] = 1.7 # How long the wheel spins at base rate
 """ How long the wheel should spin. """
-passive_configs['timeWealthUpdate'] = 1.0 # Rolling of the wealth display
+passive_configs['timeWealthUpdate'] = 0.5 # Rolling of the wealth display
 """ How long wealth does take to roll up or down. """
-passive_configs['timeFinalDisplay'] = 1.0 # How long wealth image is staying on
+passive_configs['timeFinalDisplay'] = 1.8 # How long wealth image is staying on
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
 
 ############################### Active settings
@@ -84,11 +84,13 @@ active_configs['textPos'] = CENTER_POS
 active_configs['textHeight'] = TEXT_HEIGHT
 """ Height of text. """
 
+active_configs['timerPos'] = (CENTER_POS[0], -25)
+""" Size of the timer"""
+
 # Timings
 active_configs['waitTR'] = 1
 """ How many TRs to wait before the experiment begins"""
-
-active_configs['timeResponse'] = 2.5 # Response Window
+active_configs['timeResponse'] = 2 # Response Window
 """ Maximal response time """
 active_configs['timeSideHighlight'] = 1.0 # Time after fractals are removed
 """ Time where theres only the selected fractal on screen. """
@@ -98,10 +100,11 @@ active_configs['timeFractalSelection'] = 0.5 # Time after last fractal disappear
 """ Time where only the fractal is seen on the screen (i.e. after coin toss) """
 active_configs['timeNoResponse'] = 1.25  # Time where only the worst fractal is present.
 """ Time for a non-response trial"""
-active_configs['timeWealthUpdate'] = 1.0 # Time the wealth takes to roll up.
+active_configs['timeWealthUpdate'] = 0.5 # Time the wealth takes to roll up.
 """ Time the wealth takes to roll up or down. """
-active_configs['timeFinalDisplay'] = 1.0 # Time after wealth update
+active_configs['timeFinalDisplay'] = 2.0 # Time after wealth update
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
+
 
 def check_attribute_present(config_dict:Dict, key_val:str,
                     default_val=None) -> Dict:

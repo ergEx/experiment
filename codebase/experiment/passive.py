@@ -171,8 +171,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[nFl].setAutoDraw(True)
 
     Wheel = visual.ImageStim(win=win, name='wheel',
-                             image=os.path.join(STIMULUSPATH, 'wheel.png'),
-                             mask='circle', ori=0.0, pos=pcfg.centerPos,
+                             image=os.path.join(STIMULUSPATH, 'wheel_slim.png'),
+                             mask=None, ori=0.0, pos=pcfg.centerPos,
                              size=pcfg.wheelSize, color=[1,1,1])
     Wheel.pos += offset
     Wheel.setAutoDraw(False)
@@ -192,8 +192,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     MoneyFrame.setAutoDraw(False)
 
     MoneyBox = visual.TextStim(win=win, name='MoneyBox',
-                            text=format_wealth(wealth), pos=pcfg.centerPos,
-                            height=pcfg.textHeight,  color='white')
+                            text=format_wealth(wealth), pos=pcfg.centerPos, wrapWidth=pcfg.boxSize[0],
+                            height=pcfg.textHeight,  color='white', alignText='center')
     MoneyBox.pos += offset
     MoneyBox.setAutoDraw(False)
 
@@ -379,6 +379,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         win.flip()
         Logger.keyStrokes(win)
 
+        # MoneyBox.setText(format_wealth(exp_wealth-wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
+
         fractalOnset = Logger.getTime()
         Wait.wait(fractal_duration)
 
@@ -390,26 +392,34 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
 
         wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
+        old_wealth = wealth
         wealth = exp_wealth
 
+        # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
+        MoneyBox.setText(format_wealth(wealth))
+
         moneyOnset = Logger.getTime()
+
         for ws in wealth_steps:
+            # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(ws) + '\n')
             MoneyBox.setText(format_wealth(ws))
 
             Logger.keyStrokes(win)
             win.flip()
 
-            # if (Logger.getTime() - moneyOnset) >= pcfg.timeWealthUpdate:
-            #    break
-
         Logger.keyStrokes(win)
+
         MoneyBox.setText(format_wealth(wealth))
+        # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
+        # MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(wealth-old_wealth)}')
         win.flip()
 
         Logger.logEvent({"event_type": "WealthUpdate",
                         "expected_duration": pcfg.timeWealthUpdate,
                         **logDict}, wealth=wealth, onset=moneyOnset)
         fractals[fractal].setOpacity(0)
+
+        MoneyBox.setText(format_wealth(wealth))
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
 
@@ -450,17 +460,34 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
     fractalData = fractalData[['fractal', 'gamma']]
-    unqFractals = np.unique(fractalData.fractal)
-    unqFractals = unqFractals[unqFractals < con.N_FRACTALS]
+    fractalData_pos = fractalData.query('gamma > 0')
 
-    fractalCombination = list(itertools.combinations(unqFractals, 2))
+    unqFractals_pos = np.unique(fractalData_pos.fractal)
+    unqFractals_pos = unqFractals_pos[unqFractals_pos < con.N_FRACTALS]
+
+    fractalData_neg = fractalData.query('gamma < 0')
+    unqFractals_neg = np.unique(fractalData_neg.fractal)
+    unqFractals_neg = unqFractals_neg[unqFractals_neg < con.N_FRACTALS]
+
+
+    fractalCombination = list(itertools.combinations(unqFractals_pos, 2))
+    fractalCombination_neg = list(itertools.combinations(unqFractals_neg, 2))
+    fractalCombination += fractalCombination_neg
     fractalCombination = np.array(fractalCombination)
 
     fractalGammaDict = {}
-    for kk in unqFractals:
+
+    for kk in np.hstack([unqFractals_pos.ravel(), unqFractals_neg.ravel()]):
             fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
 
     randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
+
+    if randomIdx.shape[0] < nTrial_noBrainer:
+        extendIdx = np.random.choice(len(fractalCombination),
+                                     nTrial_noBrainer - randomIdx.shape[0],
+                                     replace=True)
+        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
+
     trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
                           index=np.arange(nTrial_noBrainer))
 
@@ -476,6 +503,39 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                   fractalGammaDict[pair[1]],
                                   fractalGammaDict[pair[0]]]
 
+    TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
+                            fillColor='white', start=0, end=360)
+    TimerShape.pos += offset
+    TimerShape.setAutoDraw(False)
+    ###
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        Instructions.setText(f'Please wait to continue\n with the second part.')
+        Instructions.setAutoDraw(True)
+        win.flip()
+        Wait.wait(2)
+
+    elif expInfo['simulateMR'] == 'None':
+        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\n with the second part.')
+        Instructions.setAutoDraw(True)
+        win.flip()
+        startResp = True
+
+        if Agent.active:
+            Agent.start_timer(0, 0, [0, 0, 0, 0], 0.0)
+        # Wait for response
+        while startResp:
+            # Loop until response is received
+            if Agent.active and Logger.getTime() > Agent.press_time:
+                Agent.press()
+
+            response = Logger.keyStrokes(win, keyList=responseKeyList)
+
+            if response:
+                startResp = False
+
+    Instructions.setAutoDraw(False)
+    win.flip()
     ############################ Setup Elements ####################################
     if expInfo['feedback']:
         MoneyBox.setAutoDraw(True)
@@ -520,6 +580,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Gamble Left ####################################
         fractals['leftUp'][fractal1].setOpacity(1)
         fractals['rightUp'][fractal2].setOpacity(1)
+        TimerShape.setAutoDraw(True)
+
         win.flip()
         ########################### Gamble Right ###################################
         Logger.keyStrokes(win)
@@ -538,6 +600,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         response = False
         responseTo = 'n/a'
+
+        pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
+        pieCounter = 1
 
         while (acfg.timeResponse + respOnset) > Logger.getTime() and not response:
 
@@ -568,6 +633,17 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                 'response_correct': responseTo,
                                 **logDict})
 
+            if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
+
+                try:
+                    TimerShape.setEnd(pieShapes[pieCounter])
+                    win.flip()
+                    pieCounter += 1
+                except IndexError:
+                    pass
+
+        TimerShape.setEnd(360)
+        TimerShape.setAutoDraw(False)
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
@@ -617,8 +693,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         ################################# Wealth Update ############################
 
-        new_wealth = wealth_change(wealth, ch_gamma, eta).item()
-
         up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
 
         wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
@@ -626,12 +700,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         wealthOnset = Logger.getTime()
 
         for ws in wealth_steps:
-            MoneyBox.setText(format_wealth(ws))
+            MoneyBox.setText('\n' + format_wealth(ws) + '\n')
             Logger.keyStrokes(win)
             win.flip()
-
-            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-            #     break
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))

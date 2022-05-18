@@ -16,7 +16,7 @@ def run(lambd:float, x_0:int, n_repeats_passive:int, n_trials_active:int,
                                            n_repeats_passive=n_repeats_passive,
                                            passive_mode=passive_mode,
                                            speed_up=speed_up,
-                                           indifference_etas = con.INDIFFERENCE_ETAS,
+                                           indifference_etas = con.INDIFFERENCE_ETAS[lambd],
                                            indiffrence_x_0 = con.INDIFFERENCE_X_0,
                                            indifference_dx2 = con.INDIFFERENCE_DX2)
 

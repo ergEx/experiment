@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 from scipy import misc
 from scipy.optimize import fsolve
+from scipy import stats
 
 from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
@@ -23,13 +24,8 @@ def indiference_eta(x1:float, x2:float, x3:float, x4:float, w:float) -> list:
     root_initial_guess = -20
     root = fsolve(func, root_initial_guess)
 
-    #if not np.isclose(func(root), [0.0], atol=0.1):
-    #    print(x1,x2,x3,x4)
-    #    print(root)
-    #    print(func(root))
-    #    raise ValueError(f"There's something wrong, the 'root' gives {func(root)}")
-
     return root, func
+
 
 def calculate_min_v_max(root:float, func, choice:int) -> dict:
     dx = misc.derivative(func,root)
@@ -37,6 +33,7 @@ def calculate_min_v_max(root:float, func, choice:int) -> dict:
         return {'color':'orange','sign':'>', 'val':'max'} if choice==0 else {'color':'b','sign':'<', 'val':'min'}
     else:
         return {'color':'orange','sign':'>', 'val':'max'} if choice==1 else {'color':'b','sign':'<', 'val':'min'}
+
 
 def rand_jitter(arr:np.ndarray):
     stdev = .02 * (np.nanmax(arr) - np.nanmin(arr))
@@ -281,8 +278,7 @@ def plot_time_optimal_responses(dataframe, ax, task='active'):
 
     tr_vc = to_response.value_counts()
     tr_vc.sort_index(inplace=True, ascending=False)
-    proportion = tr_vc.iloc[0] / tr_vc.sum()
-
+    proportion = tr_vc.iloc[0] / tr_vc.iloc[[0, -1]].sum()
     ax.bar(np.arange(len(tr_vc)), tr_vc)
     ax.set_xticks(np.arange(len(tr_vc)))
     ax.set_xticklabels(list(tr_vc.index))
@@ -445,6 +441,9 @@ def plot_to_trajectory(dataframe, ax):
 def plot_nonparametric_indifference_eta(dataframe, ax):
     trials = dataframe.query('event_type == "WealthUpdate"')
 
+    indif_etas = []
+    choices = []
+
     for n, ii in enumerate(trials.index):
         tmp_trial = trials.loc[ii, :]
         x_updates = wealth_change(x=tmp_trial.wealth,
@@ -454,14 +453,29 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
 
         root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
         min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
-
+        indif_etas.append(root_dyn[0])
+        choices.append(tmp_trial.selected_side == 'left')
         ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
 
     ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
 
     ax.axvline(tmp_trial.eta,0, ls='--', color='k', alpha=0.5)
+    xlim = [np.min(indif_etas) - 0.1, np.max(indif_etas) + 0.1]
+    choices = np.array(choices)
+    indif_etas = np.array(indif_etas)
 
-# %%
+    choi_prob, binE, _ = stats.binned_statistic(indif_etas, choices, statistic='mean',
+                                                bins=np.linspace(xlim[0], xlim[1], 9))
+
+    x_points = binE[:-1]
+
+    tmp_ax = ax.twinx()
+    tmp_ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.mean(np.diff(x_points)),
+                edgecolor=[0.0, 0.0, 0.25])
+    tmp_ax.axhline(0.5, ls=':', alpha=0.5)
+    tmp_ax.set(xlim=xlim, ylim=[0, 1.0])
+    ax.set(xlim=xlim)
+
 
 def passive_report(fname:str, target_dir:str = 'data/reports'):
     dataframe = pandas_save_loader(fname, 'passive')
@@ -547,7 +561,7 @@ def active_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_prob_heads(dataframe, axes[ii])
     ii += 1
-    ax = plot_expected_gamma(dataframe, axes[ii], direction='horizontal')
+    ax = plot_expected_gamma(dataframe, axes[ii], direction='vertical')
     ii += 1
     ax = plot_nonparametric_indifference_eta(dataframe, axes[ii]) #, direction='vertical')
     ii += 1

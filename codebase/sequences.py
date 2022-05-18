@@ -10,13 +10,13 @@ def passive_sequence_v1(lambd:float,
                         repeats:int,
                         x_0:int,
                         indifference_etas:np.array,
-                        indiffrence_x_0:np.array,
+                        indifference_x_0:np.array,
                         indifference_dx2:int):
 
     gamma_range, gamma1_list, gamma2_list, fractal_dict= calculate_growth_rates(indifference_etas=indifference_etas,
                                                                                 lambd=lambd,
                                                                                 dx2=indifference_dx2,
-                                                                                x=indiffrence_x_0)
+                                                                                x=indifference_x_0)
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
@@ -33,29 +33,36 @@ def passive_sequence_v2(lambd:float,
                         repeats:int,
                         x_0:int,
                         indifference_etas:np.array,
-                        indiffrence_x_0:np.array,
+                        indifference_x_0:np.array,
                         indifference_dx2:int):
 
-    gamma_range,gamma1_list,gamma2_list,fractal_dict = calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indiffrence_x_0)
+    gamma_range,gamma1_list,gamma2_list,fractal_dict = calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indifference_x_0)
     gamma_range.append(999) #blank fractal for resetting wealth
     n_fractals = len(gamma_range)
 
     fractals = []
     part_sum = []
 
-    gamma_0 = isoelastic_utility(x_0,lambd)
+    for x0 in [x_0, x_0 * 10]:
 
-    fractal_order = shuffle_along_axis(np.array(range(n_fractals)), 0)
+        gamma_0 = isoelastic_utility(x0,lambd)
 
-    for fractal in fractal_order:
-        tmp_seq = [fractal] * repeats
-        fractals.extend(tmp_seq)
-        tmp_cum_sum = gamma_0 + np.cumsum(gamma_range[tmp_seq])
-        part_sum.extend(tmp_cum_sum)
-        part_sum.extend(gamma_0) #Reset wealth
-        fractals.append(n_fractals) #Show blank fractal
+        fractal_order = shuffle_along_axis(np.array(range(n_fractals-1)), 0)
 
-    gamma_array = gamma_range[fractals]
+        for fractal in fractal_order:
+
+            part_sum.extend(gamma_0) #Reset wealth
+            fractals.append(n_fractals-1) #Show blank fractal
+
+            tmp_seq = [fractal] * repeats
+            fractals.extend(tmp_seq)
+            tmp_cum_sum = gamma_0 + np.cumsum([gamma_range[fractal]]*repeats)
+            part_sum.extend(tmp_cum_sum)
+
+    gamma_array = np.array([gamma_range[fractal] for fractal in fractals])
+    fractals = np.array(fractals)
+    fractals[gamma_array == 999] = 9
+
     part_wealth_sum = inverse_isoelastic_utility(np.array(part_sum),lambd)
 
     return fractals, gamma_array, part_sum, part_wealth_sum, gamma1_list, gamma2_list, fractal_dict
@@ -67,6 +74,7 @@ def active_sequence(n_trials:int,
                     n_simulations:int=1):
 
     gambles = create_gambles(gamma1_list, gamma2_list)
+    gambles = shuffle_along_axis(gambles,1)
     gamble_pairs = create_gamble_pairs(gambles)
     experiment  = create_experiment(gamble_pairs)
     trial_order = create_trial_order(
@@ -81,7 +89,7 @@ def active_sequence(n_trials:int,
                                                    np.ones([math.ceil(n_trials/2), 1], dtype=int)),
                                                    axis=0)[: n_trials], 0)
     timings = np.empty([n_trials, 3], dtype=float)
-    timings[:, 0] = np.zeros(n_trials) + 3 # ITI
+    timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
     timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
     timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
     timings = shuffle_along_axis(timings, 0)
@@ -98,11 +106,11 @@ def generate_dataframes(lambd:float,
                         x_0:int,
                         n_trials_active:int,
                         n_repeats_passive:int,
-                        passive_mode:int = 1,
-                        speed_up:float = 1,
-                        indifference_etas:np.array = con.INDIFFERENCE_ETAS,
-                        indiffrence_x_0:np.array = con.INDIFFERENCE_X_0,
-                        indifference_dx2:int = con.INDIFFERENCE_DX2):
+                        passive_mode:int,
+                        speed_up:float,
+                        indifference_etas:np.array,
+                        indiffrence_x_0:np.array,
+                        indifference_dx2:int):
 
     if passive_mode == 1:
         passive_sequence = passive_sequence_v1
@@ -117,7 +125,7 @@ def generate_dataframes(lambd:float,
                                                             repeats=n_repeats_passive,
                                                             x_0=x_0,
                                                             indifference_etas=indifference_etas,
-                                                            indiffrence_x_0=indiffrence_x_0,
+                                                            indifference_x_0=indiffrence_x_0,
                                                             indifference_dx2=indifference_dx2)
 
     n_trials_passive = len(p_seq_fractals)
@@ -125,7 +133,7 @@ def generate_dataframes(lambd:float,
                               'lambda': [lambd] * n_trials_passive,
                               'gamma': p_seq_gamma,
                               'fractal': p_seq_fractals,
-                              'iti': np.zeros(n_trials_passive) + 3 / speed_up, # to debug
+                              'iti': np.zeros(n_trials_passive) + 2.0 / speed_up, # to debug
                               'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})

@@ -25,7 +25,7 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         utilites if wealth is less or equal to zero, smallest possible utility,
         i.e., specicfic lower bound is returned.
     """
-    if eta >= 2:
+    if eta > 1:
         return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(x):
@@ -36,6 +36,8 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
     if np.isclose(eta, 1):
         u[x > 0] = np.log(x[x > 0])
         u[x <= 0] = np.finfo(float).min
+    elif np.isclose(eta, 0): #allow negative values in additive dynamic
+        u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
     else:
         bound = (-1) / (1 - eta)
         u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
@@ -56,7 +58,7 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
         Vector of wealths coresponding to utilities.
     """
 
-    if eta >= 2:
+    if eta > 1:
         return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(u):
@@ -66,6 +68,8 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
 
     if np.isclose(eta, 1):
         x = np.exp(u)
+    elif np.isclose(eta, 0): #allow for negative values in additive dynamic
+        x = np.power(u * (1 - eta) + 1, 1 / (1 - eta))
     else:
         bound = (-1) / (1 - eta)
         x[u > bound] = np.power(u[u > bound] * (1 - eta) + 1, 1 / (1 - eta))
@@ -98,13 +102,13 @@ def wealth_change(x:np.array, gamma:np.array, lambd:float):
 
 def shuffle_along_axis(a:np.array, axis:int):
     """Randomly shuffle multidimentional array along specified axis.
-        
+
     Args:
         a (array)
         axis (int)
 
     Returns:
-        array    
+        array
     """
     idx = np.random.rand(*a.shape).argsort(axis=axis)
     return np.take_along_axis(a, idx, axis=axis)
@@ -118,7 +122,7 @@ def random_reorder_axis(a:np.array, axis:int):
         axis (int)
 
     Returns:
-        array 
+        array
     """
     idx = np.arange(a.shape[axis])
     np.random.shuffle(idx)
@@ -140,7 +144,7 @@ def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
         additive wealth change (dx1; float)
     """
     if np.isclose(indifference_eta, 1):
-        return round(math.exp(1*math.log(x_0)-math.log(x_0 + dx2)) - x_0)
+        return round(math.exp(2 * math.log(x_0) - math.log(x_0 + dx2)) - x_0)
     else:
         return round((2 * x_0 ** (1 - indifference_eta) - (x_0 + dx2) ** (1 - indifference_eta)) ** (1 / (1 - indifference_eta)) - x_0)
 
@@ -150,7 +154,7 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
     Args:
         indifference_etas (array):
             Array of indifference-etas, ie. riskpreferences being tested.
-        lambd (float): 
+        lambd (float):
             Wealth dynamic.
         dx2 (int):
             Wealth change of other fractal.
@@ -160,7 +164,6 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
         List of arrays. Each gamble is represented as (2, ) array with growth
         rates.
     """
-
     if len(x) > 2:
         return ValueError("You can choose max two reference wealths!")
     dx1_list = [calculate_dx1(eta, dx2, x[0]) for eta in indifference_etas]
@@ -170,6 +173,7 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
     gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
 
     gamma_list = gamma1_list + gamma2_list + [0]
+    print(gamma_list)
 
     fractal_dict = {}
     for i, gamma in enumerate(gamma_list):
@@ -183,7 +187,7 @@ def create_gambles(gamma1_list, gamma2_list):
     Args:
         gamma1_list (array):
             Array of positive growth-rates.
-        gamma2_list (float): 
+        gamma2_list (float):
             Array of negative growth-rates.
     Returns:
         List of arrays. Each gamble is represented as (2, ) array with growth

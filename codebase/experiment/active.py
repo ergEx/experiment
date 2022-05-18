@@ -194,6 +194,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.pos += offset
     Reminder.setAutoDraw(False)
 
+    TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
+                            fillColor='white', start=0, end=360)
+    TimerShape.pos += offset
+    TimerShape.setAutoDraw(False)
+
     trials = pd.read_csv(trialInfoPath, sep='\t')
 
     Initialization.setAutoDraw(False)
@@ -299,6 +304,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
         fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['active_mode'] != 2))
+        TimerShape.setAutoDraw(True)
         win.flip()
         Logger.keyStrokes(win)
 
@@ -314,6 +320,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Response Cue ###################################
         Logger.keyStrokes(win)
         ######################## Response Window ###################################
+        pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
+        pieCounter = 1
+
         respOnset = Logger.getTime()
 
         if Agent.active:
@@ -332,17 +341,21 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             if presses is not None:
                 if 'left' in responseMapping[presses[0]]:
                     response = 'left'
-                    if np.mean(currentGammas[:2]) >= np.mean(currentGammas[2:]):
-                        responseTo = True
-                    else:
-                        responseTo = False
+                    if np.isclose(np.mean(currentGammas[:2]), np.mean(currentGammas[2:]), atol=0.001):
+                        responseTo = 0
+                    elif np.mean(currentGammas[:2]) > np.mean(currentGammas[2:]):
+                        responseTo = 1
+                    elif np.mean(currentGammas[:2]) < np.mean(currentGammas[2:]):
+                        responseTo = -1
 
                 if 'right' in responseMapping[presses[0]]:
                     response = 'right'
-                    if np.mean(currentGammas[2:]) >= np.mean(currentGammas[:2]):
-                        responseTo = True
-                    else:
-                        responseTo = False
+                    if np.isclose(np.mean(currentGammas[2:]), np.mean(currentGammas[:2]), atol=0.001):
+                        responseTo = 0
+                    elif np.mean(currentGammas[2:]) > np.mean(currentGammas[:2]):
+                        responseTo = 1
+                    elif np.mean(currentGammas[2:]) < np.mean(currentGammas[:2]):
+                        responseTo = -1
 
                 Logger.logEvent({"event_type": "Response",
                                 'response_button': presses[0],
@@ -354,6 +367,17 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                 win.flip()
                 Logger.keyStrokes(win)
 
+            if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
+
+                try:
+                    TimerShape.setEnd(pieShapes[pieCounter])
+                    win.flip()
+                    pieCounter += 1
+                except IndexError:
+                    pass
+
+        TimerShape.setEnd(360)
+        TimerShape.setAutoDraw(False)
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
@@ -466,15 +490,12 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         wealth = new_wealth
 
         wealthOnset = Logger.getTime()
-
         for ws in wealth_steps:
 
             MoneyBox.setText(format_wealth(ws))
             Logger.keyStrokes(win)
             win.flip()
 
-            # if (Logger.getTime() - wealthOnset) >= acfg.timeWealthUpdate:
-            #    break
 
         Logger.keyStrokes(win)
         MoneyBox.setText(format_wealth(wealth))
@@ -505,11 +526,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         if Logger.getTime() > (expInfo['maxDuration'] - 10) or curTrial >= expInfo['maxTrial']:
             break
 
-        if new_wealth >= 1e9 or new_wealth <= 0:
+        '''
+        if wealth >= 1e9 or wealth <= 0:
             Logger.logEvent({"event_type": "WealthCeilingReached", **logDict},
                             wealth=wealth)
             terminateNormally = False
             break
+        '''
 
         nTrial += 1
 
