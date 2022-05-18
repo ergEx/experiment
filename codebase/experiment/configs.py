@@ -90,7 +90,7 @@ active_configs['timerPos'] = (CENTER_POS[0], -25)
 # Timings
 active_configs['waitTR'] = 1
 """ How many TRs to wait before the experiment begins"""
-active_configs['timeResponse'] = 3.0 # Response Window
+active_configs['timeResponse'] = 2 # Response Window
 """ Maximal response time """
 active_configs['timeSideHighlight'] = 1.0 # Time after fractals are removed
 """ Time where theres only the selected fractal on screen. """
@@ -102,7 +102,7 @@ active_configs['timeNoResponse'] = 1.25  # Time where only the worst fractal is 
 """ Time for a non-response trial"""
 active_configs['timeWealthUpdate'] = 0.5 # Time the wealth takes to roll up.
 """ Time the wealth takes to roll up or down. """
-active_configs['timeFinalDisplay'] = 1.0 # Time after wealth update
+active_configs['timeFinalDisplay'] = 2.0 # Time after wealth update
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
 
 

@@ -89,7 +89,7 @@ def active_sequence(n_trials:int,
                                                    np.ones([math.ceil(n_trials/2), 1], dtype=int)),
                                                    axis=0)[: n_trials], 0)
     timings = np.empty([n_trials, 3], dtype=float)
-    timings[:, 0] = np.zeros(n_trials) + 2.5 # ITI
+    timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
     timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
     timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
     timings = shuffle_along_axis(timings, 0)
@@ -106,11 +106,11 @@ def generate_dataframes(lambd:float,
                         x_0:int,
                         n_trials_active:int,
                         n_repeats_passive:int,
-                        passive_mode:int = 1,
-                        speed_up:float = 1,
-                        indifference_etas:np.array = con.INDIFFERENCE_ETAS,
-                        indiffrence_x_0:np.array = con.INDIFFERENCE_X_0,
-                        indifference_dx2:int = con.INDIFFERENCE_DX2):
+                        passive_mode:int,
+                        speed_up:float,
+                        indifference_etas:np.array,
+                        indiffrence_x_0:np.array,
+                        indifference_dx2:int):
 
     if passive_mode == 1:
         passive_sequence = passive_sequence_v1
@@ -133,7 +133,7 @@ def generate_dataframes(lambd:float,
                               'lambda': [lambd] * n_trials_passive,
                               'gamma': p_seq_gamma,
                               'fractal': p_seq_fractals,
-                              'iti': np.zeros(n_trials_passive) + 2.5 / speed_up, # to debug
+                              'iti': np.zeros(n_trials_passive) + 2.0 / speed_up, # to debug
                               'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})
