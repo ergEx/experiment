@@ -561,7 +561,7 @@ def active_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_prob_heads(dataframe, axes[ii])
     ii += 1
-    ax = plot_expected_gamma(dataframe, axes[ii], direction='horizontal')
+    ax = plot_expected_gamma(dataframe, axes[ii], direction='vertical')
     ii += 1
     ax = plot_nonparametric_indifference_eta(dataframe, axes[ii]) #, direction='vertical')
     ii += 1

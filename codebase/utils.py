@@ -25,7 +25,7 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         utilites if wealth is less or equal to zero, smallest possible utility,
         i.e., specicfic lower bound is returned.
     """
-    if eta >= 2:
+    if eta > 1:
         return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(x):
@@ -58,7 +58,7 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
         Vector of wealths coresponding to utilities.
     """
 
-    if eta >= 2:
+    if eta > 1:
         return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(u):
