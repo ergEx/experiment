@@ -66,6 +66,7 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '0', # Participant ID
+               'session': 1,
                'eta': 0.0, # Dynamic of the experiment
                'test_mode': False, # Whether an agent automatically presses buttons
                'fullScreen': True, # Whether to use a full screen
@@ -86,7 +87,7 @@ if __name__ == '__main__':
 
     fractalList = assign_fractals(expInfo['participant'], expInfo['eta'])
 
-    os.makedirs(filePath + make_bids_dir(expInfo['participant'], expInfo['eta']),
+    os.makedirs(filePath + make_bids_dir(expInfo['participant'], expInfo['session']),
                 exist_ok=True)
 
     run_with_dict(expInfo=expInfo)
