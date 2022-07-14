@@ -112,10 +112,10 @@ def continue_from_previous(filename:str, wealth:float,
     trial = 0
 
     # Extract run no from filename:
-    fpath, sub, eta, task, run = extract_from_fname(filename)
+    fpath, sub, ses, eta, task, run = extract_from_fname(filename)
 
     if int(run) > 1:
-        fname = make_filename(fpath, sub, eta, task, run - 1, add_dir=False)
+        fname = make_filename(fpath, sub, ses, eta, task, run - 1, add_dir=False)
 
         if os.path.exists(fname):
             try:
@@ -151,7 +151,7 @@ def continue_from_previous(filename:str, wealth:float,
     return wealth, trial, mode
 
 
-def load_calibration(path:str, participant:str, session:str) -> Tuple[float, float]:
+def load_calibration(path:str, participant:str, session:str, lambd:str) -> Tuple[float, float]:
     """Load calibration file for given participant.
 
     Args:
@@ -162,7 +162,7 @@ def load_calibration(path:str, participant:str, session:str) -> Tuple[float, flo
     Returns:
         Tuple[float, float]: Tuple of x and y coordinates. Offset in calibration units..
     """
-    filename = make_filename(path, participant, session, 'calibration', 1)
+    filename = make_filename(path, participant, session, lambd, 'calibration', 1)
 
     if os.path.exists(filename):
         coordinates = pd.read_csv(filename, sep='\t')

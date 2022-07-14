@@ -35,7 +35,8 @@ def run_with_dict(expInfo):
         speed_up = 1
         print("No speed up")
 
-    save_path = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'], 'meta', None, 'input.txt')
+    save_path = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                              expInfo['eta'], 'meta', None, 'input.txt')
 
     reply = True
 

@@ -50,17 +50,17 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
     responseMapping = {expInfo['responseLeft'] : 'left',
                        expInfo['responseRight']: 'right'}
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
-                             'passive', expInfo['run'])
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
+                              expInfo['eta'], 'passive', expInfo['run'])
 
-    offset = load_calibration(filePath, expInfo['participant'], expInfo['eta'])
+    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
                                                        expInfo['overwrite'])
 
     # Pre-Calculate Number of MR-Images:
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
-                                  'passive', extension='input.tsv')
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                                   expInfo['eta'], 'passive', extension='input.tsv')
 
     trialFile = pd.read_csv(trialInfoPath, sep='\t')
 
@@ -124,11 +124,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalList = fractalList[:]
     fractalList.append('grey100')
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
-                             'passive', expInfo['run'])
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
+                            expInfo['eta'], 'passive', expInfo['run'])
 
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
-                                  'passive', extension='input.tsv')
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                                  expInfo['eta'], 'passive', extension='input.tsv')
 
     # Create logger
     if expInfo['simulateMR'] == 'MRIDebug':
