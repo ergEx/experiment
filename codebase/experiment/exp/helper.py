@@ -283,3 +283,44 @@ def format_wealth(wealth:float, fstring:str = "7,.0f") -> str:
         string: Wealth formatted according to fstring
     """
     return format(wealth, fstring)
+
+
+def make_no_brainers(trial_df, current_trial, ntrials):
+    import itertools
+    from ... import constants as con
+
+    trial_df = trial_df.iloc[:current_trial, :].copy()
+    trial_df = trial_df[['fractal', 'gamma']]
+    unqFractals = np.unique(trial_df.fractal)
+    unqFractals= unqFractals[unqFractals < con.N_FRACTALS]
+    fractalCombination = list(itertools.combinations(unqFractals, 2))
+    fractalCombination = np.array(fractalCombination)
+    fractalGammaDict = {}
+
+    for kk in unqFractals.ravel():
+            fractalGammaDict[kk] = trial_df.query('fractal == @kk')['gamma'].values[0].item()
+
+    randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
+
+    if randomIdx.shape[0] < ntrials:
+        extendIdx = np.random.choice(len(fractalCombination),
+                                     ntrials - randomIdx.shape[0],
+                                     replace=True)
+        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
+
+    trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
+                          index=np.arange(ntrials))
+
+    for nn, ri in enumerate(randomIdx[:ntrials]):
+        pair = fractalCombination[ri, :].copy()
+
+        if np.random.rand() < 0.5:
+            trials.iloc[nn, :] = [pair[0], pair[1],
+                                  fractalGammaDict[pair[0]],
+                                  fractalGammaDict[pair[1]]]
+        else:
+            trials.iloc[nn, :] = [pair[1], pair[0],
+                                  fractalGammaDict[pair[1]],
+                                  fractalGammaDict[pair[0]]]
+
+    return trials
