@@ -19,7 +19,7 @@ from .configs import active_configs as acfg
 from .configs import DEFAULT_FRACTALS, STIMULUSPATH
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
-from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth
+from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth, make_no_brainers
 
 
 def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> Dict:
@@ -52,7 +52,6 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
                               expInfo['eta'], 'passive', expInfo['run'])
-
     offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
@@ -459,49 +458,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.setText("press earlier")
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
-    fractalData = fractalData[['fractal', 'gamma']]
-    fractalData_pos = fractalData.query('gamma > 0')
-
-    unqFractals_pos = np.unique(fractalData_pos.fractal)
-    unqFractals_pos = unqFractals_pos[unqFractals_pos < con.N_FRACTALS]
-
-    fractalData_neg = fractalData.query('gamma < 0')
-    unqFractals_neg = np.unique(fractalData_neg.fractal)
-    unqFractals_neg = unqFractals_neg[unqFractals_neg < con.N_FRACTALS]
-
-
-    fractalCombination = list(itertools.combinations(unqFractals_pos, 2))
-    fractalCombination_neg = list(itertools.combinations(unqFractals_neg, 2))
-    fractalCombination += fractalCombination_neg
-    fractalCombination = np.array(fractalCombination)
-
-    fractalGammaDict = {}
-
-    for kk in np.hstack([unqFractals_pos.ravel(), unqFractals_neg.ravel()]):
-            fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
-
-    randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
-
-    if randomIdx.shape[0] < nTrial_noBrainer:
-        extendIdx = np.random.choice(len(fractalCombination),
-                                     nTrial_noBrainer - randomIdx.shape[0],
-                                     replace=True)
-        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
-
-    trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
-                          index=np.arange(nTrial_noBrainer))
-
-    for nn, ri in enumerate(randomIdx[:nTrial_noBrainer]):
-        pair = fractalCombination[ri, :].copy()
-
-        if np.random.rand() < 0.5:
-            trials.iloc[nn, :] = [pair[0], pair[1],
-                                  fractalGammaDict[pair[0]],
-                                  fractalGammaDict[pair[1]]]
-        else:
-            trials.iloc[nn, :] = [pair[1], pair[0],
-                                  fractalGammaDict[pair[1]],
-                                  fractalGammaDict[pair[0]]]
+    trials = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
 
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
