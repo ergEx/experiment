@@ -1,5 +1,6 @@
 # %%
 from mimetypes import init
+from multiprocessing.resource_sharer import stop
 import re
 import os
 from glob import glob
@@ -19,7 +20,7 @@ def nat_sorted(ls):
 
 
 
-def run_slideshow(win, expInfo, path=SLIDE_PATH):
+def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None, win_size=[800, 600]):
 
     responseKeys = ['responseButton', 'responseLeft', 'responseRight']
 
@@ -40,11 +41,10 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH):
                                     height=12, ori=0.0, color='white')
     initialization.setAutoDraw(True)
     win.flip()
-
     images = []
     for im in slides:
         images.append(visual.ImageStim(win=win, opacity=1,
-                                        image=im, size=(500, 500)))
+                                        image=im, units='pix', size=win_size))
         images[-1].setAutoDraw(False)
 
 
@@ -54,9 +54,14 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH):
     images[0].setAutoDraw(True)
     win.flip()
 
-    min_slides = 0
-    max_slides = len(images) - 1
+    min_slides = start_slide
+    if stop_slide is None:
+        max_slides = len(images) - 1
+    else:
+        max_slides = stop_slide
+
     sl_counter = 0
+    allow_skip = False
 
     while slideShow:
 
@@ -81,6 +86,8 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH):
                     images[sl_counter].setAutoDraw(True)
                     win.flip()
 
-                elif 'space' in responseMapping[resp]:
+                elif ('space' in responseMapping[resp]) and allow_skip:
                     slideShow = False
 
+        if sl_counter == max_slides:
+            allow_skip = True
