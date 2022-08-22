@@ -82,7 +82,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
 
 
 def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None):
+               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True):
     """Runs the passive part of the experiment.
 
     Args:
@@ -330,7 +330,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                     Reminder.setAutoDraw(True)
                     win.flip()
 
-            if responseWindow <= Logger.getTime():
+            if responseWindow <= Logger.getTime() and not waitForSpace:
                 Logger.logEvent({'event_type': 'ResponseTimeOut'})
                 startResp = False
                 RT = None
@@ -346,8 +346,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                 # Increase spin duration due to fast response
                 spinDuration = pcfg.wheelSpinTime + max(pcfg.timeToReminder - RT, 0)
             elif reminderPresent:
-                # Reduce spin duraion by response lateness.
-                spinDuration = pcfg.wheelSpinTime - (RT - pcfg.timeToReminder) # This should be between 0 and 1
+                # Reduce spin duration by response lateness.
+                if (pcfg.wheelSpinTime - (RT - pcfg.timeToReminder)) > 0:
+                    spinDuration = pcfg.wheelSpinTime - (RT - pcfg.timeToReminder) # This should be between 0 and 1
+                else:
+                     spinDuration = 1 # if response took to long
         else:
             # Reduce spin duration by (right now) 1 s.
             spinDuration = pcfg.wheelSpinTime - (pcfg.timeResponseWindow - pcfg.timeToReminder)
