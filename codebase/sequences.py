@@ -32,13 +32,14 @@ def passive_sequence_one_gamble(lambd:float,
     return fractals, gamma_array, part_sum, part_wealth_sum,gamma1_list, gamma2_list, fractal_dict
 
 def passive_sequence_two_gambles(lambd:float,
-                        c:float,
-                        assymetry_array:np.array,
+                        c_dict:dict,
+                        assymetry_dict:dict,
                         n_trials:int,
                         n_fractals:int,
-                        x_0:int=con.X0):
-
+                        x_0:int):
+    c = c_dict[lambd]
     gamma_range = np.array(np.linspace(-c, c, n_fractals))
+    assymetry_array = assymetry_dict[lambd]
     gamma_range = np.sum([gamma_range,assymetry_array], axis=0)
     fractal_dict = {ii : n for n, ii in enumerate(gamma_range)}
     gamma_0     = isoelastic_utility(x_0, lambd)
@@ -126,11 +127,10 @@ def active_sequence_two_gambles(n_trials:int,
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
 def generate_dataframes(lambd:float,
-                        x_0:int,
-                        n_trials_active:int,
-                        n_trials_passive:int,
                         mode:int,
-                        speed_up:float,
+                        n_trials_active:int=con.n_trials_active,
+                        n_trials_passive:int=con.n_trials_passive,
+                        speed_up:float=1,
                         ):
 
     if mode == 1: #One gamble version
@@ -138,7 +138,7 @@ def generate_dataframes(lambd:float,
         p_seq_part_sum, p_seq_part_wealth_sum,
         gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
                                                                     n_trials=n_trials_passive,
-                                                                    x_0=x_0,
+                                                                    x_0=con.x_0,
                                                                     indifference_etas=con.indifference_etas,
                                                                     indifference_x_0=con.indiffrence_x_0,
                                                                     indifference_dx2=con.indifference_dx2)
@@ -153,11 +153,11 @@ def generate_dataframes(lambd:float,
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                            c=con.c,
-                                                                            assymetry_array=con.assymetry_array,
-                                                                            n_trials=n_trials_passive,
-                                                                            n_fractals=con.n_fractals,
-                                                                            x_0=con.X0)
+                                                                    c=con.c,
+                                                                    assymetry_array=con.assymetry_array,
+                                                                    n_trials=n_trials_passive,
+                                                                    n_fractals=con.n_fractals,
+                                                                    x_0=con.x_0)
 
 
         (a_seq_fractals, a_seq_gamma,
@@ -216,7 +216,7 @@ def generate_dataframes(lambd:float,
                                     axis=1).sum()
 
     meta = ("Passive: \n______________________ \n"
-            + f"Sequence generated using passive version {passive_mode} \n"
+            + f"Sequence generated using version {mode} \n"
             + f"Trials: {n_trials_passive}\nmin: {min(p_seq_part_wealth_sum)}\nmax: {max(p_seq_part_wealth_sum)}"
             + "\n\n\nActive: \n______________________ \n"
             + f"n. trials: {n_trials_active} \n"

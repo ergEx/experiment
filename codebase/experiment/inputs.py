@@ -4,16 +4,14 @@ import sys
 import numpy as np
 import pandas as pd
 
-from .. import constants as con
 from ..file_handler import make_filename
 from ..sequences import generate_dataframes
 
 
-def run(lambd:float, x_0:int, n_trials_passive:int, n_trials_active:int,
+def run(lambd:float, n_trials_passive:int, n_trials_active:int,
         save_path:str, mode:int = 1, speed_up:int = 1):
 
     p_df, a_df, meta = generate_dataframes(lambd=lambd,
-                                           x_0=x_0,
                                            n_trials_active=n_trials_active,
                                            n_trials_passive=n_trials_passive,
                                            mode=mode,
@@ -53,7 +51,6 @@ def run_with_dict(expInfo):
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
         run(lambd=expInfo['eta'],
-            x_0=con.X0,
             n_trials_passive=expInfo['n_trials_passive'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
