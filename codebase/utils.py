@@ -198,6 +198,24 @@ def create_gambles_one_gamble(gamma1_list, gamma2_list):
 
     return np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
+def create_gambles_two_gambles(gamma_range:np.array):
+    """Create list of all gambles.
+    Args:
+        gamma_range (array):
+            List of growth rates
+
+    Returns:
+        List of arrays. Each gamble is represented as (2, ) array with growth
+        rates. For n fractals, n(n+1)/2 gambles are created. Order of growth
+        rates doesn't matter since probabilities are assigned equally to both
+        wealth changes.
+    """
+    return [
+        np.array([gamma_1, gamma_2])
+        for gamma_1, gamma_2
+        in itertools.combinations_with_replacement(gamma_range, 2)
+    ]
+
 
 def create_gamble_pairs_one_gamble(gambles:np.array):
     """Pair each gamble with the null-gamble
@@ -215,6 +233,21 @@ def create_gamble_pairs_one_gamble(gambles:np.array):
         for gamble_1 in gambles
         ]
 
+def create_gamble_pairs_two_gambles(gambles):
+    """Create list of all unique gamble pairs.
+    Args:
+        gambles (list of arrays):
+            List of gambles.
+    Returns:
+        List of arrays. Each gamble pair is represented as (2, 2) array with
+        four growth rates for both gambles. Rows corresponds to gambles, columns
+        correspond to individual growth rates within a gamble. All pairs contain
+        two unique gambles. For n gambles, n(n-1)/2 gamble pairs are created.
+    """
+    return [
+        np.concatenate((gamble_1[np.newaxis], gamble_2[np.newaxis]), axis=0)
+        for gamble_1, gamble_2 in itertools.combinations(gambles, 2)
+        ]
 
 def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
     """Generates randomized trial order allowing for paralell simulations.
@@ -256,3 +289,23 @@ def create_experiment(gamble_pairs:np.array):
         gamble pair, third dimension correspond to subsequent trials.
     """
     return np.stack(gamble_pairs, axis=2)
+
+def is_g_deterministic(gamble):
+    """Decision if gamble is deterministic, i.e., composed of two same fractals.
+    Args:
+        gamble (np.array):
+            Gamble array of shape (2, 0).
+    Returns:
+        Boolean decision value.
+    """
+    return gamble[0] == gamble[1]
+
+def is_nobrainer(gamble_pair):
+    """Decision if a gamble pair is nobrainer."""
+    return len(set(gamble_pair[0]).intersection(set(gamble_pair[1]))) != 0
+
+
+def is_statewise_dominated(gamble_pair):
+    """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
+    return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
+           np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )

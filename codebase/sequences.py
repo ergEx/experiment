@@ -5,11 +5,13 @@ import pandas as pd
 
 from . import constants as con
 from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
-    create_gambles_one_gamble, create_trial_order, inverse_isoelastic_utility, isoelastic_utility, shuffle_along_axis
+    create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
+    inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
+    shuffle_along_axis
 
 
 def passive_sequence_one_gamble(lambd:float,
-                        repeats:int,
+                        n_trials:int,
                         x_0:int,
                         indifference_etas:np.array,
                         indifference_x_0:np.array,
@@ -22,7 +24,6 @@ def passive_sequence_one_gamble(lambd:float,
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
-    n_trials = n_fractals * repeats
     fractals = np.random.randint(n_fractals, size=n_trials)
     gamma_array = [gamma_range[fractal] for fractal in fractals]
     part_sum =  gamma_0 + np.cumsum(gamma_array)
@@ -30,6 +31,24 @@ def passive_sequence_one_gamble(lambd:float,
 
     return fractals, gamma_array, part_sum, part_wealth_sum,gamma1_list, gamma2_list, fractal_dict
 
+def passive_sequence_two_gambles(lambd:float,
+                        c:float,
+                        assymetry_array:np.array,
+                        n_trials:int,
+                        n_fractals:int,
+                        x_0:int=con.X0):
+
+    gamma_range = np.array(np.linspace(-c, c, n_fractals))
+    gamma_range = np.sum([gamma_range,assymetry_array], axis=0)
+    fractal_dict = {ii : n for n, ii in enumerate(gamma_range)}
+    gamma_0     = isoelastic_utility(x_0, lambd)
+
+    fractals = np.random.randint(n_fractals, size=n_trials)
+    gamma_array = gamma_range[fractals]
+    part_sum =  gamma_0 + np.cumsum(gamma_range[fractals])
+    part_wealth_sum = inverse_isoelastic_utility(part_sum,lambd)
+
+    return fractals, gamma_array, part_sum, part_wealth_sum, fractal_dict, gamma_range
 
 def active_sequence_one_gamble(n_trials:int,
                     gamma1_list:np.array,
@@ -65,7 +84,46 @@ def active_sequence_one_gamble(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
+def active_sequence_two_gambles(n_trials:int,
+                    gamma_range:np.array,
+                    fractal_dict:dict,
+                    n_simulations:int=1):
 
+    gambles = create_gambles_two_gambles(gamma_range)
+    gambles = [
+        gamble for gamble in gambles
+        if not is_g_deterministic(gamble)
+        ]
+    gamble_pairs = create_gamble_pairs_two_gambles(gambles)
+    gamble_pairs = [
+        gamble_pair for gamble_pair in gamble_pairs
+        if not is_statewise_dominated(gamble_pair)
+        and not is_nobrainer(gamble_pair)
+        ]
+    experiment  = create_experiment(gamble_pairs)
+    trial_order = create_trial_order(
+            n_simulations=n_simulations,
+            n_gamble_pairs=experiment.shape[-1],
+            n_trials=n_trials
+        )
+
+    gamma_array = np.empty([n_trials, 4], dtype=float)
+    fractals =  np.empty([n_trials, 4], dtype=float)
+    coin_toss = shuffle_along_axis(np.concatenate((np.zeros([math.ceil(n_trials/2), 1], dtype=int),
+                                                   np.ones([math.ceil(n_trials/2), 1], dtype=int)),
+                                                   axis=0)[: n_trials], 0)
+    timings = np.empty([n_trials, 3], dtype=float)
+    timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
+    timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
+    timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
+    timings = shuffle_along_axis(timings, 0)
+
+    for ii, trial in enumerate(trial_order):
+        tmp = experiment[:,:,trial].flatten()
+        fractals[ii, :] =  [fractal_dict[g] for g in tmp]
+        gamma_array[ii, :] = tmp
+
+    return fractals, gamma_array, coin_toss, timings, fractal_dict
 
 def generate_dataframes(lambd:float,
                         x_0:int,
@@ -79,7 +137,7 @@ def generate_dataframes(lambd:float,
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
-                                                                    repeats=n_trials_passive,
+                                                                    n_trials=n_trials_passive,
                                                                     x_0=x_0,
                                                                     indifference_etas=con.indifference_etas,
                                                                     indifference_x_0=con.indiffrence_x_0,
@@ -92,7 +150,20 @@ def generate_dataframes(lambd:float,
                                                          fractal_dict=fractal_dict)
 
     elif mode == 2: #Gamble pair version
-        raise ValueError("Not implemented yet")
+        (p_seq_fractals, p_seq_gamma,
+        p_seq_part_sum, p_seq_part_wealth_sum,
+        fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
+                                                                            c=con.c,
+                                                                            assymetry_array=con.assymetry_array,
+                                                                            n_trials=n_trials_passive,
+                                                                            n_fractals=con.n_fractals,
+                                                                            x_0=con.X0)
+
+
+        (a_seq_fractals, a_seq_gamma,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles(n_trials=n_trials_active,
+                                                                        gamma_range=gamma_range,
+                                                                        fractal_dict=fractal_dict)
     else:
         raise ValueError("Mode has to be 1 or 2")
 

@@ -10,13 +10,13 @@ from ..sequences import generate_dataframes
 
 
 def run(lambd:float, x_0:int, n_trials_passive:int, n_trials_active:int,
-        save_path:str, passive_mode:int = 1, speed_up:int = 1):
+        save_path:str, mode:int = 1, speed_up:int = 1):
 
     p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                            x_0=x_0,
                                            n_trials_active=n_trials_active,
                                            n_trials_passive=n_trials_passive,
-                                           passive_mode=passive_mode,
+                                           mode=mode,
                                            speed_up=speed_up
                                            )
 
