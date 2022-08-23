@@ -237,7 +237,7 @@ def create_gamble_pairs_one_gamble(gambles:np.array) -> np.ndarray:
         ]
 
 
-def create_gamble_pairs_two_gambles(gambles:np.arrray) -> np.ndarray:
+def create_gamble_pairs_two_gambles(gambles:np.array) -> np.ndarray:
     """Create list of all unique gamble pairs.
     Args:
         gambles (list of arrays):

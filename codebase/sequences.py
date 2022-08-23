@@ -1,10 +1,9 @@
 import math
 
+import constants as con
 import numpy as np
 import pandas as pd
-
-from . import constants as con
-from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
+from utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
     create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
     inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
     shuffle_along_axis
@@ -140,7 +139,7 @@ def generate_dataframes(lambd:float,
                                                                     n_trials=n_trials_passive,
                                                                     x_0=con.x_0,
                                                                     indifference_etas=con.indifference_etas,
-                                                                    indifference_x_0=con.indiffrence_x_0,
+                                                                    indifference_x_0=con.indifference_x_0,
                                                                     indifference_dx2=con.indifference_dx2)
 
         (a_seq_fractals, a_seq_gamma,
@@ -153,8 +152,8 @@ def generate_dataframes(lambd:float,
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                    c=con.c,
-                                                                    assymetry_array=con.assymetry_array,
+                                                                    c_dict=con.c_dict,
+                                                                    assymetry_dict=con.assymetry_dict,
                                                                     n_trials=n_trials_passive,
                                                                     n_fractals=con.n_fractals,
                                                                     x_0=con.x_0)
@@ -166,7 +165,6 @@ def generate_dataframes(lambd:float,
                                                                         fractal_dict=fractal_dict)
     else:
         raise ValueError("Mode has to be 1 or 2")
-
 
 
     n_trials_passive = len(p_seq_fractals)
