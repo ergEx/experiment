@@ -1,6 +1,8 @@
-import numpy as np
-import math
 import itertools
+import math
+
+import numpy as np
+
 
 class DotDict(dict):
     """Small helper class, so attributed of dictionary can be accessed using
@@ -173,7 +175,7 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
     gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
 
     gamma_list = gamma1_list + gamma2_list + [0]
-    print(gamma_list)
+    #print(gamma_list)
 
     fractal_dict = {}
     for i, gamma in enumerate(gamma_list):
@@ -181,7 +183,7 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
 
     return gamma_list, gamma1_list, gamma2_list, fractal_dict
 
-def create_gambles(gamma1_list, gamma2_list):
+def create_gambles_one_gamble(gamma1_list, gamma2_list):
     """Create list of all gambles.
 
     Args:
@@ -197,7 +199,7 @@ def create_gambles(gamma1_list, gamma2_list):
     return np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
 
-def create_gamble_pairs(gambles:np.array):
+def create_gamble_pairs_one_gamble(gambles:np.array):
     """Pair each gamble with the null-gamble
 
     Args:
