@@ -94,6 +94,7 @@ def active_sequence_two_gambles(n_trials:int,
         gamble for gamble in gambles
         if not is_g_deterministic(gamble)
         ]
+    gambles = shuffle_along_axis(np.array(gambles),1)
     gamble_pairs = create_gamble_pairs_two_gambles(gambles)
     gamble_pairs = [
         gamble_pair for gamble_pair in gamble_pairs
@@ -199,10 +200,10 @@ def generate_dataframes(lambd:float,
                       a_df_cointoss,a_df_timings], axis=1)
 
     ## Meta Info written here
-    l_avg_u = a_df_gamma[['gamma_left_up']].sum(axis=0)
-    l_avg_l = a_df_gamma[['gamma_left_down']].sum(axis=0)
-    r_avg_u = a_df_gamma[['gamma_right_up']].sum(axis=0)
-    r_avg_l = a_df_gamma[['gamma_right_down']].sum(axis=0)
+    l_avg_u = a_df_gamma[['gamma_left_up']].mean(axis=0)
+    l_avg_l = a_df_gamma[['gamma_left_down']].mean(axis=0)
+    r_avg_u = a_df_gamma[['gamma_right_up']].mean(axis=0)
+    r_avg_l = a_df_gamma[['gamma_right_down']].mean(axis=0)
 
     optimal_path = (a_df_gamma[['gamma_left_up', 'gamma_left_down']].mean(1) <
                     a_df_gamma[['gamma_right_up', 'gamma_right_up']].mean(1)) * 1 # to cast
