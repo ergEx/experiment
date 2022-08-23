@@ -78,7 +78,7 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
     return x
 
 
-def wealth_change(x:np.array, gamma:np.array, lambd:float):
+def wealth_change(x:np.array, gamma:np.array, lambd:float) -> np.ndarray:
     """Apply isoelastic wealth change.
 
     Args:
@@ -102,7 +102,7 @@ def wealth_change(x:np.array, gamma:np.array, lambd:float):
     return inverse_isoelastic_utility(isoelastic_utility(x, lambd) + gamma, lambd)
 
 
-def shuffle_along_axis(a:np.array, axis:int):
+def shuffle_along_axis(a:np.array, axis:int) -> np.ndarray:
     """Randomly shuffle multidimentional array along specified axis.
 
     Args:
@@ -116,7 +116,7 @@ def shuffle_along_axis(a:np.array, axis:int):
     return np.take_along_axis(a, idx, axis=axis)
 
 
-def random_reorder_axis(a:np.array, axis:int):
+def random_reorder_axis(a:np.array, axis:int) -> np.ndarray:
     """Shuffle along axis, keeping all other axis intact.
 
     Args:
@@ -131,7 +131,7 @@ def random_reorder_axis(a:np.array, axis:int):
     return np.take(a, idx, axis=axis)
 
 
-def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
+def calculate_dx1(indifference_eta:float, dx2:int, x_0:int) -> float:
     """Calculate change in wealth that corresponds to given indifference-eta
        given dx2 and x.
 
@@ -149,6 +149,7 @@ def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
         return round(math.exp(2 * math.log(x_0) - math.log(x_0 + dx2)) - x_0)
     else:
         return round((2 * x_0 ** (1 - indifference_eta) - (x_0 + dx2) ** (1 - indifference_eta)) ** (1 / (1 - indifference_eta)) - x_0)
+
 
 def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
     """Create list of all gambles.
@@ -183,7 +184,8 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
 
     return gamma_list, gamma1_list, gamma2_list, fractal_dict
 
-def create_gambles_one_gamble(gamma1_list, gamma2_list):
+
+def create_gambles_one_gamble(gamma1_list:np.array, gamma2_list:np.array) -> np.ndarray:
     """Create list of all gambles.
 
     Args:
@@ -198,7 +200,8 @@ def create_gambles_one_gamble(gamma1_list, gamma2_list):
 
     return np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
-def create_gambles_two_gambles(gamma_range:np.array):
+
+def create_gambles_two_gambles(gamma_range:np.array) -> np.ndarray:
     """Create list of all gambles.
     Args:
         gamma_range (array):
@@ -217,7 +220,7 @@ def create_gambles_two_gambles(gamma_range:np.array):
     ]
 
 
-def create_gamble_pairs_one_gamble(gambles:np.array):
+def create_gamble_pairs_one_gamble(gambles:np.array) -> np.ndarray:
     """Pair each gamble with the null-gamble
 
     Args:
@@ -233,7 +236,8 @@ def create_gamble_pairs_one_gamble(gambles:np.array):
         for gamble_1 in gambles
         ]
 
-def create_gamble_pairs_two_gambles(gambles):
+
+def create_gamble_pairs_two_gambles(gambles:np.arrray) -> np.ndarray:
     """Create list of all unique gamble pairs.
     Args:
         gambles (list of arrays):
@@ -249,7 +253,8 @@ def create_gamble_pairs_two_gambles(gambles):
         for gamble_1, gamble_2 in itertools.combinations(gambles, 2)
         ]
 
-def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
+
+def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int) -> np.array:
     """Generates randomized trial order allowing for paralell simulations.
 
     Args:
@@ -277,7 +282,7 @@ def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
     return trial_order
 
 
-def create_experiment(gamble_pairs:np.array):
+def create_experiment(gamble_pairs:np.array) -> np.ndarray:
     """Creates experiment array.
 
     Args:
@@ -290,7 +295,8 @@ def create_experiment(gamble_pairs:np.array):
     """
     return np.stack(gamble_pairs, axis=2)
 
-def is_g_deterministic(gamble):
+
+def is_g_deterministic(gamble:np.array) -> bool:
     """Decision if gamble is deterministic, i.e., composed of two same fractals.
     Args:
         gamble (np.array):
@@ -300,12 +306,13 @@ def is_g_deterministic(gamble):
     """
     return gamble[0] == gamble[1]
 
-def is_nobrainer(gamble_pair):
+
+def is_nobrainer(gamble_pair:np.array) -> bool:
     """Decision if a gamble pair is nobrainer."""
     return len(set(gamble_pair[0]).intersection(set(gamble_pair[1]))) != 0
 
 
-def is_statewise_dominated(gamble_pair):
+def is_statewise_dominated(gamble_pair:np.array) -> bool:
     """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
     return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
            np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )
