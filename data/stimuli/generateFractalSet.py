@@ -7,12 +7,14 @@ def main():
     # Constants
     NFRACTALS = 9
     RANDOMSEED = 2022
-    ETAS = ['-1.0', '-0.5', '0.0', '0.5', '1.0']
+    RANDOMSEED2 = 2023
+    SESSIONS = ['1', '2' , '3', '4', '5']
 
     # Create list of fractal names
     fractal_names = [f'F{i:03d}' for i in range(50)]
     # Create random state generator using the seed
     RS = np.random.RandomState(RANDOMSEED)
+    RS2 = np.random.RandomState(RANDOMSEED2)
 
     # Create dictionary
     fractal_keys = ([f'{i}' for i in range(1000)] +
@@ -22,10 +24,11 @@ def main():
     fractal_set = {fk : {} for fk in fractal_keys}
 
     for fk in fractal_keys:
-        fractals = RS.choice(fractal_names, len(ETAS) * NFRACTALS, replace=False)
+        fractals = RS.choice(fractal_names, len(SESSIONS) * NFRACTALS, replace=False)
+        lambds = np.hstack([RS.choice(['0.0', '1.0'], 2, replace=False) for _ in range(3)])
 
-        for n, eta in enumerate(ETAS):
-            fractal_set[fk][eta] = list(fractals[n * NFRACTALS : (n + 1) * NFRACTALS])
+        for n, (sess, lmb) in enumerate(zip(SESSIONS, lambds)):
+            fractal_set[fk][sess] = [lmb, list(fractals[n * NFRACTALS : (n + 1) * NFRACTALS])]
 
     with open(f"stimuli{os.sep}fractal_set_nf{NFRACTALS}.json", "w") as outfile:
         json.dump(fractal_set, outfile)

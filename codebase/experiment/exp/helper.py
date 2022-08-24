@@ -240,7 +240,7 @@ class DebugTimer:
         pass
 
 
-def assign_fractals(participant_id:str, eta:Union[str, float, int],
+def assign_fractals(participant_id:str, session:Union[str, float, int],
                     n_fractals:int=9, path='data/stimuli/') -> Dict:
     """Function to create fractals for a given participant ID, assigns a unique
     set of fractals to each participant, which can be looked up for the given
@@ -248,7 +248,7 @@ def assign_fractals(participant_id:str, eta:Union[str, float, int],
 
     Args:
         participant_id (str): [description]
-        eta (List[float], optional): [description]. Defaults to [-1.0, 0.0, 0.5, 1.0].
+        session (List[float], optional): [description]. Defaults to [-1.0, 0.0, 0.5, 1.0].
         n_fractals (int, optional): [description]. Defaults to 9.
 
     Returns:
@@ -261,15 +261,15 @@ def assign_fractals(participant_id:str, eta:Union[str, float, int],
     id_entry = re.search('\d{1,3}$|[a-z]{1}$', participant_id)
     id_entry = id_entry.group(0)
 
-    # Make eta a string, if numeric
-    if isinstance(eta, (int, float)):
-        eta = f'{eta:2.1f}'
+    # Make session a string, if numeric
+    if isinstance(session, (int)):
+        session = f'{session:d}'
 
-    # Check if eta is valid:
-    if eta not in ['-1.0', '-0.5', '0.0', '0.5', '1.0']:
-        raise ValueError("Eta has to be in '-1.0', '-0.5', '0.0', '0.5', '1.0'")
+    # Check if session is valid:
+    if session not in ['1', '2', '3', '4', '5']:
+        raise ValueError("session has to be in [1-5]")
 
-    return fractal_dict[id_entry][eta]
+    return fractal_dict[id_entry][session]
 
 
 def format_wealth(wealth:float, fstring:str = "7,.0f") -> str:
