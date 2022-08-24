@@ -60,7 +60,7 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
     else:
         max_slides = stop_slide
 
-    sl_counter = 0
+    sl_counter = min_slides
     allow_skip = False
 
     while slideShow:

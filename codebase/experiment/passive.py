@@ -470,15 +470,15 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     ###
 
     if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        Instructions.setText(f'Please wait to continue\n with the second part.'+
-                              'Please choose the fractal you think is better for your wealth.')
+        Instructions.setText(f'Please wait to continue\n with the second part.\n'+
+                              'Choose the fractal you think is better for your wealth.')
         Instructions.setAutoDraw(True)
         win.flip()
         Wait.wait(2)
 
     elif expInfo['simulateMR'] == 'None':
-        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\n with the second part.' +
-                              'Please choose the fractal you think is better for your wealth.')
+        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\nwith the second part.\n' +
+                              'Choose the fractal you think is better for your wealth.')
         Instructions.setAutoDraw(True)
         win.flip()
         startResp = True
