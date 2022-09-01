@@ -112,10 +112,10 @@ def continue_from_previous(filename:str, wealth:float,
     trial = 0
 
     # Extract run no from filename:
-    fpath, sub, eta, task, run = extract_from_fname(filename)
+    fpath, sub, ses, eta, task, run = extract_from_fname(filename)
 
     if int(run) > 1:
-        fname = make_filename(fpath, sub, eta, task, run - 1, add_dir=False)
+        fname = make_filename(fpath, sub, ses, eta, task, run - 1, add_dir=False)
 
         if os.path.exists(fname):
             try:
@@ -151,7 +151,7 @@ def continue_from_previous(filename:str, wealth:float,
     return wealth, trial, mode
 
 
-def load_calibration(path:str, participant:str, session:str) -> Tuple[float, float]:
+def load_calibration(path:str, participant:str, session:str, lambd:str) -> Tuple[float, float]:
     """Load calibration file for given participant.
 
     Args:
@@ -162,7 +162,7 @@ def load_calibration(path:str, participant:str, session:str) -> Tuple[float, flo
     Returns:
         Tuple[float, float]: Tuple of x and y coordinates. Offset in calibration units..
     """
-    filename = make_filename(path, participant, session, 'calibration', 1)
+    filename = make_filename(path, participant, session, lambd, 'calibration', 1)
 
     if os.path.exists(filename):
         coordinates = pd.read_csv(filename, sep='\t')
@@ -240,7 +240,7 @@ class DebugTimer:
         pass
 
 
-def assign_fractals(participant_id:str, eta:Union[str, float, int],
+def assign_fractals(participant_id:str, session:Union[str, float, int],
                     n_fractals:int=9, path='data/stimuli/') -> Dict:
     """Function to create fractals for a given participant ID, assigns a unique
     set of fractals to each participant, which can be looked up for the given
@@ -248,7 +248,7 @@ def assign_fractals(participant_id:str, eta:Union[str, float, int],
 
     Args:
         participant_id (str): [description]
-        eta (List[float], optional): [description]. Defaults to [-1.0, 0.0, 0.5, 1.0].
+        session (List[float], optional): [description]. Defaults to [-1.0, 0.0, 0.5, 1.0].
         n_fractals (int, optional): [description]. Defaults to 9.
 
     Returns:
@@ -261,15 +261,15 @@ def assign_fractals(participant_id:str, eta:Union[str, float, int],
     id_entry = re.search('\d{1,3}$|[a-z]{1}$', participant_id)
     id_entry = id_entry.group(0)
 
-    # Make eta a string, if numeric
-    if isinstance(eta, (int, float)):
-        eta = f'{eta:2.1f}'
+    # Make session a string, if numeric
+    if isinstance(session, (int)):
+        session = f'{session:d}'
 
-    # Check if eta is valid:
-    if eta not in ['-1.0', '-0.5', '0.0', '0.5', '1.0']:
-        raise ValueError("Eta has to be in '-1.0', '-0.5', '0.0', '0.5', '1.0'")
+    # Check if session is valid:
+    if session not in ['1', '2', '3', '4', '5']:
+        raise ValueError("session has to be in [1-5]")
 
-    return fractal_dict[id_entry][eta]
+    return fractal_dict[id_entry][session]
 
 
 def format_wealth(wealth:float, fstring:str = "7,.0f") -> str:
@@ -283,3 +283,44 @@ def format_wealth(wealth:float, fstring:str = "7,.0f") -> str:
         string: Wealth formatted according to fstring
     """
     return format(wealth, fstring)
+
+
+def make_no_brainers(trial_df, current_trial, ntrials):
+    import itertools
+    from ... import constants as con
+
+    trial_df = trial_df.iloc[:current_trial, :].copy()
+    trial_df = trial_df[['fractal', 'gamma']]
+    unqFractals = np.unique(trial_df.fractal)
+    unqFractals= unqFractals[unqFractals < con.N_FRACTALS]
+    fractalCombination = list(itertools.combinations(unqFractals, 2))
+    fractalCombination = np.array(fractalCombination)
+    fractalGammaDict = {}
+
+    for kk in unqFractals.ravel():
+            fractalGammaDict[kk] = trial_df.query('fractal == @kk')['gamma'].values[0].item()
+
+    randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
+
+    if randomIdx.shape[0] < ntrials:
+        extendIdx = np.random.choice(len(fractalCombination),
+                                     ntrials - randomIdx.shape[0],
+                                     replace=True)
+        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
+
+    trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
+                          index=np.arange(ntrials))
+
+    for nn, ri in enumerate(randomIdx[:ntrials]):
+        pair = fractalCombination[ri, :].copy()
+
+        if np.random.rand() < 0.5:
+            trials.iloc[nn, :] = [pair[0], pair[1],
+                                  fractalGammaDict[pair[0]],
+                                  fractalGammaDict[pair[1]]]
+        else:
+            trials.iloc[nn, :] = [pair[1], pair[0],
+                                  fractalGammaDict[pair[1]],
+                                  fractalGammaDict[pair[0]]]
+
+    return trials

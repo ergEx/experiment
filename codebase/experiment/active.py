@@ -37,7 +37,8 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
     if spawnGui:
         expInfo = gui_update_dict(expInfo, 'ergEx_Active')
 
-    offset = load_calibration(filePath, expInfo['participant'], expInfo['eta'])
+    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], 
+                              expInfo['eta'])
 
     # Buttons to str:
     expInfo['responseLeft'] = str(expInfo['responseLeft'])
@@ -47,14 +48,14 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
     responseMapping = {expInfo['responseLeft'] : 'left',
                     expInfo['responseRight']: 'right'}
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
                                                     expInfo['overwrite'])
 
     # Load trial file:
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
                                   'active', extension='input.tsv')
 
 
@@ -105,10 +106,10 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     responseMapping = expInfo['responseMapping']
 
     # Rebuild paths
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
                                   'active', extension='input.tsv')
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
 
     # Currently testing if the supposed ones are better.

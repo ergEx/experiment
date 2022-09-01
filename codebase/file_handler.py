@@ -5,7 +5,7 @@ import os
 import re
 import numpy as np
 from typing import List, Union, Tuple
-
+from .constants import OUTPUT_EXTENSION
 
 def lambd_to_bids(lambd:float) -> str:
     """Transforms lambda/eta into bids format (replacing "-" with "m" and
@@ -105,7 +105,7 @@ def check_file_parts(fparts:List):
             raise ValueError( f'{obj} cannot contain ".", "-" or "_"')
 
 
-def make_bids_base(sub:str, lambd:str, task:str, run:int = None) -> str:
+def make_bids_base(sub:str, ses:str, lambd:str, task:str, run:int = None) -> str:
     """Creates BIDS filename.
 
     Args:
@@ -119,7 +119,7 @@ def make_bids_base(sub:str, lambd:str, task:str, run:int = None) -> str:
         ValueError: If run is not an integer (or compatible with integer).
 
     Returns:
-        str: String in form: sub-XXX_ses-lambdXXX_task-XXX(_run-X), where run is
+        str: String in form: sub-XXX_ses-XXX_task-XXX_acq-lambdXXX_(_run-X), where run is
             optional.
     """
 
@@ -134,15 +134,15 @@ def make_bids_base(sub:str, lambd:str, task:str, run:int = None) -> str:
         except:
             raise ValueError('Run has to be integer compatible and less than 10!')
 
-    check_file_parts([sub, lambd, task, run])
+    check_file_parts([sub, ses, lambd, task, run])
 
     if run is not None:
-        return f'sub-{sub}_ses-lambd{lambd}_task-{task}_run-{int(run)}'
+        return f'sub-{sub}_ses-{ses}_task-{task}_acq-lambd{lambd}_run-{int(run)}'
     else:
-        return f'sub-{sub}_ses-lambd{lambd}_task-{task}'
+        return f'sub-{sub}_ses-{ses}_task-{task}_acq-lambd{lambd}'
 
 
-def make_bids_dir(sub:str, lambd:Union[str, float]) -> str:
+def make_bids_dir(sub:str, ses:Union[str, float]) -> str:
     """Returns dictionary structure in BIDS format.
 
     Args:
@@ -150,19 +150,17 @@ def make_bids_dir(sub:str, lambd:Union[str, float]) -> str:
         lambd (Union[str, float]): Dynamic.
 
     Returns:
-        str: Directory name in form /sub-XXX/ses-lambdXXX
+        str: Directory name in form /sub-XXX/ses-sesNO
     """
 
-    if isinstance(lambd, float):
-        lambd = lambd_to_bids(lambd)
+    check_file_parts([sub, ses])
 
-    check_file_parts([sub, lambd])
-
-    return os.path.join(f'sub-{sub}', f'ses-lambd{lambd}')
+    return os.path.join(f'sub-{sub}', f'ses-{ses}')
 
 
-def make_filename(file_path:str, sub:str, lambd:float, task:str, run:int = None,
-                  extension:str = 'events.tsv', add_dir:bool = True) -> str:
+def make_filename(file_path:str, sub:str, ses:Union[str, int], lambd:float,
+                  task:str, run:int = None, extension:str =OUTPUT_EXTENSION,
+                  add_dir:bool = True) -> str:
     """Creates whole filename, including directory.
 
     Args:
@@ -179,21 +177,21 @@ def make_filename(file_path:str, sub:str, lambd:float, task:str, run:int = None,
     """
     lambd = lambd_to_bids(lambd)
 
-    check_file_parts([sub, lambd, task, run])
+    check_file_parts([sub, ses, lambd, task, run])
 
     if add_dir:
-        dirs = make_bids_dir(sub, lambd)
+        dirs = make_bids_dir(sub, ses)
     else:
         dirs = ''
 
-    fname = make_bids_base(sub, lambd, task, run) + '_' + extension
+    fname = make_bids_base(sub, ses, lambd, task, run) + '_' + extension
 
     fullname = os.path.join(file_path, dirs, fname)
 
     return fullname
 
 
-def extract_from_fname(filename:str) -> Tuple[str, str, float, str, int]:
+def extract_from_fname(filename:str) -> Tuple[str, str, str, float, str, int]:
     """Extract parts from BIDS filename.
 
     Args:
@@ -203,12 +201,12 @@ def extract_from_fname(filename:str) -> Tuple[str, str, float, str, int]:
         Tuple[str, str, float, str, int]: Returns: base path, subject ID, dynamic,
         task, and run.
     """
-
     run = int(re.search('run-\d', filename)[0][-1])
-    lambda_regex = re.compile(r'ses-lambd[^_\/\\]{3,4}')
+    ses = re.search(r'ses-[^_\/\\]{1,}', filename)[0].split('-')[-1]
+    lambda_regex = re.compile(r'acq-lambd[^_\/\\]{3,4}')
     lambd = bids_to_lambd(re.search(lambda_regex, filename)[0][9:])
-    sub = re.search(r'sub-[^_]{1,}', filename)[0].split('-')[-1]
+    sub = re.search(r'sub-[^_\/\\]{1,}', filename)[0].split('-')[-1]
     task = re.search(r'task-[^_]{1,}', filename)[0].split('-')[-1]
     filepath, _ = os.path.split(filename)
 
-    return filepath, sub, lambd, task, run
+    return filepath, sub, ses, lambd, task, run
