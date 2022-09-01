@@ -12,16 +12,14 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 
 
-PASSIVE_MODE = 1
-""" Mode for the passive phase 1 = trajectory, 2 = resets. """
-ACTIVE_MODE = 2
+ACTIVE_MODE = 1
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
-N_REPEATS_PASSIVE = 24 if PASSIVE_MODE == 1 else 4
+N_TRIALS_PASSIVE = 4 * 45 #
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 90
+N_TRIALS_ACTIVE = 90 #
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 15
+N_TRIALS_NOBRAINER = 2 # 15
 """ Number of nobrainer trials after the passive phase ends."""
 
 
@@ -32,13 +30,13 @@ SIMULATE_MR = 'None'
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 4
+MAX_RUN_PASSIVE = 1 #4
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 2 if PASSIVE_MODE == 1 else (N_REPEATS_PASSIVE + 1) * 9
+MAX_TRIALS_PASSIVE = 4 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = np.inf
+MAX_TRIALS_ACTIVE = 1 #np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
@@ -90,10 +88,9 @@ if __name__ == '__main__':
         lambd = float(lambd)
 
         expInfo.update({
-            'n_repeats_passive': N_REPEATS_PASSIVE,
+            'n_trials_passive': N_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
-            'passive_mode': PASSIVE_MODE,
-            'active_mode': ACTIVE_MODE,
+            'mode': ACTIVE_MODE,
             'agentActive': expInfo['test_mode'],
             'TR': TR,
             'session': sess,
@@ -122,7 +119,7 @@ if __name__ == '__main__':
         passive_conf = check_configs(passive_conf, task='passive')
 
         if not instruction_shown:
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=14)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=16)
 
         win.close()
 
@@ -137,7 +134,7 @@ if __name__ == '__main__':
 
             win.close()
 
-        expInfo.update({'wealth' : con.X0})
+        expInfo.update({'wealth' : con.x_0})
 
         # Reset run
         active_conf = expInfo.copy()
@@ -152,7 +149,7 @@ if __name__ == '__main__':
         win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], True)
 
         if not instruction_shown:
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=16)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=17)
             win.close()
 
         instruction_shown = True

@@ -262,7 +262,7 @@ class ActiveAutoPilot(PassiveAutoPilot):
         """
 
         c_eta = {0.0: 250, 1.0 : 0.4}
-        beta =  calculate_beta(eta_dynamic=eta, eta_agent=eta_agent, x_0=con.X0,
+        beta =  calculate_beta(eta_dynamic=eta, eta_agent=eta_agent, x_0=con.x_0,
                                x_limit=con.X_UPPER, p_threshold=self.p_threshold,
                 c=c_eta(eta))
 

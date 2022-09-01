@@ -1,9 +1,8 @@
 import math
-
-import constants as con
+from . import constants as con
 import numpy as np
 import pandas as pd
-from utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
+from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
     create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
     inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
     shuffle_along_axis
