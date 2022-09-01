@@ -15,11 +15,11 @@ from codebase.file_handler import make_bids_dir
 ACTIVE_MODE = 1
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
-N_TRIALS_PASSIVE = 4 * 45 #
+N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 90 #
+N_TRIALS_ACTIVE = 90 # Default 90
 """ Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 2 # 15
+N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
 
 
@@ -30,13 +30,13 @@ SIMULATE_MR = 'None'
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 1 #4
+MAX_RUN_PASSIVE = 4 # Defaults to 4
 """ Number of runs of the passive phase"""
-MAX_RUN_ACTIVE = 1
+MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 4 # By default should be N_TRIALS_PASSIVE / 4
+MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = 1 #np.inf
+MAX_TRIALS_ACTIVE = np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
@@ -47,9 +47,9 @@ def set_up_win(fscreen, gui=True):
                     waitBlanking=False)
 
     if not fscreen and gui:
-        win_size = [3072 // 2, 1920 // 2]
+        win_size = [1920, 1080] #[3072 // 2, 1920 // 2]
     else:
-        win_size = win.size
+        win_size = [1920, 1080] #win.size
 
     print(win_size)
     refreshRate, frameDur = get_frame_timings(win)
@@ -69,9 +69,9 @@ if __name__ == '__main__':
     os.chdir(thisDir)
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
-    expInfo = {'participant': '0', # Participant ID
-               'test_mode': True, # Whether an agent automatically presses buttons
-               'fullScreen': False, # Whether to use a full screen
+    expInfo = {'participant': '000', # Participant ID
+               'test_mode': False, # Whether an agent automatically presses buttons
+               'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
@@ -91,6 +91,7 @@ if __name__ == '__main__':
             'n_trials_passive': N_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
             'mode': ACTIVE_MODE,
+            'active_mode': ACTIVE_MODE,
             'agentActive': expInfo['test_mode'],
             'TR': TR,
             'session': sess,
@@ -119,7 +120,7 @@ if __name__ == '__main__':
         passive_conf = check_configs(passive_conf, task='passive')
 
         if not instruction_shown:
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=16)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=15)
 
         win.close()
 
@@ -149,7 +150,7 @@ if __name__ == '__main__':
         win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], True)
 
         if not instruction_shown:
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=17)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=16)
             win.close()
 
         instruction_shown = True
