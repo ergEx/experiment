@@ -51,7 +51,7 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
     initialization.setAutoDraw(False)
     slideShow = True
 
-    images[0].setAutoDraw(True)
+    images[start_slide].setAutoDraw(True)
     win.flip()
 
     min_slides = start_slide
