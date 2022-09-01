@@ -1,13 +1,16 @@
+import math
+
+import constants as con
 import numpy as np
 import pandas as pd
-import math
-from . import constants as con
-from .utils import (isoelastic_utility, inverse_isoelastic_utility, calculate_growth_rates,
-                    shuffle_along_axis, create_gambles, create_gamble_pairs, create_experiment,
-                    create_trial_order)
+from utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
+    create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
+    inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
+    shuffle_along_axis
 
-def passive_sequence_v1(lambd:float,
-                        repeats:int,
+
+def passive_sequence_one_gamble(lambd:float,
+                        n_trials:int,
                         x_0:int,
                         indifference_etas:np.array,
                         indifference_x_0:np.array,
@@ -20,7 +23,6 @@ def passive_sequence_v1(lambd:float,
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
-    n_trials = n_fractals * repeats
     fractals = np.random.randint(n_fractals, size=n_trials)
     gamma_array = [gamma_range[fractal] for fractal in fractals]
     part_sum =  gamma_0 + np.cumsum(gamma_array)
@@ -28,54 +30,35 @@ def passive_sequence_v1(lambd:float,
 
     return fractals, gamma_array, part_sum, part_wealth_sum,gamma1_list, gamma2_list, fractal_dict
 
+def passive_sequence_two_gambles(lambd:float,
+                        c_dict:dict,
+                        assymetry_dict:dict,
+                        n_trials:int,
+                        n_fractals:int,
+                        x_0:int):
+    c = c_dict[lambd]
+    gamma_range = np.array(np.linspace(-c, c, n_fractals))
+    assymetry_array = assymetry_dict[lambd]
+    gamma_range = np.sum([gamma_range,assymetry_array], axis=0)
+    fractal_dict = {ii : n for n, ii in enumerate(gamma_range)}
+    gamma_0     = isoelastic_utility(x_0, lambd)
 
-def passive_sequence_v2(lambd:float,
-                        repeats:int,
-                        x_0:int,
-                        indifference_etas:np.array,
-                        indifference_x_0:np.array,
-                        indifference_dx2:int):
+    fractals = np.random.randint(n_fractals, size=n_trials)
+    gamma_array = gamma_range[fractals]
+    part_sum =  gamma_0 + np.cumsum(gamma_range[fractals])
+    part_wealth_sum = inverse_isoelastic_utility(part_sum,lambd)
 
-    gamma_range,gamma1_list,gamma2_list,fractal_dict = calculate_growth_rates(indifference_etas, lambd, indifference_dx2, indifference_x_0)
-    gamma_range.append(999) #blank fractal for resetting wealth
-    n_fractals = len(gamma_range)
+    return fractals, gamma_array, part_sum, part_wealth_sum, fractal_dict, gamma_range
 
-    fractals = []
-    part_sum = []
-
-    for x0 in [x_0, x_0 * 10]:
-
-        gamma_0 = isoelastic_utility(x0,lambd)
-
-        fractal_order = shuffle_along_axis(np.array(range(n_fractals-1)), 0)
-
-        for fractal in fractal_order:
-
-            part_sum.extend(gamma_0) #Reset wealth
-            fractals.append(n_fractals-1) #Show blank fractal
-
-            tmp_seq = [fractal] * repeats
-            fractals.extend(tmp_seq)
-            tmp_cum_sum = gamma_0 + np.cumsum([gamma_range[fractal]]*repeats)
-            part_sum.extend(tmp_cum_sum)
-
-    gamma_array = np.array([gamma_range[fractal] for fractal in fractals])
-    fractals = np.array(fractals)
-    fractals[gamma_array == 999] = 9
-
-    part_wealth_sum = inverse_isoelastic_utility(np.array(part_sum),lambd)
-
-    return fractals, gamma_array, part_sum, part_wealth_sum, gamma1_list, gamma2_list, fractal_dict
-
-def active_sequence(n_trials:int,
+def active_sequence_one_gamble(n_trials:int,
                     gamma1_list:np.array,
                     gamma2_list:np.array,
                     fractal_dict:dict,
                     n_simulations:int=1):
 
-    gambles = create_gambles(gamma1_list, gamma2_list)
+    gambles = create_gambles_one_gamble(gamma1_list, gamma2_list)
     gambles = shuffle_along_axis(gambles,1)
-    gamble_pairs = create_gamble_pairs(gambles)
+    gamble_pairs = create_gamble_pairs_one_gamble(gambles)
     experiment  = create_experiment(gamble_pairs)
     trial_order = create_trial_order(
             n_simulations=n_simulations,
@@ -101,32 +84,89 @@ def active_sequence(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
+def active_sequence_two_gambles(n_trials:int,
+                    gamma_range:np.array,
+                    fractal_dict:dict,
+                    n_simulations:int=1):
+
+    gambles = create_gambles_two_gambles(gamma_range)
+    gambles = [
+        gamble for gamble in gambles
+        if not is_g_deterministic(gamble)
+        ]
+    gambles = shuffle_along_axis(np.array(gambles),1)
+    gamble_pairs = create_gamble_pairs_two_gambles(gambles)
+    gamble_pairs = [
+        gamble_pair for gamble_pair in gamble_pairs
+        if not is_statewise_dominated(gamble_pair)
+        and not is_nobrainer(gamble_pair)
+        ]
+    experiment  = create_experiment(gamble_pairs)
+    trial_order = create_trial_order(
+            n_simulations=n_simulations,
+            n_gamble_pairs=experiment.shape[-1],
+            n_trials=n_trials
+        )
+
+    gamma_array = np.empty([n_trials, 4], dtype=float)
+    fractals =  np.empty([n_trials, 4], dtype=float)
+    coin_toss = shuffle_along_axis(np.concatenate((np.zeros([math.ceil(n_trials/2), 1], dtype=int),
+                                                   np.ones([math.ceil(n_trials/2), 1], dtype=int)),
+                                                   axis=0)[: n_trials], 0)
+    timings = np.empty([n_trials, 3], dtype=float)
+    timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
+    timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
+    timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
+    timings = shuffle_along_axis(timings, 0)
+
+    for ii, trial in enumerate(trial_order):
+        tmp = experiment[:,:,trial].flatten()
+        fractals[ii, :] =  [fractal_dict[g] for g in tmp]
+        gamma_array[ii, :] = tmp
+
+    return fractals, gamma_array, coin_toss, timings, fractal_dict
 
 def generate_dataframes(lambd:float,
-                        x_0:int,
-                        n_trials_active:int,
-                        n_repeats_passive:int,
-                        passive_mode:int,
-                        speed_up:float,
-                        indifference_etas:np.array,
-                        indiffrence_x_0:np.array,
-                        indifference_dx2:int):
+                        mode:int,
+                        n_trials_active:int=con.n_trials_active,
+                        n_trials_passive:int=con.n_trials_passive,
+                        speed_up:float=1,
+                        ):
 
-    if passive_mode == 1:
-        passive_sequence = passive_sequence_v1
-    elif passive_mode == 2:
-        passive_sequence = passive_sequence_v2
+    if mode == 1: #One gamble version
+        (p_seq_fractals, p_seq_gamma,
+        p_seq_part_sum, p_seq_part_wealth_sum,
+        gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
+                                                                    n_trials=n_trials_passive,
+                                                                    x_0=con.x_0,
+                                                                    indifference_etas=con.indifference_etas,
+                                                                    indifference_x_0=con.indifference_x_0,
+                                                                    indifference_dx2=con.indifference_dx2)
+
+        (a_seq_fractals, a_seq_gamma,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_one_gamble(n_trials=n_trials_active,
+                                                         gamma1_list=gamma1_list,
+                                                         gamma2_list=gamma2_list,
+                                                         fractal_dict=fractal_dict)
+
+    elif mode == 2: #Gamble pair version
+        (p_seq_fractals, p_seq_gamma,
+        p_seq_part_sum, p_seq_part_wealth_sum,
+        fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
+                                                                    c_dict=con.c_dict,
+                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    n_trials=n_trials_passive,
+                                                                    n_fractals=con.n_fractals,
+                                                                    x_0=con.x_0)
+
+
+        (a_seq_fractals, a_seq_gamma,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles(n_trials=n_trials_active,
+                                                                        gamma_range=gamma_range,
+                                                                        fractal_dict=fractal_dict)
     else:
-        raise ValueError("Passive sequence has to be 1 or 2")
+        raise ValueError("Mode has to be 1 or 2")
 
-    (p_seq_fractals, p_seq_gamma,
-    p_seq_part_sum, p_seq_part_wealth_sum,
-    gamma1_list, gamma2_list, fractal_dict) = passive_sequence(lambd=lambd,
-                                                            repeats=n_repeats_passive,
-                                                            x_0=x_0,
-                                                            indifference_etas=indifference_etas,
-                                                            indifference_x_0=indiffrence_x_0,
-                                                            indifference_dx2=indifference_dx2)
 
     n_trials_passive = len(p_seq_fractals)
     p_df = pd.DataFrame(data={'trial': range(n_trials_passive),
@@ -138,11 +178,7 @@ def generate_dataframes(lambd:float,
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})
 
-    (a_seq_fractals, a_seq_gamma,
-     a_seq_cointoss, a_seq_timings, _) = active_sequence(n_trials=n_trials_active,
-                                                         gamma1_list=gamma1_list,
-                                                         gamma2_list=gamma2_list,
-                                                         fractal_dict=fractal_dict)
+
 
     a_df_fractals = pd.DataFrame(a_seq_fractals,
                                  columns=['fractal_left_up', 'fractal_left_down',
@@ -164,10 +200,10 @@ def generate_dataframes(lambd:float,
                       a_df_cointoss,a_df_timings], axis=1)
 
     ## Meta Info written here
-    l_avg_u = a_df_gamma[['gamma_left_up']].sum(axis=0)
-    l_avg_l = a_df_gamma[['gamma_left_down']].sum(axis=0)
-    r_avg_u = a_df_gamma[['gamma_right_up']].sum(axis=0)
-    r_avg_l = a_df_gamma[['gamma_right_down']].sum(axis=0)
+    l_avg_u = a_df_gamma[['gamma_left_up']].mean(axis=0)
+    l_avg_l = a_df_gamma[['gamma_left_down']].mean(axis=0)
+    r_avg_u = a_df_gamma[['gamma_right_up']].mean(axis=0)
+    r_avg_l = a_df_gamma[['gamma_right_down']].mean(axis=0)
 
     optimal_path = (a_df_gamma[['gamma_left_up', 'gamma_left_down']].mean(1) <
                     a_df_gamma[['gamma_right_up', 'gamma_right_up']].mean(1)) * 1 # to cast
@@ -179,7 +215,7 @@ def generate_dataframes(lambd:float,
                                     axis=1).sum()
 
     meta = ("Passive: \n______________________ \n"
-            + f"Sequence generated using passive version {passive_mode} \n"
+            + f"Sequence generated using version {mode} \n"
             + f"Trials: {n_trials_passive}\nmin: {min(p_seq_part_wealth_sum)}\nmax: {max(p_seq_part_wealth_sum)}"
             + "\n\n\nActive: \n______________________ \n"
             + f"n. trials: {n_trials_active} \n"

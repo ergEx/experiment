@@ -1,6 +1,8 @@
-import numpy as np
-import math
 import itertools
+import math
+
+import numpy as np
+
 
 class DotDict(dict):
     """Small helper class, so attributed of dictionary can be accessed using
@@ -76,7 +78,7 @@ def inverse_isoelastic_utility(u:np.ndarray, eta:float) -> np.ndarray:
     return x
 
 
-def wealth_change(x:np.array, gamma:np.array, lambd:float):
+def wealth_change(x:np.array, gamma:np.array, lambd:float) -> np.ndarray:
     """Apply isoelastic wealth change.
 
     Args:
@@ -100,7 +102,7 @@ def wealth_change(x:np.array, gamma:np.array, lambd:float):
     return inverse_isoelastic_utility(isoelastic_utility(x, lambd) + gamma, lambd)
 
 
-def shuffle_along_axis(a:np.array, axis:int):
+def shuffle_along_axis(a:np.array, axis:int) -> np.ndarray:
     """Randomly shuffle multidimentional array along specified axis.
 
     Args:
@@ -114,7 +116,7 @@ def shuffle_along_axis(a:np.array, axis:int):
     return np.take_along_axis(a, idx, axis=axis)
 
 
-def random_reorder_axis(a:np.array, axis:int):
+def random_reorder_axis(a:np.array, axis:int) -> np.ndarray:
     """Shuffle along axis, keeping all other axis intact.
 
     Args:
@@ -129,7 +131,7 @@ def random_reorder_axis(a:np.array, axis:int):
     return np.take(a, idx, axis=axis)
 
 
-def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
+def calculate_dx1(indifference_eta:float, dx2:int, x_0:int) -> float:
     """Calculate change in wealth that corresponds to given indifference-eta
        given dx2 and x.
 
@@ -147,6 +149,7 @@ def calculate_dx1(indifference_eta:float, dx2:int, x_0:int):
         return round(math.exp(2 * math.log(x_0) - math.log(x_0 + dx2)) - x_0)
     else:
         return round((2 * x_0 ** (1 - indifference_eta) - (x_0 + dx2) ** (1 - indifference_eta)) ** (1 / (1 - indifference_eta)) - x_0)
+
 
 def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:np.array):
     """Create list of all gambles.
@@ -173,7 +176,7 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
     gamma2_list = [float(isoelastic_utility(x[0] + dx2, lambd)-isoelastic_utility(x[0], lambd)) for dx2 in dx2_list]
 
     gamma_list = gamma1_list + gamma2_list + [0]
-    print(gamma_list)
+    #print(gamma_list)
 
     fractal_dict = {}
     for i, gamma in enumerate(gamma_list):
@@ -181,7 +184,8 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
 
     return gamma_list, gamma1_list, gamma2_list, fractal_dict
 
-def create_gambles(gamma1_list, gamma2_list):
+
+def create_gambles_one_gamble(gamma1_list:np.array, gamma2_list:np.array) -> np.ndarray:
     """Create list of all gambles.
 
     Args:
@@ -197,7 +201,26 @@ def create_gambles(gamma1_list, gamma2_list):
     return np.array(list(itertools.product(gamma1_list, gamma2_list)))
 
 
-def create_gamble_pairs(gambles:np.array):
+def create_gambles_two_gambles(gamma_range:np.array) -> np.ndarray:
+    """Create list of all gambles.
+    Args:
+        gamma_range (array):
+            List of growth rates
+
+    Returns:
+        List of arrays. Each gamble is represented as (2, ) array with growth
+        rates. For n fractals, n(n+1)/2 gambles are created. Order of growth
+        rates doesn't matter since probabilities are assigned equally to both
+        wealth changes.
+    """
+    return [
+        np.array([gamma_1, gamma_2])
+        for gamma_1, gamma_2
+        in itertools.combinations_with_replacement(gamma_range, 2)
+    ]
+
+
+def create_gamble_pairs_one_gamble(gambles:np.array) -> np.ndarray:
     """Pair each gamble with the null-gamble
 
     Args:
@@ -214,7 +237,24 @@ def create_gamble_pairs(gambles:np.array):
         ]
 
 
-def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
+def create_gamble_pairs_two_gambles(gambles:np.array) -> np.ndarray:
+    """Create list of all unique gamble pairs.
+    Args:
+        gambles (list of arrays):
+            List of gambles.
+    Returns:
+        List of arrays. Each gamble pair is represented as (2, 2) array with
+        four growth rates for both gambles. Rows corresponds to gambles, columns
+        correspond to individual growth rates within a gamble. All pairs contain
+        two unique gambles. For n gambles, n(n-1)/2 gamble pairs are created.
+    """
+    return [
+        np.concatenate((gamble_1[np.newaxis], gamble_2[np.newaxis]), axis=0)
+        for gamble_1, gamble_2 in itertools.combinations(gambles, 2)
+        ]
+
+
+def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int) -> np.array:
     """Generates randomized trial order allowing for paralell simulations.
 
     Args:
@@ -242,7 +282,7 @@ def create_trial_order(n_simulations:int, n_gamble_pairs:int, n_trials:int):
     return trial_order
 
 
-def create_experiment(gamble_pairs:np.array):
+def create_experiment(gamble_pairs:np.array) -> np.ndarray:
     """Creates experiment array.
 
     Args:
@@ -254,3 +294,25 @@ def create_experiment(gamble_pairs:np.array):
         gamble pair, third dimension correspond to subsequent trials.
     """
     return np.stack(gamble_pairs, axis=2)
+
+
+def is_g_deterministic(gamble:np.array) -> bool:
+    """Decision if gamble is deterministic, i.e., composed of two same fractals.
+    Args:
+        gamble (np.array):
+            Gamble array of shape (2, 0).
+    Returns:
+        Boolean decision value.
+    """
+    return gamble[0] == gamble[1]
+
+
+def is_nobrainer(gamble_pair:np.array) -> bool:
+    """Decision if a gamble pair is nobrainer."""
+    return len(set(gamble_pair[0]).intersection(set(gamble_pair[1]))) != 0
+
+
+def is_statewise_dominated(gamble_pair:np.array) -> bool:
+    """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
+    return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
+           np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )
