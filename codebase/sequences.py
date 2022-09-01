@@ -132,7 +132,7 @@ def generate_dataframes(lambd:float,
                         speed_up:float=1,
                         ):
 
-    if mode == 1: #One gamble version
+    if mode == 2: #One gamble version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
@@ -148,7 +148,7 @@ def generate_dataframes(lambd:float,
                                                          gamma2_list=gamma2_list,
                                                          fractal_dict=fractal_dict)
 
-    elif mode == 2: #Gamble pair version
+    elif mode == 1: #Gamble pair version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
