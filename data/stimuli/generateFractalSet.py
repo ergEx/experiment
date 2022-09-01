@@ -17,11 +17,12 @@ def main():
     RS2 = np.random.RandomState(RANDOMSEED2)
 
     # Create dictionary
-    fractal_keys = ([f'{i}' for i in range(1000)] +
-                    [chr(i) for i in range(ord('a'), ord('z')+1)])
+    fractal_keys = ([f'{i:03}' for i in range(1000)] +
+                    [chr(i) for i in range(ord('a'), ord('z')+1)]
+                    + [f'{i:02}' for i in range(100)] + [f'{i:01}' for i in range(10)])
 
 
-    fractal_set = {fk : {} for fk in fractal_keys}
+    fractal_set = {fk : {} for fk in np.unique(fractal_keys)}
 
     for fk in fractal_keys:
         fractals = RS.choice(fractal_names, len(SESSIONS) * NFRACTALS, replace=False)
