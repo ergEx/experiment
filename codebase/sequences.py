@@ -155,7 +155,7 @@ def generate_dataframes(lambd:float,
                                                                     c_dict=con.c_dict,
                                                                     assymetry_dict=con.assymetry_dict,
                                                                     n_trials=n_trials_passive,
-                                                                    n_fractals=con.n_fractals,
+                                                                    n_fractals=con.N_FRACTALS,
                                                                     x_0=con.x_0)
 
 
