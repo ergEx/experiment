@@ -10,9 +10,9 @@ from psychopy import visual, core, event
 import numpy as np
 from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
+import gc
 
-
-ACTIVE_MODE = 1
+ACTIVE_MODE = 2
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
@@ -44,7 +44,7 @@ def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
                     screen=0, winType='pyglet', allowGUI=gui, monitor=None,
                     color=[-1,-1,-1], colorSpace='rgb', units='pix',
-                    waitBlanking=False)
+                    waitBlanking=False, useFBO=False)
 
     if not fscreen and gui:
         win_size = [1920, 1080] #[3072 // 2, 1920 // 2]
@@ -59,6 +59,8 @@ def set_up_win(fscreen, gui=True):
                                 text=f'Experiment set up, starting with passive task.',
                                 pos=acfg.textPos, height=acfg.textHeight,
                                 color='white')
+    if not gui:
+        win.mouseVisible = False
 
     return win, frameDur, Between, win_size
 
@@ -132,7 +134,7 @@ if __name__ == '__main__':
             passive_conf = passive_gui(filePath, passive_conf, False)
             event.clearEvents()
             wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
-
+            gc.collect()
             win.close()
 
         expInfo.update({'wealth' : con.x_0})
@@ -147,9 +149,8 @@ if __name__ == '__main__':
 
         active_conf = check_configs(active_conf, task='active')
 
-        win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], True)
-
         if not instruction_shown:
+            win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
             run_slideshow(win, passive_conf, win_size=win_size, start_slide=16)
             win.close()
 
@@ -163,6 +164,7 @@ if __name__ == '__main__':
             event.clearEvents()
             wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
             win.close()
+            gc.collect()
 
         win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
 
@@ -171,5 +173,6 @@ if __name__ == '__main__':
         win.flip()
         core.wait(2)
         win.close()
+        gc.collect()
 
     core.quit()
