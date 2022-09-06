@@ -17,7 +17,7 @@ ACTIVE_MODE = 2
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 90 # Default 90
+N_TRIALS_ACTIVE = 120 # Default 90
 """ Number of trials in the active phaes"""
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
@@ -90,7 +90,8 @@ if __name__ == '__main__':
         lambd = float(lambd)
 
         expInfo.update({
-            'n_trials_passive': N_TRIALS_PASSIVE,
+            'n_resets_passive': MAX_RUN_PASSIVE,
+            'n_trials_passive_before_reset': MAX_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
             'mode': ACTIVE_MODE,
             'active_mode': ACTIVE_MODE,
@@ -132,6 +133,7 @@ if __name__ == '__main__':
             passive_conf['run'] = run
 
             passive_conf = passive_gui(filePath, passive_conf, False)
+            passive_conf['wealth'] = con.x_0
             event.clearEvents()
             wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
             gc.collect()
