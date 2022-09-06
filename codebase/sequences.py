@@ -154,7 +154,7 @@ def generate_dataframes(lambd:float,
                                                                     n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
                                                                     x_0=con.x_0,
-                                                                    indifference_etas=con.indifference_etas,
+                                                                    indifference_etas=con.indifference_etas[lambd],
                                                                     indifference_x_0=con.indifference_x_0,
                                                                     indifference_dx2=con.indifference_dx2)
 
