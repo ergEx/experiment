@@ -1,5 +1,5 @@
 from ..utils import inverse_isoelastic_utility, isoelastic_utility
-from ..utils import wealth_change, shuffle_along_axis, create_gamble_pairs
+from ..utils import wealth_change, shuffle_along_axis
 import numpy as np
 
 
@@ -123,7 +123,7 @@ def test_suffle_along_axis_3d_2():
     for idx in range(3):
         assert np.isin(test_array[:, idx, :], shuff_array[:, idx, :]).all()
 
-
+"""
 def test_create_gamble_pairs():
     # From:
     # https://stackoverflow.com/questions/14766194/testing-whether-a-numpy-array-contains-a-given-row
@@ -137,3 +137,4 @@ def test_create_gamble_pairs():
             print(ga, gps[ga, :])
             # Test whether gamble_pairs are a row in gambles
             assert any((gambles[:] == gps[ga, :]).all(1))
+"""
