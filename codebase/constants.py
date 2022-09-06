@@ -1,7 +1,8 @@
 #Both modes
 x_0 = 1000
-n_trials_passive = 45*4
+n_trials_passive = 45
 n_trials_active=120
+n_resets_passive = 4
 
 #Mode 1 (one gamble)
 indifference_etas = {0.0: [-1, 0.5, 2],

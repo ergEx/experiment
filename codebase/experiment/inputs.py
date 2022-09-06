@@ -8,12 +8,13 @@ from ..file_handler import make_filename
 from ..sequences import generate_dataframes
 
 
-def run(lambd:float, n_trials_passive:int, n_trials_active:int,
-        save_path:str, mode:int = 1, speed_up:int = 1):
+def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
+        n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1):
 
     p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                            n_trials_active=n_trials_active,
-                                           n_trials_passive=n_trials_passive,
+                                           n_resets_passive=n_resets_passive,
+                                           n_trials_passive_before_reset=n_trials_passive_before_reset,
                                            mode=mode,
                                            speed_up=speed_up
                                            )
@@ -52,7 +53,8 @@ def run_with_dict(expInfo):
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
         run(lambd=expInfo['eta'],
-            n_trials_passive=expInfo['n_trials_passive'],
+            n_resets_passive=expInfo['n_resets_passive'],
+            n_trials_passive_before_reset=expInfo['n_trials_passive_before_reset'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
             mode=expInfo['mode'],

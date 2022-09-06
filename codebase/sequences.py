@@ -1,9 +1,9 @@
 import math
 
-import constants as con
+from . import constants as con
 import numpy as np
 import pandas as pd
-from utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
+from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
     create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
     inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
     shuffle_along_axis
@@ -21,6 +21,8 @@ def passive_sequence_one_gamble(lambd:float,
                                                                                 lambd=lambd,
                                                                                 dx2=indifference_dx2,
                                                                                 x=indifference_x_0)
+
+    gamma_range = np.array(gamma_range)
     gamma_0 = isoelastic_utility(x_0,lambd)
 
     n_fractals = len(gamma_range)
@@ -136,6 +138,7 @@ def active_sequence_two_gambles(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
+
 def generate_dataframes(lambd:float,
                         mode:int,
                         n_trials_active:int=con.n_trials_active,
@@ -144,7 +147,7 @@ def generate_dataframes(lambd:float,
                         speed_up:float=1,
                         ):
 
-    if mode == 1: #One gamble version
+    if mode == 2: #One gamble version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
@@ -161,15 +164,15 @@ def generate_dataframes(lambd:float,
                                                          gamma2_list=gamma2_list,
                                                          fractal_dict=fractal_dict)
 
-    elif mode == 2: #Gamble pair version
+    elif mode == 1: #Gamble pair version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
                                                                     c_dict=con.c_dict,
                                                                     assymetry_dict=con.assymetry_dict,
-                                                                    n_trials_before_reset=n_trials_passive,
+                                                                    n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
-                                                                    n_fractals=con.n_fractals,
+                                                                    n_fractals=con.N_FRACTALS,
                                                                     x_0=con.x_0)
 
 
