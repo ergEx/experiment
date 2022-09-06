@@ -106,11 +106,12 @@ if __name__ == '__main__':
 
         run_with_dict(expInfo=expInfo)
 
-        win, frameDur, Between, win_size = set_up_win(expInfo['fullScreen'], False)
 
         if expInfo['calibration']:
+            win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
             calib_conf = check_configs(expInfo.copy(), task='calibration')
             calibration_run(filePath, calib_conf, win=win)
+            win.close()
 
         passive_conf = expInfo.copy()
 
@@ -123,9 +124,9 @@ if __name__ == '__main__':
         passive_conf = check_configs(passive_conf, task='passive')
 
         if not instruction_shown:
+            win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
             run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=15)
-
-        win.close()
+            win.close()
 
         for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
 
