@@ -169,7 +169,7 @@ def check_configs(config_dict:Dict, task='passive') -> Dict:
 
     default_dict = {'participant': None, 'eta': None, 'run': None,
                     'responseLeft': 'left', 'responseRight': 'right',
-                    'wealth': con.X0,  'overwrite': True, 'agentActive': False,
+                    'wealth': con.x_0,  'overwrite': True, 'agentActive': False,
                     'simulateMR': 'Simulate', 'TR': 2.0, 'maxTrial': np.inf,
                     'maxDuration': np.inf}
 

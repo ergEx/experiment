@@ -19,7 +19,7 @@ from .configs import active_configs as acfg
 from .configs import DEFAULT_FRACTALS, STIMULUSPATH
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
-from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth
+from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth, make_no_brainers
 
 
 def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> Dict:
@@ -50,17 +50,16 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
     responseMapping = {expInfo['responseLeft'] : 'left',
                        expInfo['responseRight']: 'right'}
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
-                             'passive', expInfo['run'])
-
-    offset = load_calibration(filePath, expInfo['participant'], expInfo['eta'])
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
+                              expInfo['eta'], 'passive', expInfo['run'])
+    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
                                                        expInfo['overwrite'])
 
     # Pre-Calculate Number of MR-Images:
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
-                                  'passive', extension='input.tsv')
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                                   expInfo['eta'], 'passive', extension='input.tsv')
 
     trialFile = pd.read_csv(trialInfoPath, sep='\t')
 
@@ -83,7 +82,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
 
 
 def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None):
+               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True):
     """Runs the passive part of the experiment.
 
     Args:
@@ -124,11 +123,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalList = fractalList[:]
     fractalList.append('grey100')
 
-    fileName = make_filename(filePath, expInfo['participant'], expInfo['eta'],
-                             'passive', expInfo['run'])
+    fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
+                            expInfo['eta'], 'passive', expInfo['run'])
 
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'],
-                                  'passive', extension='input.tsv')
+    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                                  expInfo['eta'], 'passive', extension='input.tsv')
 
     # Create logger
     if expInfo['simulateMR'] == 'MRIDebug':
@@ -331,7 +330,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                     Reminder.setAutoDraw(True)
                     win.flip()
 
-            if responseWindow <= Logger.getTime():
+            if responseWindow <= Logger.getTime() and not waitForSpace:
                 Logger.logEvent({'event_type': 'ResponseTimeOut'})
                 startResp = False
                 RT = None
@@ -347,8 +346,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                 # Increase spin duration due to fast response
                 spinDuration = pcfg.wheelSpinTime + max(pcfg.timeToReminder - RT, 0)
             elif reminderPresent:
-                # Reduce spin duraion by response lateness.
-                spinDuration = pcfg.wheelSpinTime - (RT - pcfg.timeToReminder) # This should be between 0 and 1
+                # Reduce spin duration by response lateness.
+                if (pcfg.wheelSpinTime - (RT - pcfg.timeToReminder)) > 0:
+                    spinDuration = pcfg.wheelSpinTime - (RT - pcfg.timeToReminder) # This should be between 0 and 1
+                else:
+                     spinDuration = 1 # if response took to long
         else:
             # Reduce spin duration by (right now) 1 s.
             spinDuration = pcfg.wheelSpinTime - (pcfg.timeResponseWindow - pcfg.timeToReminder)
@@ -429,7 +431,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
         nTrial += 1
 
-        if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial']:
+        if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
 
     ################################ Post Experiment clean up ######################
@@ -459,49 +461,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.setText("press earlier")
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
-    fractalData = fractalData[['fractal', 'gamma']]
-    fractalData_pos = fractalData.query('gamma > 0')
-
-    unqFractals_pos = np.unique(fractalData_pos.fractal)
-    unqFractals_pos = unqFractals_pos[unqFractals_pos < con.N_FRACTALS]
-
-    fractalData_neg = fractalData.query('gamma < 0')
-    unqFractals_neg = np.unique(fractalData_neg.fractal)
-    unqFractals_neg = unqFractals_neg[unqFractals_neg < con.N_FRACTALS]
-
-
-    fractalCombination = list(itertools.combinations(unqFractals_pos, 2))
-    fractalCombination_neg = list(itertools.combinations(unqFractals_neg, 2))
-    fractalCombination += fractalCombination_neg
-    fractalCombination = np.array(fractalCombination)
-
-    fractalGammaDict = {}
-
-    for kk in np.hstack([unqFractals_pos.ravel(), unqFractals_neg.ravel()]):
-            fractalGammaDict[kk] = fractalData.query('fractal == @kk')['gamma'].values[0].item()
-
-    randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
-
-    if randomIdx.shape[0] < nTrial_noBrainer:
-        extendIdx = np.random.choice(len(fractalCombination),
-                                     nTrial_noBrainer - randomIdx.shape[0],
-                                     replace=True)
-        randomIdx = np.hstack([randomIdx.ravel(), extendIdx.ravel()])
-
-    trials  = pd.DataFrame(columns=['fractal1', 'fractal2', 'gamma1', 'gamma2'],
-                          index=np.arange(nTrial_noBrainer))
-
-    for nn, ri in enumerate(randomIdx[:nTrial_noBrainer]):
-        pair = fractalCombination[ri, :].copy()
-
-        if np.random.rand() < 0.5:
-            trials.iloc[nn, :] = [pair[0], pair[1],
-                                  fractalGammaDict[pair[0]],
-                                  fractalGammaDict[pair[1]]]
-        else:
-            trials.iloc[nn, :] = [pair[1], pair[0],
-                                  fractalGammaDict[pair[1]],
-                                  fractalGammaDict[pair[0]]]
+    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
 
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
@@ -510,15 +470,15 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     ###
 
     if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        Instructions.setText(f'Please wait to continue\n with the second part.'+
-                              'Please choose the fractal you think is better for your wealth.')
+        Instructions.setText(f'Please wait to continue\n with the second part.\n'+
+                              'Choose the fractal you think is better for your wealth.')
         Instructions.setAutoDraw(True)
         win.flip()
         Wait.wait(2)
 
     elif expInfo['simulateMR'] == 'None':
-        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\n with the second part.' +
-                              'Please choose the fractal you think is better for your wealth.')
+        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\nwith the second part.\n' +
+                              'Choose the fractal you think is better for your wealth.')
         Instructions.setAutoDraw(True)
         win.flip()
         startResp = True
@@ -544,7 +504,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     win.flip()
     ###################### This is were Nobrainers begins ######################
-    noTrials = trials.shape[0]
+    noTrials = trials_nb.shape[0]
     iti = 1.0
     eta = expInfo['eta']
 
@@ -553,7 +513,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     for nbTrial in range(nTrial_noBrainer):
 
-        thisTrial = trials.iloc[nbTrial].to_dict()
+        thisTrial = trials_nb.iloc[nbTrial].to_dict()
 
         if thisTrial != None:
             fractal1, fractal2 = thisTrial['fractal1'], thisTrial['fractal2']

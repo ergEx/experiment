@@ -16,8 +16,8 @@ def calibration_run(filepath:str, expInfo:Optional[Dict]=None,
     for rK in responseKeys:
         expInfo[rK] = str(expInfo[rK])
 
-    filename = make_filename(filepath, expInfo['participant'], expInfo['eta'],
-                             'calibration', 1)
+    filename = make_filename(filepath, expInfo['participant'], expInfo['session'],
+                            expInfo['eta'], 'calibration', 1)
 
     responseKeyList = [expInfo[rK] for rK in responseKeys]
 

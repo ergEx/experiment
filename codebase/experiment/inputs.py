@@ -1,24 +1,23 @@
+import os
 import sys
+
 import numpy as np
 import pandas as pd
-import os
-from .. import constants as con
-from ..sequences import generate_dataframes
+
 from ..file_handler import make_filename
+from ..sequences import generate_dataframes
 
 
-def run(lambd:float, x_0:int, n_repeats_passive:int, n_trials_active:int,
-        save_path:str, passive_mode:int = 1, speed_up:int = 1):
+def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
+        n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1):
 
     p_df, a_df, meta = generate_dataframes(lambd=lambd,
-                                           x_0=x_0,
                                            n_trials_active=n_trials_active,
-                                           n_repeats_passive=n_repeats_passive,
-                                           passive_mode=passive_mode,
-                                           speed_up=speed_up,
-                                           indifference_etas = con.INDIFFERENCE_ETAS[lambd],
-                                           indiffrence_x_0 = con.INDIFFERENCE_X_0,
-                                           indifference_dx2 = con.INDIFFERENCE_DX2)
+                                           n_resets_passive=n_resets_passive,
+                                           n_trials_passive_before_reset=n_trials_passive_before_reset,
+                                           mode=mode,
+                                           speed_up=speed_up
+                                           )
 
     p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
     a_df.to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv'), index=False, sep='\t')
@@ -35,7 +34,8 @@ def run_with_dict(expInfo):
         speed_up = 1
         print("No speed up")
 
-    save_path = make_filename('data/inputs/', expInfo['participant'], expInfo['eta'], 'meta', None, 'input.txt')
+    save_path = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
+                              expInfo['eta'], 'meta', None, 'input.txt')
 
     reply = True
 
@@ -53,11 +53,11 @@ def run_with_dict(expInfo):
         os.makedirs(os.path.split(save_path)[0], exist_ok=True)
 
         run(lambd=expInfo['eta'],
-            x_0=con.X0,
-            n_repeats_passive=expInfo['n_repeats_passive'],
+            n_resets_passive=expInfo['n_resets_passive'],
+            n_trials_passive_before_reset=expInfo['n_trials_passive_before_reset'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
-            passive_mode=expInfo['passive_mode'],
+            mode=expInfo['mode'],
             speed_up=speed_up)
 
     else:
