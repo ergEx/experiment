@@ -431,7 +431,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
         nTrial += 1
 
-        if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial']:
+        if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
 
     ################################ Post Experiment clean up ######################
@@ -461,7 +461,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.setText("press earlier")
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
-    trials = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
+    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
 
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
@@ -504,7 +504,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     win.flip()
     ###################### This is were Nobrainers begins ######################
-    noTrials = trials.shape[0]
+    noTrials = trials_nb.shape[0]
     iti = 1.0
     eta = expInfo['eta']
 
@@ -513,7 +513,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     for nbTrial in range(nTrial_noBrainer):
 
-        thisTrial = trials.iloc[nbTrial].to_dict()
+        thisTrial = trials_nb.iloc[nbTrial].to_dict()
 
         if thisTrial != None:
             fractal1, fractal2 = thisTrial['fractal1'], thisTrial['fractal2']
