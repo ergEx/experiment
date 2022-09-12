@@ -12,7 +12,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 2
+ACTIVE_MODE = 1
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
@@ -94,7 +94,6 @@ if __name__ == '__main__':
             'n_trials_passive_before_reset': MAX_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
             'mode': ACTIVE_MODE,
-            'active_mode': ACTIVE_MODE,
             'agentActive': expInfo['test_mode'],
             'TR': TR,
             'session': sess,
