@@ -383,7 +383,7 @@ def plot_choice_probability(dataframe, ax):
     probs = np.zeros(choices.shape)
 
     for n, ch in enumerate(choices):
-        probs[n] = np.mean(button[gammas_1==ch])
+        probs[n] = np.mean(button[(gammas_1 - gammas_2)==ch])
 
     ax.plot(choices, probs, '--o')
     ax.axhline(0.5, linestyle='--', alpha=0.5)
@@ -445,17 +445,22 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
     choices = []
 
     for n, ii in enumerate(trials.index):
-        tmp_trial = trials.loc[ii, :]
-        x_updates = wealth_change(x=tmp_trial.wealth,
-                                  gamma=[tmp_trial.gamma_left_up, tmp_trial.gamma_left_down,
-                                        tmp_trial.gamma_right_up, tmp_trial.gamma_right_down],
-                                        lambd=tmp_trial.eta)
 
-        root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
-        min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
-        indif_etas.append(root_dyn[0])
-        choices.append(tmp_trial.selected_side == 'left')
-        ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
+        tmp_trial = trials.loc[ii, :]
+
+        try:
+            x_updates = wealth_change(x=tmp_trial.wealth,
+                                    gamma=[tmp_trial.gamma_left_up, tmp_trial.gamma_left_down,
+                                            tmp_trial.gamma_right_up, tmp_trial.gamma_right_down],
+                                            lambd=tmp_trial.eta)
+
+            root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
+            min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
+            indif_etas.append(root_dyn[0])
+            choices.append(tmp_trial.selected_side == 'left')
+            ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
+        except:
+            print(f"Possible error in indifference eta calculation, negative values, wealth = {tmp_trial.wealth}?")
 
     ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
 
