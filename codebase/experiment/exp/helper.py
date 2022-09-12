@@ -312,7 +312,7 @@ def make_no_brainers(trial_df, current_trial, ntrials, mode=2):
 
         gammaSelect = np.sum(gammaMin + gammaMax, 1) == 3
 
-        fractalCombination = fractalCombination[gammaSelect, :]
+        fractalCombination = fractalCombination[gammaSelect == False, :]
 
     randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
 
