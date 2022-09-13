@@ -337,4 +337,6 @@ def make_no_brainers(trial_df, current_trial, ntrials, mode=2):
                                   fractalGammaDict[pair[1]],
                                   fractalGammaDict[pair[0]]]
 
+    print(trials)
+
     return trials
