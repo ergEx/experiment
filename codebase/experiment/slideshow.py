@@ -44,7 +44,7 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
     images = []
     for im in slides:
         images.append(visual.ImageStim(win=win, opacity=1,
-                                        image=im, units='pix', size=win_size))
+                                        image=im, units='height', size=[1, 1]))
         images[-1].setAutoDraw(False)
 
 
