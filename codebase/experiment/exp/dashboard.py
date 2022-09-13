@@ -282,8 +282,24 @@ def plot_time_optimal_responses(dataframe, ax, task='active'):
     ax.bar(np.arange(len(tr_vc)), tr_vc)
     ax.set_xticks(np.arange(len(tr_vc)))
     ax.set_xticklabels(list(tr_vc.index))
+
+    title_str = f'Time Optimal Choice\n TO: {proportion * 100:4.2f} %'
+
+    if task == 'nobrainer':
+        #print(dataframe)
+        fl = dataframe[['fractal_left', 'fractal_right']].values.astype(float)
+        #print(fl)
+        fl = fl[~np.isnan(fl[:, 0]), :]
+
+        fl_sort = np.sort(fl, 1).astype(int).astype(str)
+        frac_combs = list(map(''.join, zip(fl_sort[:, 0], fl_sort[:, 1])))
+        frac_combs = np.unique(frac_combs)
+
+        title_str += f'\nFractal Pairs {len(frac_combs)}'
+        title_str += f'\nUnq Fractals {len(np.unique(fl.ravel()))}'
+
     ax.set(ylabel='Counts', xlabel='Time Optimal Responses',
-           title=f'Time Optimal Choice\n TO: {proportion * 100:4.2f} %')
+           title=title_str)
 
     return ax
 
