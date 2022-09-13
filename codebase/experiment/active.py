@@ -167,7 +167,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     for imL in acfg.imgLocation:
         for nFl, fl in enumerate(fractalList):
 
-            if "right" in imL and expInfo['active_mode'] == 2:
+            if "right" in imL and expInfo['mode'] == 2:
                 pos = list(acfg.imgLocPos[imL])
                 pos[1] = 0
             else:
@@ -296,7 +296,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                         'gamma_left_up': gamma1,
                         'gamma_left_down': gamma2})
 
-        if expInfo['active_mode'] != 2:
+        if expInfo['mode'] != 2:
             win.flip()
             Logger.keyStrokes(win)
 
@@ -307,7 +307,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
-        fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['active_mode'] != 2))
+        fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['mode'] != 2))
         TimerShape.setAutoDraw(True)
         win.flip()
         Logger.keyStrokes(win)
@@ -411,13 +411,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                             onset=selectionOnset)
             ############################ Coin ######################################
             if coin_toss:
-                if (response=='right') and expInfo['active_mode'] == 2:
+                if (response=='right') and expInfo['mode'] == 2:
                     pass
                 else:
                     coins[response + 'Up'].setOpacity(1)
                 logDict.update({'gamble_up': 'up'})
             else:
-                if (response == 'right') and expInfo['active_mode'] == 2:
+                if (response == 'right') and expInfo['mode'] == 2:
                     pass
                 else:
                     coins[response + 'Down'].setOpacity(1)

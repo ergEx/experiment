@@ -471,7 +471,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.setText("press earlier")
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
-    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
+    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer, expInfo['mode'])
 
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
