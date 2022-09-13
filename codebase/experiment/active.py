@@ -37,7 +37,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
     if spawnGui:
         expInfo = gui_update_dict(expInfo, 'ergEx_Active')
 
-    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], 
+    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'],
                               expInfo['eta'])
 
     # Buttons to str:
@@ -184,6 +184,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         coins[imL].pos += offset
         coins[imL].setAutoDraw(True)
 
+    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[1,1,1],
+                           pos= [-1, -1], height=20, width=0, opacity=0.5, units='norm')
+    TimeLine.setAutoDraw(True)
     MoneyBox = visual.TextStim(win=win, name='MoneyBox', text=format_wealth(wealth),
                             pos=acfg.textPos, height=acfg.textHeight, color='white')
     MoneyBox.pos += offset
@@ -517,6 +520,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         for imL in acfg.imgLocation:
                 coins[imL].setOpacity(0)
                 Logger.keyStrokes(win)
+
+        TimeLine.width = (curTrial / noTrials) * 4
+        TimeLine.draw()
 
         win.flip()
         Logger.keyStrokes(win)

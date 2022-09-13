@@ -169,6 +169,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[nFl].pos += offset
         fractals[nFl].setAutoDraw(True)
 
+
+    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[1,1,1], units='norm', opacity=0.5,
+                           pos=[-1, -1], height=0.05, width=0)
+    TimeLine.setAutoDraw(True)
+
     Wheel = visual.ImageStim(win=win, name='wheel',
                              image=os.path.join(STIMULUSPATH, 'wheel_slim.png'),
                              mask=None, ori=0.0, pos=pcfg.centerPos,
@@ -422,6 +427,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[fractal].setOpacity(0)
 
         MoneyBox.setText(format_wealth(wealth))
+        TimeLine.width = (curTrial / noTrials) * 4
+        TimeLine.draw()
+
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
 
@@ -430,7 +438,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.wealth = wealth
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
         nTrial += 1
-
         if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
 
@@ -442,6 +449,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Logger.keyStrokes(win)
 
     ############################### Nobrainer about here ###########################
+
+    TimeLine.width = 0
+    TimeLine.draw()
     Agent = ActiveAutoPilot(0.4, 0.1, active=expInfo['agentActive'],
                             mode='random',
                             buttonLeft=expInfo['responseLeft'],
@@ -682,10 +692,13 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
 
         Reminder.setAutoDraw(False)
+        TimeLine.width = (nbTrial / nTrial_noBrainer) * 4
+        TimeLine.draw()
         win.flip()
         Logger.keyStrokes(win)
 
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
+
         nTrial += 1
 
     ############################### Nobrainer over #################################
