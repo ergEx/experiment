@@ -170,8 +170,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[nFl].setAutoDraw(True)
 
 
-    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[1,1,1], units='norm', opacity=0.5,
-                           pos=[-1, -1], height=0.05, width=0)
+    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1, 0.1, 0.1], units='norm', opacity=1.0,
+                           pos=[-1, -1], height=0.02, width=0)
     TimeLine.setAutoDraw(True)
 
     Wheel = visual.ImageStim(win=win, name='wheel',
@@ -427,7 +427,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[fractal].setOpacity(0)
 
         MoneyBox.setText(format_wealth(wealth))
-        TimeLine.width = (curTrial / noTrials) * 4
+        TimeLine.width = ( (curTrial + 1) / expInfo['maxTrial']) * 4
         TimeLine.draw()
 
         Wait.wait(pcfg.timeFinalDisplay)
@@ -692,7 +692,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
 
         Reminder.setAutoDraw(False)
-        TimeLine.width = (nbTrial / nTrial_noBrainer) * 4
+        TimeLine.width = ( (nbTrial + 1) / nTrial_noBrainer) * 4
         TimeLine.draw()
         win.flip()
         Logger.keyStrokes(win)
