@@ -172,7 +172,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1, 0.1, 0.1], units='norm', opacity=1.0,
                            pos=[-1, -1], height=0.02, width=0)
-    TimeLine.setAutoDraw(True)
+    TimeLine.setAutoDraw(False)
 
     Wheel = visual.ImageStim(win=win, name='wheel',
                              image=os.path.join(STIMULUSPATH, 'wheel_slim.png'),
@@ -428,7 +428,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         MoneyBox.setText(format_wealth(wealth))
         TimeLine.width = ( (curTrial + 1) / expInfo['maxTrial']) * 4
-        TimeLine.draw()
 
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
@@ -451,7 +450,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     ############################### Nobrainer about here ###########################
 
     TimeLine.width = 0
-    TimeLine.draw()
+    win.flip()
     Agent = ActiveAutoPilot(0.4, 0.1, active=expInfo['agentActive'],
                             mode='random',
                             buttonLeft=expInfo['responseLeft'],
@@ -693,7 +692,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         Reminder.setAutoDraw(False)
         TimeLine.width = ( (nbTrial + 1) / nTrial_noBrainer) * 4
-        TimeLine.draw()
         win.flip()
         Logger.keyStrokes(win)
 

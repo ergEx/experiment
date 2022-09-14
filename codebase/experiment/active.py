@@ -186,7 +186,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
     TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1,0.1,0.1],
                            pos= [-1, -1], height=0.02, width=0, opacity=1.0, units='norm')
-    TimeLine.setAutoDraw(True)
+    TimeLine.setAutoDraw(False)
     MoneyBox = visual.TextStim(win=win, name='MoneyBox', text=format_wealth(wealth),
                             pos=acfg.textPos, height=acfg.textHeight, color='white')
     MoneyBox.pos += offset
@@ -522,7 +522,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                 Logger.keyStrokes(win)
 
         TimeLine.width = ((curTrial + 1) / noTrials) * 4
-        TimeLine.draw()
 
         win.flip()
         Logger.keyStrokes(win)
