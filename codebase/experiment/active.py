@@ -37,7 +37,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
     if spawnGui:
         expInfo = gui_update_dict(expInfo, 'ergEx_Active')
 
-    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], 
+    offset = load_calibration(filePath, expInfo['participant'], expInfo['session'],
                               expInfo['eta'])
 
     # Buttons to str:
@@ -167,7 +167,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     for imL in acfg.imgLocation:
         for nFl, fl in enumerate(fractalList):
 
-            if "right" in imL and expInfo['active_mode'] == 2:
+            if "right" in imL and expInfo['mode'] == 2:
                 pos = list(acfg.imgLocPos[imL])
                 pos[1] = 0
             else:
@@ -184,6 +184,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         coins[imL].pos += offset
         coins[imL].setAutoDraw(True)
 
+    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1,0.1,0.1],
+                           pos= [-1, -1], height=0.02, width=0, opacity=1.0, units='norm')
+    TimeLine.setAutoDraw(False)
     MoneyBox = visual.TextStim(win=win, name='MoneyBox', text=format_wealth(wealth),
                             pos=acfg.textPos, height=acfg.textHeight, color='white')
     MoneyBox.pos += offset
@@ -293,7 +296,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                         'gamma_left_up': gamma1,
                         'gamma_left_down': gamma2})
 
-        if expInfo['active_mode'] != 2:
+        if expInfo['mode'] != 2:
             win.flip()
             Logger.keyStrokes(win)
 
@@ -304,7 +307,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
-        fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['active_mode'] != 2))
+        fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['mode'] != 2))
         TimerShape.setAutoDraw(True)
         win.flip()
         Logger.keyStrokes(win)
@@ -408,13 +411,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                             onset=selectionOnset)
             ############################ Coin ######################################
             if coin_toss:
-                if (response=='right') and expInfo['active_mode'] == 2:
+                if (response=='right') and expInfo['mode'] == 2:
                     pass
                 else:
                     coins[response + 'Up'].setOpacity(1)
                 logDict.update({'gamble_up': 'up'})
             else:
-                if (response == 'right') and expInfo['active_mode'] == 2:
+                if (response == 'right') and expInfo['mode'] == 2:
                     pass
                 else:
                     coins[response + 'Down'].setOpacity(1)
@@ -517,6 +520,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         for imL in acfg.imgLocation:
                 coins[imL].setOpacity(0)
                 Logger.keyStrokes(win)
+
+        TimeLine.width = ((curTrial + 1) / noTrials) * 4
 
         win.flip()
         Logger.keyStrokes(win)

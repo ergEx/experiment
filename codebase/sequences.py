@@ -127,8 +127,8 @@ def active_sequence_two_gambles(n_trials:int,
                                                    axis=0)[: n_trials], 0)
     timings = np.empty([n_trials, 3], dtype=float)
     timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
-    timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
-    timings[:, 2] = np.zeros(n_trials) + 1.5 # Onset Gamble 2
+    timings[:, 1] = np.zeros(n_trials) + 1.3 # Onset Gamble 1
+    timings[:, 2] = np.zeros(n_trials) + 1.3 # Onset Gamble 2
     timings = shuffle_along_axis(timings, 0)
 
     for ii, trial in enumerate(trial_order):

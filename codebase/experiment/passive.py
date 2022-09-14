@@ -169,6 +169,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[nFl].pos += offset
         fractals[nFl].setAutoDraw(True)
 
+
+    TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1, 0.1, 0.1], units='norm', opacity=1.0,
+                           pos=[-1, -1], height=0.02, width=0)
+    TimeLine.setAutoDraw(False)
+
     Wheel = visual.ImageStim(win=win, name='wheel',
                              image=os.path.join(STIMULUSPATH, 'wheel_slim.png'),
                              mask=None, ori=0.0, pos=pcfg.centerPos,
@@ -422,6 +427,8 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         fractals[fractal].setOpacity(0)
 
         MoneyBox.setText(format_wealth(wealth))
+        TimeLine.width = ( (curTrial + 1) / expInfo['maxTrial']) * 4
+
         Wait.wait(pcfg.timeFinalDisplay)
         ########################## Fractal offset ##################################
 
@@ -430,7 +437,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.wealth = wealth
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
         nTrial += 1
-
         if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
 
@@ -442,6 +448,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Logger.keyStrokes(win)
 
     ############################### Nobrainer about here ###########################
+
+    TimeLine.width = 0
+    win.flip()
     Agent = ActiveAutoPilot(0.4, 0.1, active=expInfo['agentActive'],
                             mode='random',
                             buttonLeft=expInfo['responseLeft'],
@@ -461,7 +470,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     Reminder.setText("press earlier")
     fractalData = pd.read_csv(trialInfoPath, sep='\t')
     # Create dataset:
-    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer)
+    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer, expInfo['mode'])
 
     TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
                             fillColor='white', start=0, end=360)
@@ -682,10 +691,12 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
 
         Reminder.setAutoDraw(False)
+        TimeLine.width = ( (nbTrial + 1) / nTrial_noBrainer) * 4
         win.flip()
         Logger.keyStrokes(win)
 
         Logger.logEvent({"event_type": "TrialEnd", **logDict})
+
         nTrial += 1
 
     ############################### Nobrainer over #################################

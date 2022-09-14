@@ -90,7 +90,7 @@ active_configs['timerPos'] = (CENTER_POS[0], -25)
 # Timings
 active_configs['waitTR'] = 1
 """ How many TRs to wait before the experiment begins"""
-active_configs['timeResponse'] = 2 # Response Window
+active_configs['timeResponse'] = 2.2 # Response Window
 """ Maximal response time """
 active_configs['timeSideHighlight'] = 1.0 # Time after fractals are removed
 """ Time where theres only the selected fractal on screen. """
