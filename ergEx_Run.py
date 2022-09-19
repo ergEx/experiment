@@ -12,7 +12,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 1
+ACTIVE_MODE = 2
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
