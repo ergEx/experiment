@@ -1,3 +1,4 @@
 *.tsv
 *.zip
 *.csv
+!questionnaires/*.tsv
