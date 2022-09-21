@@ -1,12 +1,16 @@
 import math
 
-from . import constants as con
 import numpy as np
 import pandas as pd
-from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
-    create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
-    inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
-    shuffle_along_axis
+
+from . import constants as con
+from .utils import (calculate_growth_rates, create_experiment,
+                    create_gamble_pairs_one_gamble,
+                    create_gamble_pairs_two_gambles, create_gambles_one_gamble,
+                    create_gambles_two_gambles, create_trial_order,
+                    inverse_isoelastic_utility, is_g_deterministic,
+                    is_nobrainer, is_statewise_dominated, isoelastic_utility,
+                    shuffle_along_axis)
 
 
 def passive_sequence_one_gamble(lambd:float,
@@ -80,9 +84,8 @@ def active_sequence_one_gamble(n_trials:int,
 
     gamma_array = np.empty([n_trials, 4], dtype=float)
     fractals =  np.empty([n_trials, 4], dtype=float)
-    coin_toss = shuffle_along_axis(np.concatenate((np.zeros([math.ceil(n_trials/2), 1], dtype=int),
-                                                   np.ones([math.ceil(n_trials/2), 1], dtype=int)),
-                                                   axis=0)[: n_trials], 0)
+    coin_toss = np.random.randint(2, size=(n_trials,1))
+
     timings = np.empty([n_trials, 3], dtype=float)
     timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
     timings[:, 1] = np.zeros(n_trials) + 1.5 # Onset Gamble 1
@@ -122,9 +125,8 @@ def active_sequence_two_gambles(n_trials:int,
 
     gamma_array = np.empty([n_trials, 4], dtype=float)
     fractals =  np.empty([n_trials, 4], dtype=float)
-    coin_toss = shuffle_along_axis(np.concatenate((np.zeros([math.ceil(n_trials/2), 1], dtype=int),
-                                                   np.ones([math.ceil(n_trials/2), 1], dtype=int)),
-                                                   axis=0)[: n_trials], 0)
+    coin_toss = np.random.randint(2, size=(n_trials,1))
+
     timings = np.empty([n_trials, 3], dtype=float)
     timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
     timings[:, 1] = np.zeros(n_trials) + 1.3 # Onset Gamble 1
