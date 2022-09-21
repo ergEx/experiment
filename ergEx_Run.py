@@ -1,5 +1,6 @@
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
+from codebase.experiment import run_questionnaire
 from codebase.experiment import calibration_run
 from codebase import constants as con
 from codebase.experiment import gui_update_dict, assign_fractals
@@ -77,7 +78,8 @@ if __name__ == '__main__':
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
-               'startSession': 1} # Which run of the active phase to start from (starts at 1)
+               'startSession': 1,
+               'showQuestionnaires': True} # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, 'Set Up')
 
@@ -104,7 +106,6 @@ if __name__ == '__main__':
                     exist_ok=True)
 
         run_with_dict(expInfo=expInfo)
-
 
         if expInfo['calibration']:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
@@ -167,6 +168,31 @@ if __name__ == '__main__':
             wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
             win.close()
             gc.collect()
+
+
+        if expInfo['showQuestionnaires']:
+
+            folder = os.path.join(filePath, make_bids_dir(expInfo['participant'], sess))
+
+            win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
+
+            save_names = ['risk-propensity', 'dospert-risk-taking', 'dospert-perceived-risk', 'dospert-risk-benefits']
+            quests = ['data/questionnaires/risk_propensity_scale.tsv',
+                      'data/questionnaires/dospert_risk_taking.tsv',
+                      'data/questionnaires/dospert_perceived_risk.tsv',
+                      'data/questionnaires/dospert_risk_benefits.tsv']
+
+            for nquest, quest in zip(save_names, quests):
+
+                run_questionnaire(win, quest, expInfo['participant'],
+                                passive_conf['responseLeft'],
+                                passive_conf['responseRight'],
+                                passive_conf['responseButton'],
+                                os.path.join(folder, f'sub-{expInfo["participant"]}_{nquest}.tsv'))
+
+            win.close()
+
+            expInfo['showQuestionnaires'] = False
 
         win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
 
