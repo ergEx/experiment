@@ -12,7 +12,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 2
+ACTIVE_MODE = 1
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
@@ -39,6 +39,9 @@ MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
 MAX_TRIALS_ACTIVE = np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
+
+SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28]}
+""" The 2 sets of start and stop slides for the instructions depending on mode. """
 
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
@@ -124,7 +127,7 @@ if __name__ == '__main__':
 
         if not instruction_shown:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=0, stop_slide=15)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][0], stop_slide=SLIDESET[ACTIVE_MODE][1])
             win.close()
 
         for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
@@ -153,7 +156,7 @@ if __name__ == '__main__':
 
         if not instruction_shown:
             win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=16)
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][2], stop_slide=SLIDESET[ACTIVE_MODE][3])
             win.close()
 
         instruction_shown = True

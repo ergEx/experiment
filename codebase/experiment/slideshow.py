@@ -34,7 +34,7 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
 
     slides = glob(os.path.join(path, 'Slide*'))
 
-    slides = nat_sorted(slides)
+    slides = nat_sorted(slides)[start_slide : stop_slide + 1]
 
     initialization = visual.TextStim(win=win, name='initialization',
                                     text='Initializing!',
@@ -54,14 +54,11 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
     initialization.setAutoDraw(False)
     slideShow = True
 
-    images[start_slide].setAutoDraw(True)
-    win.flip()
+    min_slides = 0
+    max_slides = len(images) - 1
 
-    min_slides = start_slide
-    if stop_slide is None:
-        max_slides = len(images) - 1
-    else:
-        max_slides = stop_slide
+    images[min_slides].setAutoDraw(True)
+    win.flip()
 
     sl_counter = min_slides
     allow_skip = False
