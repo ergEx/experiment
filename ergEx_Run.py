@@ -1,3 +1,4 @@
+# VERSION: v0.2.1b
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -173,30 +174,6 @@ if __name__ == '__main__':
             gc.collect()
 
 
-        if expInfo['showQuestionnaires']:
-
-            folder = os.path.join(filePath, make_bids_dir(expInfo['participant'], sess))
-
-            win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-
-            save_names = ['risk-propensity', 'dospert-risk-taking', 'dospert-perceived-risk', 'dospert-risk-benefits']
-            quests = ['data/questionnaires/risk_propensity_scale.tsv',
-                      'data/questionnaires/dospert_risk_taking.tsv',
-                      'data/questionnaires/dospert_perceived_risk.tsv',
-                      'data/questionnaires/dospert_risk_benefits.tsv']
-
-            for nquest, quest in zip(save_names, quests):
-
-                run_questionnaire(win, quest, expInfo['participant'],
-                                passive_conf['responseLeft'],
-                                passive_conf['responseRight'],
-                                passive_conf['responseButton'],
-                                os.path.join(folder, f'sub-{expInfo["participant"]}_{nquest}.tsv'))
-
-            win.close()
-
-            expInfo['showQuestionnaires'] = False
-
         win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
 
         Between.setText(f"You completed session {sess}, thank you.")
@@ -205,5 +182,30 @@ if __name__ == '__main__':
         core.wait(2)
         win.close()
         gc.collect()
+
+
+    if expInfo['showQuestionnaires']:
+
+        folder = os.path.join(filePath, make_bids_dir(expInfo['participant'], sess))
+
+        win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
+
+        save_names = ['risk-propensity', 'dospert-risk-taking', 'dospert-perceived-risk', 'dospert-risk-benefits']
+        quests = ['data/questionnaires/risk_propensity_scale.tsv',
+                  'data/questionnaires/dospert_risk_taking.tsv',
+                  'data/questionnaires/dospert_perceived_risk.tsv',
+                  'data/questionnaires/dospert_risk_benefits.tsv']
+
+        for nquest, quest in zip(save_names, quests):
+
+            run_questionnaire(win, quest, expInfo['participant'],
+                            passive_conf['responseLeft'],
+                            passive_conf['responseRight'],
+                            passive_conf['responseButton'],
+                            os.path.join(folder, f'sub-{expInfo["participant"]}_{nquest}.tsv'))
+
+        win.close()
+
+        expInfo['showQuestionnaires'] = False
 
     core.quit()
