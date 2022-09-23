@@ -35,6 +35,7 @@ class ExperimentLogger:
         self.part = self.na
         self.tr = 0
         self.run = 0
+        self.track = na
         self.tmp_dict = {}
 
         self.categories = ['onset', 'duration', 'trial_type', 'event_type',
@@ -51,7 +52,7 @@ class ExperimentLogger:
                                  'fractal_right_up', 'fractal_right_down',
                                  'chosen_expected_gamma', 'realized_gamma',
                                  'trial_time', 'participant_id',
-                                 'expected_duration', 'run']
+                                 'expected_duration', 'run', 'track']
 
         elif self.mode == 'passive':
              self.categories += ['response_late',  'response_correct',
