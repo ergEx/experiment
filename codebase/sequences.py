@@ -152,7 +152,7 @@ def active_sequence_two_gambles_train_tracks(n_trials:int,
     timings[:, 2] = np.zeros(n_trials) + 1.3 # Onset Gamble 2
     timings = shuffle_along_axis(timings, 0)
 
-    for i,r in enumerate([[list(range(int(len(gamma_range)/2))),list(range(int(len(gamma_range)))),list(range(int(len(gamma_range)/2),int(len(gamma_range))))]]):
+    for i,r in enumerate([list(range(int(len(gamma_range)/2))),list(range(int(len(gamma_range)))),list(range(int(len(gamma_range)/2),int(len(gamma_range))))]):
         gambles = create_gambles_two_gambles(gamma_range[r])
         gambles = [
             gamble for gamble in gambles
