@@ -109,6 +109,15 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
                                   'active', extension='input.tsv')
 
+    if expInfo['mode'] == 3:
+        trainInfoPath = {}
+        for input_ext in ['0', '1', '2']:
+            tmpPath = make_filename('data/inputs/', expInfo['participant'],
+                                    expInfo['session'], expInfo['eta'],
+                                    'active', extension=f'input{input_ext}.tsv')
+            trialInfoPath[input_ext] = tmpPath
+
+
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
 
@@ -203,7 +212,14 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     TimerShape.pos += offset
     TimerShape.setAutoDraw(False)
 
-    trials = pd.read_csv(trialInfoPath, sep='\t')
+    if expInfo['mode'] != 3:
+
+        trials = pd.read_csv(trialInfoPath, sep='\t')
+    elif expInfo['mode'] == 3:
+        trials =[]
+        for track, input_ext in zip(['0', '1', '2'], ['0', '1', '2']):
+            trials[track] = pd.read_csv(trialInfoPath[input_ext])
+
 
     Initialization.setAutoDraw(False)
     win.flip()
@@ -250,12 +266,31 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
 
     ###################### This is were the experiment begins ######################
-    noTrials = trials.shape[0] - nTrial
+    if expInfo['mode'] != 3:
+        noTrials = trials.shape[0] - nTrial
+    else:
+        noTrials = trials['0'].shape[0] - nTrial
+
     terminateNormally = True
 
     for curTrial in range(noTrials):
 
-        thisTrial = trials.iloc[nTrial].to_dict()
+        # Logging dict - to include continuously updated info:
+        logDict = {}
+
+        if expInfo['mode'] != 3:
+            thisTrial = trials.iloc[nTrial].to_dict()
+        else:
+            if wealth  > 10_000:
+                thisTrial = trials['2'].iloc[nTrial].to_dict()
+                logDict.update({'track': '2'})
+            elif wealth < 100:
+                thisTrial = trials['3'].iloc[nTrial].to_dict()
+                logDict.update({'track': '3'})
+            else:
+                thisTrial= trials['0'].iloc[nTrial].to_dict()
+                logDict.update({'track': '0'})
+
 
         if thisTrial != None:
             fractal1, fractal2 = int(thisTrial['fractal_left_up']), int(thisTrial['fractal_left_down'])
@@ -274,8 +309,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         currentFractals = [fractal1, fractal2, fractal3, fractal4]
         currentGammas = [gamma1, gamma2, gamma3, gamma4]
-        # Logging dict - to include continuously updated info:
-        logDict = {}
+
         ############################### ITI ########################################
         itiOnset = Logger.getTime()
 
