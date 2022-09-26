@@ -110,11 +110,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                                   'active', extension='input.tsv')
 
     if expInfo['mode'] == 3:
-        trainInfoPath = {}
-        for input_ext in ['0', '1', '2']:
+        trialInfoPath = {}
+        for input_ext in ['bad', 'neutral', 'good']:
             tmpPath = make_filename('data/inputs/', expInfo['participant'],
                                     expInfo['session'], expInfo['eta'],
-                                    'active', extension=f'input{input_ext}.tsv')
+                                    'active', extension=f'input_{input_ext}.tsv')
             trialInfoPath[input_ext] = tmpPath
 
 
@@ -216,9 +216,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         trials = pd.read_csv(trialInfoPath, sep='\t')
     elif expInfo['mode'] == 3:
-        trials =[]
-        for track, input_ext in zip(['0', '1', '2'], ['0', '1', '2']):
-            trials[track] = pd.read_csv(trialInfoPath[input_ext])
+        trials = {}
+        for track in ['bad', 'neutral', 'good']:
+            trials[track] = pd.read_csv(trialInfoPath[track], sep='\t')
 
 
     Initialization.setAutoDraw(False)
@@ -269,7 +269,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     if expInfo['mode'] != 3:
         noTrials = trials.shape[0] - nTrial
     else:
-        noTrials = trials['0'].shape[0] - nTrial
+        noTrials = trials['neutral'].shape[0] - nTrial
 
     terminateNormally = True
 
@@ -282,15 +282,14 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             thisTrial = trials.iloc[nTrial].to_dict()
         else:
             if wealth  > 10_000:
-                thisTrial = trials['2'].iloc[nTrial].to_dict()
-                logDict.update({'track': '2'})
+                thisTrial = trials['bad'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'bad'})
             elif wealth < 100:
-                thisTrial = trials['3'].iloc[nTrial].to_dict()
-                logDict.update({'track': '3'})
+                thisTrial = trials['good'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'good'})
             else:
-                thisTrial= trials['0'].iloc[nTrial].to_dict()
-                logDict.update({'track': '0'})
-
+                thisTrial= trials['neutral'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'neutral'})
 
         if thisTrial != None:
             fractal1, fractal2 = int(thisTrial['fractal_left_up']), int(thisTrial['fractal_left_down'])
