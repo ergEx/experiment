@@ -34,9 +34,9 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
                                             speed_up=speed_up
                                             )
 
-        p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
+        p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv').replace('_neutral', ''), index=False, sep='\t')
         for i, name in enumerate(['bad','neutral','good']):
-            a_df[i].to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('neutral',name), index=False, sep='\t')
+            a_df[i].to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('neutral', name), index=False, sep='\t')
 
     else:
         raise ValueError("Mode has to be 1, 2 or 3")
