@@ -1,4 +1,4 @@
-# VERSION: v0.2.1b
+VERSION='v0.2.1d'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                'startSession': 1,
                'showQuestionnaires': True} # Which run of the active phase to start from (starts at 1)
 
-    expInfo = gui_update_dict(expInfo, 'Set Up')
+    expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
     instruction_shown = False
     SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
