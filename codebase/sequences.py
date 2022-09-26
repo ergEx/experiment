@@ -4,13 +4,10 @@ import numpy as np
 import pandas as pd
 
 from . import constants as con
-from .utils import (calculate_growth_rates, create_experiment,
-                    create_gamble_pairs_one_gamble,
-                    create_gamble_pairs_two_gambles, create_gambles_one_gamble,
-                    create_gambles_two_gambles, create_trial_order,
-                    inverse_isoelastic_utility, is_g_deterministic,
-                    is_nobrainer, is_statewise_dominated, isoelastic_utility,
-                    shuffle_along_axis)
+from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
+    create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
+    inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
+    shuffle_along_axis
 
 
 def passive_sequence_one_gamble(lambd:float,
@@ -140,6 +137,54 @@ def active_sequence_two_gambles(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
+def active_sequence_two_gambles_train_tracks(n_trials:int,
+                    gamma_range:np.array,
+                    fractal_dict:dict,
+                    n_simulations:int=1):
+
+    gamma_array_train_tracks = dict()
+    fractals_train_tracks = dict()
+
+    coin_toss = np.random.randint(2, size=(n_trials,1))
+    timings = np.empty([n_trials, 3], dtype=float)
+    timings[:, 0] = np.zeros(n_trials) + 2.0 # ITI
+    timings[:, 1] = np.zeros(n_trials) + 1.3 # Onset Gamble 1
+    timings[:, 2] = np.zeros(n_trials) + 1.3 # Onset Gamble 2
+    timings = shuffle_along_axis(timings, 0)
+
+    for i,r in enumerate([list(range(int(len(gamma_range)-2))),list(range(int(len(gamma_range)))),list(range(2,int(len(gamma_range))))]):
+        gambles = create_gambles_two_gambles(gamma_range[r])
+        gambles = [
+            gamble for gamble in gambles
+            if not is_g_deterministic(gamble)
+            ]
+        gambles = shuffle_along_axis(np.array(gambles),1)
+        gamble_pairs = create_gamble_pairs_two_gambles(gambles)
+        gamble_pairs = [
+            gamble_pair for gamble_pair in gamble_pairs
+            if not is_statewise_dominated(gamble_pair)
+            and not is_nobrainer(gamble_pair)
+            ]
+        experiment  = create_experiment(gamble_pairs)
+        trial_order = create_trial_order(
+                n_simulations=n_simulations,
+                n_gamble_pairs=experiment.shape[-1],
+                n_trials=n_trials
+            )
+
+        gamma_array = np.empty([n_trials, 4], dtype=float)
+        fractals =  np.empty([n_trials, 4], dtype=float)
+
+        for ii, trial in enumerate(trial_order):
+            tmp = experiment[:,:,trial].flatten()
+            fractals[ii, :] =  [fractal_dict[g] for g in tmp]
+            gamma_array[ii, :] = tmp
+
+        gamma_array_train_tracks[i] = gamma_array
+        fractals_train_tracks[i] = fractals
+
+    return fractals_train_tracks, gamma_array_train_tracks, coin_toss, timings, fractal_dict
+
 
 def generate_dataframes(lambd:float,
                         mode:int,
@@ -148,8 +193,23 @@ def generate_dataframes(lambd:float,
                         n_resets_passive:int=con.n_resets_passive,
                         speed_up:float=1,
                         ):
+    if mode == 3: #Gamble pair version with train tracks
+        (p_seq_fractals, p_seq_gamma,
+        p_seq_part_sum, p_seq_part_wealth_sum,
+        fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
+                                                                    c_dict=con.c_dict,
+                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    n_trials_before_reset=n_trials_passive_before_reset,
+                                                                    n_resets=n_resets_passive,
+                                                                    n_fractals=con.N_FRACTALS,
+                                                                    x_0=con.x_0)
 
-    if mode == 2: #One gamble version
+
+        (a_seq_fractals, a_seq_gamma,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles_train_tracks(n_trials=n_trials_active,
+                                                                        gamma_range=gamma_range,
+                                                                        fractal_dict=fractal_dict)
+    elif mode == 2: #One gamble version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         gamma1_list, gamma2_list, fractal_dict) = passive_sequence_one_gamble(lambd=lambd,
@@ -183,7 +243,7 @@ def generate_dataframes(lambd:float,
                                                                         gamma_range=gamma_range,
                                                                         fractal_dict=fractal_dict)
     else:
-        raise ValueError("Mode has to be 1 or 2")
+        raise ValueError("Mode has to be 1, 2 or 3")
 
 
     n_trials_passive = len(p_seq_fractals)
@@ -196,52 +256,68 @@ def generate_dataframes(lambd:float,
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})
 
-
-
-    a_df_fractals = pd.DataFrame(a_seq_fractals,
-                                 columns=['fractal_left_up', 'fractal_left_down',
-                                          'fractal_right_up', 'fractal_right_down'])
-    a_df_gamma = pd.DataFrame(a_seq_gamma,
-                              columns=['gamma_left_up', 'gamma_left_down',
-                                       'gamma_right_up', 'gamma_right_down'])
-
     a_df_cointoss = pd.DataFrame(a_seq_cointoss, columns=['gamble_up'])
 
     a_df_misc = pd.DataFrame(data={'trial': range(n_trials_active),
-                                   'lambda': [lambd]*n_trials_active})
+                                    'lambda': [lambd]*n_trials_active})
 
     a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
-                                                        'onset_gamble_pair_left',
-                                                        'onset_gamble_pair_right'])
+                                                            'onset_gamble_pair_left',
+                                                            'onset_gamble_pair_right'])
+    if mode in [1,2]:
+        a_df_fractals = pd.DataFrame(a_seq_fractals,
+                                    columns=['fractal_left_up', 'fractal_left_down',
+                                            'fractal_right_up', 'fractal_right_down'])
+        a_df_gamma = pd.DataFrame(a_seq_gamma,
+                                columns=['gamma_left_up', 'gamma_left_down',
+                                        'gamma_right_up', 'gamma_right_down'])
 
-    a_df = pd.concat([a_df_misc,a_df_fractals, a_df_gamma,
-                      a_df_cointoss,a_df_timings], axis=1)
 
-    ## Meta Info written here
-    l_avg_u = a_df_gamma[['gamma_left_up']].mean(axis=0)
-    l_avg_l = a_df_gamma[['gamma_left_down']].mean(axis=0)
-    r_avg_u = a_df_gamma[['gamma_right_up']].mean(axis=0)
-    r_avg_l = a_df_gamma[['gamma_right_down']].mean(axis=0)
+        a_df = pd.concat([a_df_misc,a_df_fractals, a_df_gamma,
+                        a_df_cointoss,a_df_timings], axis=1)
 
-    optimal_path = (a_df_gamma[['gamma_left_up', 'gamma_left_down']].mean(1) <
-                    a_df_gamma[['gamma_right_up', 'gamma_right_up']].mean(1)) * 1 # to cast
+        ## Meta Info written here
+        l_avg_u = a_df_gamma[['gamma_left_up']].mean(axis=0)
+        l_avg_l = a_df_gamma[['gamma_left_down']].mean(axis=0)
+        r_avg_u = a_df_gamma[['gamma_right_up']].mean(axis=0)
+        r_avg_l = a_df_gamma[['gamma_right_down']].mean(axis=0)
 
-    max_gammas = np.concatenate([a_df_gamma[['gamma_left_up', 'gamma_left_down']].max(1).values[:, np.newaxis],
-                                a_df_gamma[['gamma_right_up', 'gamma_right_down']].max(1).values[:, np.newaxis]],
-                                axis=1)
-    max_sum_gamma = np.take_along_axis(max_gammas, optimal_path.values[:, np.newaxis] * 1,
-                                    axis=1).sum()
+        optimal_path = (a_df_gamma[['gamma_left_up', 'gamma_left_down']].mean(1) <
+                        a_df_gamma[['gamma_right_up', 'gamma_right_up']].mean(1)) * 1 # to cast
 
-    meta = ("Passive: \n______________________ \n"
-            + f"Sequence generated using version {mode} \n"
-            + f"Trials: {n_trials_passive}\nmin: {min(p_seq_part_wealth_sum)}\nmax: {max(p_seq_part_wealth_sum)}"
-            + "\n\n\nActive: \n______________________ \n"
-            + f"n. trials: {n_trials_active} \n"
-            + f"Left upper avg: {np.mean(l_avg_u)}\n"
-            + f"Left lower avg: {np.mean(l_avg_l)}\n"
-            + f"Right upper avg: {np.mean(r_avg_u)}\n"
-            + f"Right lower avg: {np.mean(r_avg_l)}\n"
-            + f"Time Optimal Max: {max_sum_gamma}\n"
-            + f"Cointoss: {np.mean(a_df_cointoss.mean(axis=0))}\n" )
+        max_gammas = np.concatenate([a_df_gamma[['gamma_left_up', 'gamma_left_down']].max(1).values[:, np.newaxis],
+                                    a_df_gamma[['gamma_right_up', 'gamma_right_down']].max(1).values[:, np.newaxis]],
+                                    axis=1)
+        max_sum_gamma = np.take_along_axis(max_gammas, optimal_path.values[:, np.newaxis] * 1,
+                                        axis=1).sum()
 
-    return p_df, a_df, meta
+        meta = ("Passive: \n______________________ \n"
+                + f"Sequence generated using version {mode} \n"
+                + f"Trials: {n_trials_passive}\nmin: {min(p_seq_part_wealth_sum)}\nmax: {max(p_seq_part_wealth_sum)}"
+                + "\n\n\nActive: \n______________________ \n"
+                + f"n. trials: {n_trials_active} \n"
+                + f"Left upper avg: {np.mean(l_avg_u)}\n"
+                + f"Left lower avg: {np.mean(l_avg_l)}\n"
+                + f"Right upper avg: {np.mean(r_avg_u)}\n"
+                + f"Right lower avg: {np.mean(r_avg_l)}\n"
+                + f"Time Optimal Max: {max_sum_gamma}\n"
+                + f"Cointoss: {np.mean(a_df_cointoss.mean(axis=0))}\n" )
+
+        return p_df, a_df, meta
+
+    elif mode == 3:
+        a_dfs = []
+        for i in range(3):
+            a_df_fractals = pd.DataFrame(a_seq_fractals[i],
+                                    columns=['fractal_left_up', 'fractal_left_down',
+                                            'fractal_right_up', 'fractal_right_down'])
+            a_df_gamma = pd.DataFrame(a_seq_gamma[i],
+                                columns=['gamma_left_up', 'gamma_left_down',
+                                        'gamma_right_up', 'gamma_right_down'])
+
+
+            a_df = pd.concat([a_df_misc,a_df_fractals, a_df_gamma,
+                        a_df_cointoss,a_df_timings], axis=1)
+            a_dfs.append(a_df)
+
+        return p_df, a_dfs

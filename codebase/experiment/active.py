@@ -55,11 +55,20 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
                                                     expInfo['overwrite'])
 
     # Load trial file:
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
-                                  'active', extension='input.tsv')
+    if expInfo['mode'] != 3:
+        trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
+                                    'active', extension='input.tsv')
+        trialFile = pd.read_csv(trialInfoPath, sep='\t')
 
+    elif expInfo['mode'] == 3:
+        trialInfoPath = {}
+        for input_ext in ['bad', 'neutral', 'good']:
+            tmpPath = make_filename('data/inputs/', expInfo['participant'],
+                                    expInfo['session'], expInfo['eta'],
+                                    'active', extension=f'input_{input_ext}.tsv')
+            trialInfoPath[input_ext] = tmpPath
 
-    trialFile = pd.read_csv(trialInfoPath, sep='\t')
+        trialFile = pd.read_csv(trialInfoPath['neutral'], sep='\t')
 
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
                                     fixed_timings=[acfg.timeResponse,
@@ -106,8 +115,18 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     responseMapping = expInfo['responseMapping']
 
     # Rebuild paths
-    trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
-                                  'active', extension='input.tsv')
+
+    if expInfo['mode'] != 3:
+        trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'], expInfo['eta'],
+                                    'active', extension='input.tsv')
+    elif expInfo['mode'] == 3:
+        trialInfoPath = {}
+        for input_ext in ['bad', 'neutral', 'good']:
+            tmpPath = make_filename('data/inputs/', expInfo['participant'],
+                                    expInfo['session'], expInfo['eta'],
+                                    'active', extension=f'input_{input_ext}.tsv')
+            trialInfoPath[input_ext] = tmpPath
+
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
@@ -203,7 +222,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     TimerShape.pos += offset
     TimerShape.setAutoDraw(False)
 
-    trials = pd.read_csv(trialInfoPath, sep='\t')
+    if expInfo['mode'] != 3:
+        trials = pd.read_csv(trialInfoPath, sep='\t')
+    elif expInfo['mode'] == 3:
+        trials = {}
+        for track in ['bad', 'neutral', 'good']:
+            trials[track] = pd.read_csv(trialInfoPath[track], sep='\t')
+
 
     Initialization.setAutoDraw(False)
     win.flip()
@@ -250,12 +275,30 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
 
     ###################### This is were the experiment begins ######################
-    noTrials = trials.shape[0] - nTrial
+    if expInfo['mode'] != 3:
+        noTrials = trials.shape[0] - nTrial
+    else:
+        noTrials = trials['neutral'].shape[0] - nTrial
+
     terminateNormally = True
 
     for curTrial in range(noTrials):
 
-        thisTrial = trials.iloc[nTrial].to_dict()
+        # Logging dict - to include continuously updated info:
+        logDict = {}
+
+        if expInfo['mode'] != 3:
+            thisTrial = trials.iloc[nTrial].to_dict()
+        else:
+            if wealth  > con.LIMITS[expInfo['eta']][1]:
+                thisTrial = trials['bad'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'bad'})
+            elif wealth < con.LIMITS[expInfo['eta']][0]:
+                thisTrial = trials['good'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'good'})
+            else:
+                thisTrial= trials['neutral'].iloc[nTrial].to_dict()
+                logDict.update({'track': 'neutral'})
 
         if thisTrial != None:
             fractal1, fractal2 = int(thisTrial['fractal_left_up']), int(thisTrial['fractal_left_down'])
@@ -274,8 +317,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
         currentFractals = [fractal1, fractal2, fractal3, fractal4]
         currentGammas = [gamma1, gamma2, gamma3, gamma4]
-        # Logging dict - to include continuously updated info:
-        logDict = {}
+
         ############################### ITI ########################################
         itiOnset = Logger.getTime()
 

@@ -6,3 +6,7 @@ __pycache__
 html
 test_dashboard.py
 docs
+
+.vscode
+.ipynb_*
+.pytest_cache

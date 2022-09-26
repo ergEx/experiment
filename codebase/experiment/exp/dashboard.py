@@ -54,7 +54,8 @@ def pandas_save_loader(filename:str, task:str = 'passive'):
                       'eta': float, 'trial_time': float,
                       'participant_id': str, 'TR': float, 'no_response': float,
                       'chosen_expected_gamma': float, 'realized_gamma': float,
-                      'expected_duration': float, 'selected_side': str}
+                      'expected_duration': float, 'selected_side': str,
+                      'track': str}
 
     elif task == 'passive':
         cat_dtypes = {'onset': float, 'duration': float, 'trial_type': str,
@@ -154,7 +155,25 @@ def plot_wealth_trajectory(dataframe, ax):
     wealth_trajectory = dataframe.query('event_type=="WealthUpdate"')
 
     wealth_traj = wealth_trajectory.reset_index()
-    ax.plot(wealth_traj.wealth)
+    trials = np.arange(wealth_traj.shape[0])
+
+    ax.plot(trials, wealth_traj.wealth, alpha=0.5, color='k', label='__nolegend__')
+
+    try:
+        tracks = np.unique(wealth_trajectory['track'])
+        colors = np.zeros(trials.shape)
+
+        for nn, ii in enumerate(tracks):
+            idx = wealth_trajectory.eval('track==@ii')
+            colors[idx] = nn
+            ax.scatter(trials[idx], wealth_traj.wealth.values[idx], label=ii)
+
+        #legend1 = ax.legend(*scatter.legend_elements()) #, labels=tracks.tolist())
+        #ax.add_artist(legend1)
+        ax.legend()
+
+    except KeyError:
+        print("Track column not found, skipping scatter plot display.")
 
     ax.set(ylabel='Wealth', xlabel='Trial',
         title=f'Wealth Trjactory over Trials')
@@ -459,7 +478,7 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
 
     indif_etas = []
     choices = []
-
+    mmax = []
     for n, ii in enumerate(trials.index):
 
         tmp_trial = trials.loc[ii, :]
@@ -475,6 +494,7 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
             indif_etas.append(root_dyn[0])
             choices.append(tmp_trial.selected_side == 'left')
             ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
+            mmax.append(min_max_dyn)
         except:
             print(f"Possible error in indifference eta calculation, negative values, wealth = {tmp_trial.wealth}?")
 
@@ -496,6 +516,8 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
     tmp_ax.axhline(0.5, ls=':', alpha=0.5)
     tmp_ax.set(xlim=xlim, ylim=[0, 1.0])
     ax.set(xlim=xlim)
+
+    return indif_etas, choices, mmax
 
 
 def passive_report(fname:str, target_dir:str = 'data/reports'):

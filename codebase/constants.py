@@ -18,4 +18,6 @@ assymetry_dict = {0.0: [43, 32, -16, -32, -49, -4, -15, -28, -10],
 
 N_FRACTALS = 9
 
+LIMITS = {0.0: [-500, 2_500], 1.0: [52 , 18_700]}
+
 OUTPUT_EXTENSION = 'beh.csv'
