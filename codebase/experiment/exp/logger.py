@@ -40,7 +40,7 @@ class ExperimentLogger:
 
         self.categories = ['onset', 'duration', 'trial_type', 'event_type',
                             'response_time', 'response_button', 'wealth',
-                            'delta_wealth', 'trial', 'eta', 'TR']
+                            'delta_wealth', 'trial', 'eta', 'TR', 'log_return']
 
         # Bit of a mess: Predefine the header row of logfiles.
         if self.mode == 'active':
@@ -93,6 +93,10 @@ class ExperimentLogger:
         # Update wealth
         if wealth is not None:
             tmp_dict['delta_wealth'] = wealth - self.wealth
+
+            if np.isfinite(np.log(wealth)) and np.isfinite(np.log(self.wealth)):
+                tmp_dict['log_return'] = np.log(wealth) - np.log(self.wealth)
+
             self.wealth = wealth
         else:
             tmp_dict['delta_wealth'] = 0

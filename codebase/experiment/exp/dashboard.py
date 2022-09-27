@@ -55,7 +55,7 @@ def pandas_save_loader(filename:str, task:str = 'passive'):
                       'participant_id': str, 'TR': float, 'no_response': float,
                       'chosen_expected_gamma': float, 'realized_gamma': float,
                       'expected_duration': float, 'selected_side': str,
-                      'track': str}
+                      'track': str, 'log_return': float}
 
     elif task == 'passive':
         cat_dtypes = {'onset': float, 'duration': float, 'trial_type': str,
@@ -68,7 +68,8 @@ def pandas_save_loader(filename:str, task:str = 'passive'):
                       'expected_duration': float, 'gamma_left': float,
                       'gamma_right': float, 'fractal_left': str,
                       'fractal_right': str, 'chosen_gamma': float,
-                      'selected_side': str, 'run': float, 'part': float}
+                      'selected_side': str, 'run': float, 'part': float,
+                      'log_return': float}
 
     else:
         raise ValueError('task has to be passive or active!')
