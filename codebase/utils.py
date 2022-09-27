@@ -39,7 +39,7 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         u[x > 0] = np.log(x[x > 0])
         u[x <= 0] = np.finfo(float).min
     elif np.isclose(eta, 0): #allow negative values in additive dynamic
-        u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
+        u = (np.power(x, 1-eta) - 1) / (1 - eta)
     else:
         bound = (-1) / (1 - eta)
         u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
