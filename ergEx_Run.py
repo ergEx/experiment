@@ -1,4 +1,4 @@
-VERSION='v0.2.1d'
+VERSION='v0.2.1e'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -152,7 +152,7 @@ if __name__ == '__main__':
         active_conf.update(
             {'run': expInfo['startActive'],
             'maxTrial': MAX_TRIALS_ACTIVE,
-            'agentMode': 'time_optimal'})
+            'agentMode': 'random'})
 
         active_conf = check_configs(active_conf, task='active')
 
