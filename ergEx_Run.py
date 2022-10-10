@@ -38,12 +38,15 @@ MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
 MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = np.inf # Default is np.inf
+MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
 SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
+
+BREAKLENGTH = 10
+""" Break duration between Sessions."""
 
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
@@ -83,14 +86,16 @@ if __name__ == '__main__':
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
-               'showQuestionnaires': True} # Which run of the active phase to start from (starts at 1)
+               'showQuestionnaires': True,
+               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
-    instruction_shown = False
+    instruction_shown = not expInfo['showInstructions']
+
     SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
 
-    for sess in SESSIONS:
+    for nsess, sess in enumerate(SESSIONS):
 
         lambd, fractalList =  assign_fractals(expInfo['participant'], sess)
         lambd = float(lambd)
@@ -174,14 +179,28 @@ if __name__ == '__main__':
             gc.collect()
 
 
-        win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
+        win, frameDur, Break, _ = set_up_win(expInfo['fullScreen'], False)
 
-        Between.setText(f"You completed session {sess}, thank you.")
-        Between.draw()
-        win.flip()
-        core.wait(2)
-        win.close()
-        gc.collect()
+        if nsess < len(SESSIONS) - 1:
+            breakText = f"Thank you for completing session {nsess + 1} of {len(SESSIONS)}.\nPlease take a break and contact the experimenter.\nBreak:\n"
+            Break.setText(breakText)
+            Break.draw()
+            timer = core.CountdownTimer(BREAKLENGTH * 60)
+            while timer.getTime() > 0: #until the timer is negative, after which time has elapsed
+                time_left = timer.getTime()
+                minutes = int(time_left / 60)
+                seconds = int(time_left - minutes * 60)
+                Break.setText(breakText + f'{minutes}:{seconds:02d}')
+                Break.draw()
+                win.flip()
+
+            breakText = f"The break is over,\nplease press SPACE to continue."
+            Break.setText(breakText)
+            Break.draw()
+            win.flip()
+            event.waitKeys(keyList=['space'])
+            win.close()
+            gc.collect()
 
 
     if expInfo['showQuestionnaires']:
@@ -207,5 +226,12 @@ if __name__ == '__main__':
         win.close()
 
         expInfo['showQuestionnaires'] = False
+
+    win, frameDur, screenText, _ = set_up_win(expInfo['fullScreen'], False)
+    screenText.setText("Thank you!\nYou completed the experiment.\nPlease contact the experimenters.")
+    screenText.draw()
+    win.flip()
+    event.waitKeys(keyList=['q'])
+    win.close()
 
     core.quit()
