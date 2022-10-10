@@ -175,7 +175,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         SyncGen = SyncGenerator(TR=expInfo['TR'], TA=expInfo['TR'] / 10, volumes = noTR)
     ###################### Preloading Images #######################################
     Initialization = visual.TextStim(win=win, name='initialization',
-                                    text='Initializing!!', pos=acfg.textPos,
+                                    text='Initializing!', pos=acfg.textPos,
                                     height=acfg.textHeight, ori=0.0, color='white')
     Initialization.setAutoDraw(True)
     win.flip()
@@ -234,7 +234,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
     ########################### Instruction Screen #################################
     Instructions = visual.TextStim(win=win, name='instruction',
-                                text=f'Press {responseKeyList[0]} or {responseKeyList[1]} to begin!',
+                                text=f'Press {responseKeyList[0]} or {responseKeyList[1]} to begin the decision making task!',
                                 pos=acfg.textPos, height=acfg.textHeight, color='white')
     Instructions.pos += offset
     Instructions.setAutoDraw(True)
@@ -588,13 +588,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     MoneyBox.setAutoDraw(False)
     Logger.keyStrokes(win)
 
-    Outro = visual.TextStim(win=win, name='Outro', text='Thanks!', pos=acfg.textPos,
-                            height=acfg.textHeight, color='white')
-    Outro.pos += offset
-    Outro.setAutoDraw(True)
-
-    Wait.wait(1)
-
     if expInfo['simulateMR'] in ['Simulate']:
         SyncGen.stop()
         del SyncGen
@@ -607,7 +600,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     except:
         print("Report did not run.")
 
-    Outro.setAutoDraw(False)
     if expInfo['simulateMR'] == 'MRIDebug':
         Counter.setAutoDraw(False)
 
