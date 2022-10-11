@@ -14,7 +14,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 3
+ACTIVE_MODE = 4
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
@@ -42,7 +42,7 @@ MAX_TRIALS_ACTIVE = np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
-SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56]}
+SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [30, 44, 45, 56]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
 def set_up_win(fscreen, gui=True):

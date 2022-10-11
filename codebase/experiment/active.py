@@ -201,7 +201,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         coins[imL] = visual.ImageStim(win=win, pos=acfg.imgLocPos[imL], size=acfg.coinSize, opacity=0,
                                     image=os.path.join(STIMULUSPATH, acfg.coinPos[imL] + '.png'))
         coins[imL].pos += offset
-        coins[imL].setAutoDraw(True)
+
+        if expInfo['mode'] != 4:
+            coins[imL].setAutoDraw(True)
 
     TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1,0.1,0.1],
                            pos= [-1, -1], height=0.02, width=0, opacity=1.0, units='norm')
@@ -271,8 +273,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     Instructions.setAutoDraw(False)
 
     ############################ Setup Elements ####################################
-    MoneyBox.setAutoDraw(True)
-    win.flip()
+    if expInfo['mode'] != 4:
+        MoneyBox.setAutoDraw(True)
+        win.flip()
 
     ###################### This is were the experiment begins ######################
     if expInfo['mode'] != 3:
@@ -470,17 +473,22 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
 
             coinOnset = Logger.getTime()
-            Wait.wait(acfg.timeCoinToss, start=coinOnset)
+
+            if expInfo['mode'] != 4:
+                Wait.wait(acfg.timeCoinToss, start=coinOnset)
+
             Logger.logEvent({"event_type": "Coin",
                             "expected_duration": acfg.timeCoinToss,
                             **logDict}, onset=coinOnset)
             ############################ Fractal Selection #########################
-            if coin_toss:
-                fractals['leftDown'][fractal2].setOpacity(0)
-                fractals['rightDown'][fractal4].setOpacity(0)
-            else:
-                fractals['leftUp'][fractal1].setOpacity(0)
-                fractals['rightUp'][fractal3].setOpacity(0)
+            if expInfo['mode'] != 4:
+
+                if coin_toss:
+                    fractals['leftDown'][fractal2].setOpacity(0)
+                    fractals['rightDown'][fractal4].setOpacity(0)
+                else:
+                    fractals['leftUp'][fractal1].setOpacity(0)
+                    fractals['rightUp'][fractal3].setOpacity(0)
 
             if response == 'left':
                 ch_gamma = currentGammas[:2][np.abs(coin_toss -1)]
@@ -573,14 +581,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         # Break condition time
         if Logger.getTime() > (expInfo['maxDuration'] - 10) or curTrial >= expInfo['maxTrial']:
             break
-
-        '''
-        if wealth >= 1e9 or wealth <= 0:
-            Logger.logEvent({"event_type": "WealthCeilingReached", **logDict},
-                            wealth=wealth)
-            terminateNormally = False
-            break
-        '''
 
         nTrial += 1
 

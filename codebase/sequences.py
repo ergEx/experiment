@@ -226,7 +226,7 @@ def generate_dataframes(lambd:float,
                                                          gamma2_list=gamma2_list,
                                                          fractal_dict=fractal_dict)
 
-    elif mode == 1: #Gamble pair version
+    elif mode == 1 or mode == 4: #Gamble pair version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
@@ -243,7 +243,7 @@ def generate_dataframes(lambd:float,
                                                                         gamma_range=gamma_range,
                                                                         fractal_dict=fractal_dict)
     else:
-        raise ValueError("Mode has to be 1, 2 or 3")
+        raise ValueError("Mode has to be 1, 2, 3 or 4")
 
 
     n_trials_passive = len(p_seq_fractals)
@@ -264,7 +264,7 @@ def generate_dataframes(lambd:float,
     a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
                                                             'onset_gamble_pair_left',
                                                             'onset_gamble_pair_right'])
-    if mode in [1,2]:
+    if mode in [1, 2, 4]:
         a_df_fractals = pd.DataFrame(a_seq_fractals,
                                     columns=['fractal_left_up', 'fractal_left_down',
                                             'fractal_right_up', 'fractal_right_down'])

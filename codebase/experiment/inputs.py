@@ -11,7 +11,7 @@ from ..sequences import generate_dataframes
 def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
         n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1):
 
-    if mode in [1,2]:
+    if mode in [1, 2, 4]:
         p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                             n_trials_active=n_trials_active,
                                             n_resets_passive=n_resets_passive,
@@ -20,8 +20,8 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
                                             speed_up=speed_up
                                             )
 
-        p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
-        a_df.to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv'), index=False, sep='\t')
+        p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv').replace('_neutral', ''), index=False, sep='\t')
+        a_df.to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('_neutral', ''), index=False, sep='\t')
         with open(save_path,"w+") as f:
             f.writelines(meta)
 
@@ -39,9 +39,7 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
             a_df[i].to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('neutral', name), index=False, sep='\t')
 
     else:
-        raise ValueError("Mode has to be 1, 2 or 3")
-
-
+        raise ValueError("Mode has to be 1, 2, 3 or 4")
 
 
 def run_with_dict(expInfo):
