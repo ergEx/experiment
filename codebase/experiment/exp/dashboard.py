@@ -13,14 +13,47 @@ from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
 from ...utils import wealth_change
 
+def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
+    """Isoelastic utility for a given wealth.
+
+    Args:
+        x (array):
+            Wealth vector.
+        eta (float):
+            Risk-aversion.
+
+    Returns:
+        Vector of utilities corresponding to wealths. For log utility if wealth
+        is less or equal to zero, smallest float possible is returned. For other
+        utilites if wealth is less or equal to zero, smallest possible utility,
+        i.e., specicfic lower bound is returned.
+    """
+
+    if np.isscalar(x):
+        x = np.asarray((x, ))
+
+    u = np.zeros_like(x, dtype=float)
+
+    if np.isclose(eta, 1):
+        u[x > 0] = np.log(x[x > 0])
+        u[x <= 0] = np.finfo(float).min
+    elif np.isclose(eta, 0): #allow negative values in additive dynamic
+        u = (np.power(x, 1-eta) - 1) / (1 - eta)
+    else:
+        bound = (-1) / (1 - eta)
+        u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
+        u[x <= 0] = bound
+    return u
+
 # %%
 def indiference_eta(x1:float, x2:float, x3:float, x4:float, w:float) -> list:
-    if w+x1<0 or w+x2<0 or w+x3<0 or w+x4<0:
+    if x1<0 or x2<0 or x3<0 or x4<0:
         print(x1,x2,x3,x4)
         raise ValueError(f"Isoelastic utility function not defined for negative values")
 
-    func = lambda x : (((((x1)**(1-x))/(1-x) + ((x2)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x))
-                    - ((((x3)**(1-x))/(1-x) + ((x4)**(1-x))/(1-x))/2 - ((w)**(1-x))/(1-x)) )
+    func = lambda x : (isoelastic_utility(x1, x) + isoelastic_utility(x2, x)
+                       - isoelastic_utility(x3, x) - isoelastic_utility(x4, x))
+
     root_initial_guess = -20
     root = fsolve(func, root_initial_guess)
 
@@ -159,6 +192,7 @@ def plot_wealth_trajectory(dataframe, ax):
     trials = np.arange(wealth_traj.shape[0])
 
     ax.plot(trials, wealth_traj.wealth, alpha=0.5, color='k', label='__nolegend__')
+    t_cols = {'good': 'green', 'neutral': 'blue', 'bad': 'orange'}
 
     try:
         tracks = np.unique(wealth_trajectory['track'])
@@ -167,10 +201,8 @@ def plot_wealth_trajectory(dataframe, ax):
         for nn, ii in enumerate(tracks):
             idx = wealth_trajectory.eval('track==@ii')
             colors[idx] = nn
-            ax.scatter(trials[idx], wealth_traj.wealth.values[idx], label=ii)
+            ax.scatter(trials[idx], wealth_traj.wealth.values[idx], label=ii, c=t_cols[ii])
 
-        #legend1 = ax.legend(*scatter.legend_elements()) #, labels=tracks.tolist())
-        #ax.add_artist(legend1)
         ax.legend()
 
     except KeyError:
@@ -430,6 +462,61 @@ def plot_choice_probability(dataframe, ax):
 
     return ax
 
+def plot_binned_choice_probability(dataframe, ax):
+
+    gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
+
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1).values
+    gammas_2 = gammas[['gamma_right_up', 'gamma_right_down']].mean(1).values
+    button = gammas.selected_side == 'left'
+
+    delta_gams = gammas_1 - gammas_2
+
+    choi_prob, binE, _ = stats.binned_statistic(delta_gams, button, statistic='mean',
+                                                bins=15)
+    x_points = binE[:-1]
+
+    ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.mean(np.diff(x_points)),
+                edgecolor=[0.0, 0.0, 0.25])
+
+    ax.plot(x_points + np.diff(binE) / 2, choi_prob, '--o')
+    ax.axhline(0.5, linestyle='--', alpha=0.5)
+    ax.axvline(0.0, linestyle='--', alpha=0.5)
+
+    ax.set(title='Choice Probability', xlabel='Unique (Δ Ev(Gamma))',
+           ylabel='Probability\nselecting Left')
+
+    return ax
+
+
+def plot_gamma_sensitivity(dataframe, ax):
+
+    gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
+    gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1).values
+    gammas_2 = gammas[['gamma_right_up', 'gamma_right_down']].mean(1).values
+    to = gammas.response_time_optimal.values >= 0
+
+    sort_dist = []
+    for g1, g2 in zip(gammas_1, gammas_2):
+        if g1 >= g2:
+            sort_dist.append(g1 - g2)
+        elif g2 >= g1:
+            sort_dist.append(g2 - g1)
+
+    sort_dist = np.array(sort_dist)
+
+    choi_prob, binE, _ = stats.binned_statistic(sort_dist, to, statistic='mean',
+                                                bins=7)
+
+    x_points = binE[:-1]
+
+    ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.mean(np.diff(x_points)),
+                edgecolor=[0.0, 0.0, 0.25])
+
+    ax.plot(x_points + np.diff(binE) / 2, choi_prob, '--o')
+
+    ax.set(title='Choice Sensitivity', xlabel='Unique (Δ Ev(Gamma))',
+           ylabel='Probability\n TO Response')
 
 def plot_to_trajectory(dataframe, ax):
     gammas = dataframe.query('event_type == "TrialEnd"')
@@ -496,7 +583,7 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
             choices.append(tmp_trial.selected_side == 'left')
             ax.plot(root_dyn[0], n, marker=min_max_dyn['sign'], color = min_max_dyn['color'])
             mmax.append(min_max_dyn)
-        except:
+        except ValueError:
             print(f"Possible error in indifference eta calculation, negative values, wealth = {tmp_trial.wealth}?")
 
     ax.set(xlabel='Indifference Eta', ylabel='Trial Number', title='Indifference Eta')
@@ -507,12 +594,15 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
     indif_etas = np.array(indif_etas)
 
     choi_prob, binE, _ = stats.binned_statistic(indif_etas, choices, statistic='mean',
-                                                bins=np.linspace(xlim[0], xlim[1], 9))
+                                                bins=np.hstack([
+                                                    np.linspace(-20, -2.5, 7, endpoint=False),
+                                                    np.linspace(-2.5, 2.5, 7, endpoint=False),
+                                                    np.linspace(2.5, 20, 7)]))
 
     x_points = binE[:-1]
 
     tmp_ax = ax.twinx()
-    tmp_ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.mean(np.diff(x_points)),
+    tmp_ax.bar(x_points, choi_prob, alpha=0.1, align='edge', width=np.diff(binE),
                 edgecolor=[0.0, 0.0, 0.25])
     tmp_ax.axhline(0.5, ls=':', alpha=0.5)
     tmp_ax.set(xlim=xlim, ylim=[0, 1.0])
