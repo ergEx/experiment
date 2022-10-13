@@ -270,7 +270,8 @@ def generate_dataframes(lambd:float,
         a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles(lambd=lambd,
                                                                         n_trials=n_trials_active,
                                                                         gamma_range=gamma_range,
-                                                                        fractal_dict=fractal_dict)
+                                                                        fractal_dict=fractal_dict,
+                                                                        filtering=gamble_filter)
     else:
         raise ValueError("Mode has to be 1, 2 or 3")
 
