@@ -9,15 +9,17 @@ from ..sequences import generate_dataframes
 
 
 def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
-        n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1):
+        n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1,
+        gamble_filter:bool = False):
 
-    if mode in [1,2]:
+    if mode in [1, 2, 4]:
         p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                             n_trials_active=n_trials_active,
                                             n_resets_passive=n_resets_passive,
                                             n_trials_passive_before_reset=n_trials_passive_before_reset,
                                             mode=mode,
-                                            speed_up=speed_up
+                                            speed_up=speed_up,
+                                            gamble_filter=gamble_filter
                                             )
 
         p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv'), index=False, sep='\t')
@@ -76,6 +78,7 @@ def run_with_dict(expInfo):
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
             mode=expInfo['mode'],
+            gamble_filter=expInfo['gambleFilter'],
             speed_up=speed_up)
 
     else:
