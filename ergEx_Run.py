@@ -1,4 +1,4 @@
-VERSION='v0.2.1e'
+VERSION='v0.2.2'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire

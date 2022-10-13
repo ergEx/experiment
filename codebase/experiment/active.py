@@ -113,7 +113,6 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     noTR = expInfo['noTR']
     responseKeyList = expInfo['responseKeyList']
     responseMapping = expInfo['responseMapping']
-
     # Rebuild paths
 
     if expInfo['mode'] != 3:
@@ -127,6 +126,10 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                                     'active', extension=f'input_{input_ext}.tsv')
             trialInfoPath[input_ext] = tmpPath
 
+    if expInfo['mode'] == 4:
+        # Overwrite some configs
+        acfg['timeFinalDisplay'] = 0.25
+        acfg['timeCoinToss'] = 0.0
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
@@ -474,8 +477,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
 
             coinOnset = Logger.getTime()
 
-            if expInfo['mode'] != 4:
-                Wait.wait(acfg.timeCoinToss, start=coinOnset)
+
+            Wait.wait(acfg.timeCoinToss, start=coinOnset)
 
             Logger.logEvent({"event_type": "Coin",
                             "expected_duration": acfg.timeCoinToss,
