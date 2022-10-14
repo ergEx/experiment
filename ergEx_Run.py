@@ -24,7 +24,6 @@ N_TRIALS_ACTIVE = 120 # Default 90
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
 
-
 TR = 2.5
 """ TR of the MR scanner (also for simulations) """
 SIMULATE_MR = 'None'
@@ -213,7 +212,9 @@ if __name__ == '__main__':
 
         win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
 
-        save_names = ['risk-propensity', 'dospert-risk-taking', 'dospert-perceived-risk', 'dospert-risk-benefits']
+        save_names = ['risk-propensity', 'dospert-risk-taking',
+                      'dospert-perceived-risk', 'dospert-risk-benefits']
+
         quests = ['data/questionnaires/risk_propensity_scale.tsv',
                   'data/questionnaires/dospert_risk_taking.tsv',
                   'data/questionnaires/dospert_perceived_risk.tsv',
