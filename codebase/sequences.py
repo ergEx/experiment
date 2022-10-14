@@ -230,7 +230,7 @@ def generate_dataframes(lambd:float,
                         n_trials_passive_before_reset:int=con.n_trials_passive,
                         n_resets_passive:int=con.n_resets_passive,
                         speed_up:float=1,
-                        gamble_filter:bool = False
+                        gamble_filter:bool = False,
                         c_dict=con.c_dict,
                         assymetry_dict=con.assymetry_dict
                         ):
