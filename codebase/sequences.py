@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 import pandas as pd
 
@@ -157,14 +158,12 @@ def active_sequence_two_gambles(lambd:float,
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
 
-def active_sequence_two_gambles_train_tracks(n_trials:int,
+def active_sequence_two_gambles_train_tracks(lambd:float,
+                    n_trials:int,
                     gamma_range:np.array,
                     fractal_dict:dict,
                     n_simulations:int=1,
                     filtering:bool = False):
-
-    if filtering:
-        raise NotImplementedError('Filtering not implemented.')
 
     gamma_array_train_tracks = dict()
     fractals_train_tracks = dict()
@@ -189,6 +188,23 @@ def active_sequence_two_gambles_train_tracks(n_trials:int,
             if not is_statewise_dominated(gamble_pair)
             and not is_nobrainer(gamble_pair)
             ]
+
+        if filtering:
+            tmp = list()
+            for gamble_pair in gamble_pairs:
+                x_updates = wealth_change(x=1000,
+                                        gamma=[gamble_pair[0][0], gamble_pair[0][1],
+                                                gamble_pair[1][0], gamble_pair[1][1]],
+                                                lambd=lambd)
+                try:
+                    root = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
+                    if -0.5 < root < 1.5:
+                        tmp.append(gamble_pair)
+                except Exception:
+                    pass
+
+            gamble_pairs = tmp
+
         experiment  = create_experiment(gamble_pairs)
         trial_order = create_trial_order(
                 n_simulations=n_simulations,
