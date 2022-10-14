@@ -130,6 +130,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         # Overwrite some configs
         acfg['timeFinalDisplay'] = 0.25
         acfg['timeCoinToss'] = 0.0
+        acfg['timeFractalSelection'] = 0.0
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
                              'active', expInfo['run'])
