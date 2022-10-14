@@ -45,8 +45,11 @@ SESSIONS = [1, 2]
 SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [30, 44, 45, 56]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
+GAMBLE_FILTER = False
+""" Whether gambles are filtered in a given range. """
 BREAKLENGTH = 10
 """ Break duration between Sessions."""
+
 
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
@@ -91,6 +94,7 @@ if __name__ == '__main__':
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
+    expInfo['gambleFilter'] = GAMBLE_FILTER
     instruction_shown = not expInfo['showInstructions']
 
     SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
