@@ -1,6 +1,5 @@
 import itertools
 import math
-
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -28,8 +27,6 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         utilites if wealth is less or equal to zero, smallest possible utility,
         i.e., specicfic lower bound is returned.
     """
-    if eta > 1:
-        return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(x):
         x = np.asarray((x, ))
@@ -339,4 +336,4 @@ def indiference_eta(x1:float, x2:float, x3:float, x4:float) -> list:
     root_initial_guess = -20
     root = fsolve(func, root_initial_guess)
 
-    return root
+    return root, func

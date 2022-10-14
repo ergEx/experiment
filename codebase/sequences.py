@@ -123,7 +123,7 @@ def active_sequence_two_gambles(lambd:float,
                                             gamble_pair[1][0], gamble_pair[1][1]],
                                             lambd=lambd)
             try:
-                root = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
+                root, _ = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
                 if -0.5 < root < 1.5:
                     tmp.append(gamble_pair)
             except Exception:
@@ -195,7 +195,7 @@ def active_sequence_two_gambles_train_tracks(lambd:float,
                                                 gamble_pair[1][0], gamble_pair[1][1]],
                                                 lambd=lambd)
                 try:
-                    root = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
+                    root, _ = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
                     if -0.5 < root < 1.5:
                         tmp.append(gamble_pair)
                 except Exception:

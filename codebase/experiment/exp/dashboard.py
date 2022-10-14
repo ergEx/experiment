@@ -1,6 +1,7 @@
 """
 Plotting functions used in the dashboard.
 """
+from multiprocessing.sharedctypes import Value
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,53 +12,7 @@ from scipy import stats
 
 from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
-from ...utils import wealth_change
-
-def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
-    """Isoelastic utility for a given wealth.
-
-    Args:
-        x (array):
-            Wealth vector.
-        eta (float):
-            Risk-aversion.
-
-    Returns:
-        Vector of utilities corresponding to wealths. For log utility if wealth
-        is less or equal to zero, smallest float possible is returned. For other
-        utilites if wealth is less or equal to zero, smallest possible utility,
-        i.e., specicfic lower bound is returned.
-    """
-
-    if np.isscalar(x):
-        x = np.asarray((x, ))
-
-    u = np.zeros_like(x, dtype=float)
-
-    if np.isclose(eta, 1):
-        u[x > 0] = np.log(x[x > 0])
-        u[x <= 0] = np.finfo(float).min
-    elif np.isclose(eta, 0): #allow negative values in additive dynamic
-        u = (np.power(x, 1-eta) - 1) / (1 - eta)
-    else:
-        bound = (-1) / (1 - eta)
-        u[x > 0] = (np.power(x[x > 0], 1-eta) - 1) / (1 - eta)
-        u[x <= 0] = bound
-    return u
-
-# %%
-def indiference_eta(x1:float, x2:float, x3:float, x4:float, w:float) -> list:
-    if x1<0 or x2<0 or x3<0 or x4<0:
-        print(x1,x2,x3,x4)
-        raise ValueError(f"Isoelastic utility function not defined for negative values")
-
-    func = lambda x : (isoelastic_utility(x1, x) + isoelastic_utility(x2, x)
-                       - isoelastic_utility(x3, x) - isoelastic_utility(x4, x))
-
-    root_initial_guess = -20
-    root = fsolve(func, root_initial_guess)
-
-    return root, func
+from ...utils import wealth_change, indiference_eta
 
 
 def calculate_min_v_max(root:float, func, choice:int) -> dict:
@@ -577,7 +532,7 @@ def plot_nonparametric_indifference_eta(dataframe, ax):
                                             tmp_trial.gamma_right_up, tmp_trial.gamma_right_down],
                                             lambd=tmp_trial.eta)
 
-            root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3], tmp_trial.wealth)
+            root_dyn, func_dyn = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
             min_max_dyn = calculate_min_v_max(root_dyn, func_dyn, tmp_trial.selected_side == 'left')
             indif_etas.append(root_dyn[0])
             choices.append(tmp_trial.selected_side == 'left')
