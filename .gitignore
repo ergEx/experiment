@@ -6,6 +6,9 @@ __pycache__
 html
 test_dashboard.py
 docs
+sim
+Version*
+traintrack*
 
 .vscode
 .ipynb_*
