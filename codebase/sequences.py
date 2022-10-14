@@ -1,8 +1,6 @@
 import math
-
 import numpy as np
 import pandas as pd
-
 from . import constants as con
 from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
     create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
@@ -233,14 +231,16 @@ def generate_dataframes(lambd:float,
                         n_resets_passive:int=con.n_resets_passive,
                         speed_up:float=1,
                         gamble_filter:bool = False
+                        c_dict=con.c_dict,
+                        assymetry_dict=con.assymetry_dict
                         ):
 
     if mode == 3: #Gamble pair version with train tracks
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                    c_dict=con.c_dict,
-                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    c_dict=c_dict,
+                                                                    assymetry_dict=assymetry_dict,
                                                                     n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
                                                                     n_fractals=con.N_FRACTALS,
@@ -270,12 +270,12 @@ def generate_dataframes(lambd:float,
                                                             gamma2_list=gamma2_list,
                                                             fractal_dict=fractal_dict)
 
-    elif mode == 1: #Gamble pair version
+    elif mode == 1 or mode == 4: #Gamble pair version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                    c_dict=con.c_dict,
-                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    c_dict=c_dict,
+                                                                    assymetry_dict=assymetry_dict,
                                                                     n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
                                                                     n_fractals=con.N_FRACTALS,
@@ -289,7 +289,7 @@ def generate_dataframes(lambd:float,
                                                                         fractal_dict=fractal_dict,
                                                                         filtering=gamble_filter)
     else:
-        raise ValueError("Mode has to be 1, 2 or 3")
+        raise ValueError("Mode has to be 1, 2, 3 or 4")
 
 
     n_trials_passive = len(p_seq_fractals)
@@ -310,7 +310,7 @@ def generate_dataframes(lambd:float,
     a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
                                                             'onset_gamble_pair_left',
                                                             'onset_gamble_pair_right'])
-    if mode in [1,2]:
+    if mode in [1, 2, 4]:
         a_df_fractals = pd.DataFrame(a_seq_fractals,
                                     columns=['fractal_left_up', 'fractal_left_down',
                                             'fractal_right_up', 'fractal_right_down'])

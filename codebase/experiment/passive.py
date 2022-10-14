@@ -214,7 +214,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
     ########################### Instruction Screen #################################
     Instructions = visual.TextStim(win=win, name='instruction',
-                                text=f'Press {keyList[0]} to continue!',
+                                text=f'Press {keyList[0]} to start the learning task!',
                                 pos=pcfg.centerPos, height=pcfg.textHeight, color='white')
     Instructions.pos += offset
     Instructions.setAutoDraw(True)
@@ -700,14 +700,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         nTrial += 1
 
     ############################### Nobrainer over #################################
-    Outro = visual.TextStim(win=win, name='outro',
-                                text='Thanks!',
-                                pos=pcfg.centerPos, height=pcfg.textHeight, color='white')
-    Outro.pos += offset
-    Outro.setAutoDraw(True)
-
-    Wait.wait(1)
-
     if expInfo['simulateMR'] in ['Simulate']:
         SyncGen.stop()
         del SyncGen
@@ -728,8 +720,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         print("Nobrainer report did not run.")
 
     # Final clean up
-    Outro.setAutoDraw(False)
-
     if expInfo['simulateMR'] == 'MRIDebug':
         Counter.setAutoDraw(False)
 
