@@ -1,4 +1,4 @@
-VERSION='v0.2.2'
+VERSION='v0.2.2a'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -14,7 +14,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 4
+ACTIVE_MODE = 3
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
