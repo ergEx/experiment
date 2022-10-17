@@ -1,13 +1,10 @@
-import math
-
 import numpy as np
 import pandas as pd
-
 from . import constants as con
 from .utils import calculate_growth_rates, create_experiment, create_gamble_pairs_one_gamble, \
     create_gamble_pairs_two_gambles, create_gambles_one_gamble, create_gambles_two_gambles, create_trial_order, \
-    inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, isoelastic_utility, \
-    shuffle_along_axis
+    indiference_eta, inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, \
+    isoelastic_utility, shuffle_along_axis, wealth_change
 
 
 def passive_sequence_one_gamble(lambd:float,
@@ -96,10 +93,13 @@ def active_sequence_one_gamble(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
-def active_sequence_two_gambles(n_trials:int,
-                    gamma_range:np.array,
-                    fractal_dict:dict,
-                    n_simulations:int=1):
+
+def active_sequence_two_gambles(lambd:float,
+                                n_trials:int,
+                                gamma_range:np.array,
+                                fractal_dict:dict,
+                                filtering:bool=False,
+                                n_simulations:int=1):
 
     gambles = create_gambles_two_gambles(gamma_range)
     gambles = [
@@ -113,6 +113,23 @@ def active_sequence_two_gambles(n_trials:int,
         if not is_statewise_dominated(gamble_pair)
         and not is_nobrainer(gamble_pair)
         ]
+
+    if filtering:
+        tmp = list()
+        for gamble_pair in gamble_pairs:
+            x_updates = wealth_change(x=1000,
+                                      gamma=[gamble_pair[0][0], gamble_pair[0][1],
+                                            gamble_pair[1][0], gamble_pair[1][1]],
+                                            lambd=lambd)
+            try:
+                root, _ = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
+                if -0.5 < root < 1.5:
+                    tmp.append(gamble_pair)
+            except Exception:
+                pass
+
+        gamble_pairs = tmp
+
     experiment  = create_experiment(gamble_pairs)
     trial_order = create_trial_order(
             n_simulations=n_simulations,
@@ -137,10 +154,13 @@ def active_sequence_two_gambles(n_trials:int,
 
     return fractals, gamma_array, coin_toss, timings, fractal_dict
 
-def active_sequence_two_gambles_train_tracks(n_trials:int,
+
+def active_sequence_two_gambles_train_tracks(lambd:float,
+                    n_trials:int,
                     gamma_range:np.array,
                     fractal_dict:dict,
-                    n_simulations:int=1):
+                    n_simulations:int=1,
+                    filtering:bool = False):
 
     gamma_array_train_tracks = dict()
     fractals_train_tracks = dict()
@@ -165,6 +185,23 @@ def active_sequence_two_gambles_train_tracks(n_trials:int,
             if not is_statewise_dominated(gamble_pair)
             and not is_nobrainer(gamble_pair)
             ]
+
+        if filtering:
+            tmp = list()
+            for gamble_pair in gamble_pairs:
+                x_updates = wealth_change(x=1000,
+                                        gamma=[gamble_pair[0][0], gamble_pair[0][1],
+                                                gamble_pair[1][0], gamble_pair[1][1]],
+                                                lambd=lambd)
+                try:
+                    root, _ = indiference_eta(x_updates[0], x_updates[1], x_updates[2], x_updates[3])
+                    if -0.5 < root < 1.5:
+                        tmp.append(gamble_pair)
+                except Exception:
+                    pass
+
+            gamble_pairs = tmp
+
         experiment  = create_experiment(gamble_pairs)
         trial_order = create_trial_order(
                 n_simulations=n_simulations,
@@ -192,13 +229,17 @@ def generate_dataframes(lambd:float,
                         n_trials_passive_before_reset:int=con.n_trials_passive,
                         n_resets_passive:int=con.n_resets_passive,
                         speed_up:float=1,
+                        gamble_filter:bool = False,
+                        c_dict=con.c_dict,
+                        assymetry_dict=con.assymetry_dict
                         ):
+
     if mode == 3: #Gamble pair version with train tracks
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                    c_dict=con.c_dict,
-                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    c_dict=c_dict,
+                                                                    assymetry_dict=assymetry_dict,
                                                                     n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
                                                                     n_fractals=con.N_FRACTALS,
@@ -206,9 +247,11 @@ def generate_dataframes(lambd:float,
 
 
         (a_seq_fractals, a_seq_gamma,
-        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles_train_tracks(n_trials=n_trials_active,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles_train_tracks(lambd=lambd,
+                                                                        n_trials=n_trials_active,
                                                                         gamma_range=gamma_range,
-                                                                        fractal_dict=fractal_dict)
+                                                                        fractal_dict=fractal_dict,
+                                                                        filtering=gamble_filter)
     elif mode == 2: #One gamble version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
@@ -222,16 +265,16 @@ def generate_dataframes(lambd:float,
 
         (a_seq_fractals, a_seq_gamma,
         a_seq_cointoss, a_seq_timings, _) = active_sequence_one_gamble(n_trials=n_trials_active,
-                                                         gamma1_list=gamma1_list,
-                                                         gamma2_list=gamma2_list,
-                                                         fractal_dict=fractal_dict)
+                                                            gamma1_list=gamma1_list,
+                                                            gamma2_list=gamma2_list,
+                                                            fractal_dict=fractal_dict)
 
-    elif mode == 1: #Gamble pair version
+    elif mode == 1 or mode == 4: #Gamble pair version
         (p_seq_fractals, p_seq_gamma,
         p_seq_part_sum, p_seq_part_wealth_sum,
         fractal_dict, gamma_range) = passive_sequence_two_gambles(lambd=lambd,
-                                                                    c_dict=con.c_dict,
-                                                                    assymetry_dict=con.assymetry_dict,
+                                                                    c_dict=c_dict,
+                                                                    assymetry_dict=assymetry_dict,
                                                                     n_trials_before_reset=n_trials_passive_before_reset,
                                                                     n_resets=n_resets_passive,
                                                                     n_fractals=con.N_FRACTALS,
@@ -239,11 +282,13 @@ def generate_dataframes(lambd:float,
 
 
         (a_seq_fractals, a_seq_gamma,
-        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles(n_trials=n_trials_active,
+        a_seq_cointoss, a_seq_timings, _) = active_sequence_two_gambles(lambd=lambd,
+                                                                        n_trials=n_trials_active,
                                                                         gamma_range=gamma_range,
-                                                                        fractal_dict=fractal_dict)
+                                                                        fractal_dict=fractal_dict,
+                                                                        filtering=gamble_filter)
     else:
-        raise ValueError("Mode has to be 1, 2 or 3")
+        raise ValueError("Mode has to be 1, 2, 3 or 4")
 
 
     n_trials_passive = len(p_seq_fractals)
@@ -264,7 +309,7 @@ def generate_dataframes(lambd:float,
     a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
                                                             'onset_gamble_pair_left',
                                                             'onset_gamble_pair_right'])
-    if mode in [1,2]:
+    if mode in [1, 2, 4]:
         a_df_fractals = pd.DataFrame(a_seq_fractals,
                                     columns=['fractal_left_up', 'fractal_left_down',
                                             'fractal_right_up', 'fractal_right_down'])

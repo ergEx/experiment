@@ -1,7 +1,7 @@
 import itertools
 import math
-
 import numpy as np
+from scipy.optimize import fsolve
 
 
 class DotDict(dict):
@@ -27,8 +27,6 @@ def isoelastic_utility(x:np.ndarray, eta:float) -> np.ndarray:
         utilites if wealth is less or equal to zero, smallest possible utility,
         i.e., specicfic lower bound is returned.
     """
-    if eta > 1:
-        return ValueError("Not implemented for eta > 1!")
 
     if np.isscalar(x):
         x = np.asarray((x, ))
@@ -317,3 +315,25 @@ def is_statewise_dominated(gamble_pair:np.array) -> bool:
     """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
     return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
            np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )
+
+def indiference_eta(x1:float, x2:float, x3:float, x4:float) -> list:
+    """Calculates indiference_etas for gamble pairs, ie. at which riskaversion is an agent indifferent between the choices
+    Args:
+        x1 (float): after trial wealth if upper left is realized
+        x2 (float): after trial wealth if lower left is realized
+        x3 (float): after trial wealth if upper right is realized
+        x4 (float): after trial wealth if lower right is realized
+
+    Returns:
+        Indifference eta (float).
+    """
+    if x1<0 or x2<0 or x3<0 or x4<0:
+        print(x1,x2,x3,x4)
+        raise ValueError(f"Isoelastic utility function not defined for negative values")
+
+    func = lambda x : ((isoelastic_utility(x1,x)+ isoelastic_utility(x2,x)) / 2
+                     - (isoelastic_utility(x3,x)+ isoelastic_utility(x4,x)) / 2)
+    root_initial_guess = -20
+    root = fsolve(func, root_initial_guess)
+
+    return root, func

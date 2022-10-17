@@ -1,4 +1,4 @@
-VERSION='v0.2.1e'
+VERSION='v0.2.2a'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -17,13 +17,12 @@ import gc
 ACTIVE_MODE = 3
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
-N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
+N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 120 # Default 90
+N_TRIALS_ACTIVE = 160 # Default 90
 """ Number of trials in the active phaes"""
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
-
 
 TR = 2.5
 """ TR of the MR scanner (also for simulations) """
@@ -32,18 +31,24 @@ SIMULATE_MR = 'None'
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 4 # Defaults to 4
+MAX_RUN_PASSIVE = 3 # Defaults to 4
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
 MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE = np.inf # Default is np.inf
+MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
-SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56]}
+SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [30, 44, 45, 56]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
+
+GAMBLE_FILTER = True
+""" Whether gambles are filtered in a given range. """
+BREAKLENGTH = 10
+""" Break duration between Sessions."""
+
 
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
@@ -83,14 +88,17 @@ if __name__ == '__main__':
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
-               'showQuestionnaires': True} # Which run of the active phase to start from (starts at 1)
+               'showQuestionnaires': True,
+               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
-    instruction_shown = False
+    expInfo['gambleFilter'] = GAMBLE_FILTER
+    instruction_shown = not expInfo['showInstructions']
+
     SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
 
-    for sess in SESSIONS:
+    for nsess, sess in enumerate(SESSIONS):
 
         lambd, fractalList =  assign_fractals(expInfo['participant'], sess)
         lambd = float(lambd)
@@ -173,15 +181,28 @@ if __name__ == '__main__':
             win.close()
             gc.collect()
 
+        if nsess < len(SESSIONS) - 1:
+            win, frameDur, Break, _ = set_up_win(expInfo['fullScreen'], False)
 
-        win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
+            breakText = f"Thank you for completing session {nsess + 1} of {len(SESSIONS)}.\nPlease take a break and contact the experimenter.\nBreak:\n"
+            Break.setText(breakText)
+            Break.draw()
+            timer = core.CountdownTimer(BREAKLENGTH * 60)
+            while timer.getTime() > 0: #until the timer is negative, after which time has elapsed
+                time_left = timer.getTime()
+                minutes = int(time_left / 60)
+                seconds = int(time_left - minutes * 60)
+                Break.setText(breakText + f'{minutes}:{seconds:02d}')
+                Break.draw()
+                win.flip()
 
-        Between.setText(f"You completed session {sess}, thank you.")
-        Between.draw()
-        win.flip()
-        core.wait(2)
-        win.close()
-        gc.collect()
+            breakText = f"The break is over,\nplease press SPACE to continue."
+            Break.setText(breakText)
+            Break.draw()
+            win.flip()
+            event.waitKeys(keyList=['space'])
+            win.close()
+            gc.collect()
 
 
     if expInfo['showQuestionnaires']:
@@ -190,7 +211,9 @@ if __name__ == '__main__':
 
         win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
 
-        save_names = ['risk-propensity', 'dospert-risk-taking', 'dospert-perceived-risk', 'dospert-risk-benefits']
+        save_names = ['risk-propensity', 'dospert-risk-taking',
+                      'dospert-perceived-risk', 'dospert-risk-benefits']
+
         quests = ['data/questionnaires/risk_propensity_scale.tsv',
                   'data/questionnaires/dospert_risk_taking.tsv',
                   'data/questionnaires/dospert_perceived_risk.tsv',
@@ -207,5 +230,12 @@ if __name__ == '__main__':
         win.close()
 
         expInfo['showQuestionnaires'] = False
+
+    win, frameDur, screenText, _ = set_up_win(expInfo['fullScreen'], False)
+    screenText.setText("Thank you!\nYou completed the experiment.\nPlease contact the experimenters.")
+    screenText.draw()
+    win.flip()
+    event.waitKeys(keyList=['q'])
+    win.close()
 
     core.quit()
