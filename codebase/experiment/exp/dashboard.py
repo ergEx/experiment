@@ -1,15 +1,12 @@
 """
 Plotting functions used in the dashboard.
 """
-from multiprocessing.sharedctypes import Value
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy import misc
-from scipy.optimize import fsolve
 from scipy import stats
-
 from ..configs import active_configs as acfg
 from ..configs import passive_configs as pcfg
 from ...utils import wealth_change, indiference_eta

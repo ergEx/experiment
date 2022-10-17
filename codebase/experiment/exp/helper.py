@@ -2,7 +2,6 @@
 like getting frame timings, waiting functions etc. """
 from psychopy import core, gui, visual
 from ...file_handler import extract_from_fname, make_filename
-from ...utils import wealth_change
 from .logger import ExperimentLogger
 import os
 import numpy as np

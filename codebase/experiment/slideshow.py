@@ -1,10 +1,8 @@
 # %%
-from mimetypes import init
-from multiprocessing.resource_sharer import stop
 import re
 import os
 from glob import glob
-from psychopy import core,  gui, visual, data, event
+from psychopy import core, visual, event
 
 SLIDE_PATH = 'instructions/First_draft_of_visual_instructions'
 

@@ -1,16 +1,14 @@
 """
 Functions to run the passive task of the experiment.
 """
-from psychopy import visual, core, event
-import itertools
+from psychopy import visual, core
 from psychopy.hardware.emulator import SyncGenerator
 import numpy as np
 import pandas as pd
 import os
 import gc
-from typing import Type, List
+from typing import List
 from .exp import ExperimentLogger, PassiveAutoPilot, DebugLogger, ActiveAutoPilot
-from .. import wealth_change
 from .. import constants as con
 from .exp import WaitTime, get_frame_timings, passive_report
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
@@ -19,7 +17,7 @@ from .configs import active_configs as acfg
 from .configs import DEFAULT_FRACTALS, STIMULUSPATH
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
-from .exp.helper import gui_update_dict, DebugTimer, make_filename, format_wealth, make_no_brainers
+from .exp.helper import gui_update_dict, make_filename, format_wealth, make_no_brainers
 
 
 def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> Dict:

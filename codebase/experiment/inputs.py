@@ -1,9 +1,4 @@
 import os
-import sys
-
-import numpy as np
-import pandas as pd
-
 from ..file_handler import make_filename
 from ..sequences import generate_dataframes
 

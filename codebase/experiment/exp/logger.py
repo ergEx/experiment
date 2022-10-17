@@ -2,7 +2,6 @@
 
 from psychopy import core, visual, event
 import numpy as np
-import os
 from typing import DefaultDict, Dict, Type, List, Tuple, Union
 
 

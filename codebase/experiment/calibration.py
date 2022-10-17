@@ -1,10 +1,10 @@
-from .exp import ExperimentLogger, get_frame_timings
-from psychopy import core,  gui, visual, data
+from .exp import ExperimentLogger
+from psychopy import core, visual
 from .configs import active_configs as acfg
 from .configs import STIMULUSPATH, DEFAULT_FRACTALS
 import os
 from typing import Optional, Dict
-from .exp.helper import gui_update_dict, make_filename
+from .exp.helper import make_filename
 ####################### Setup GUI ##############################################
 
 def calibration_run(filepath:str, expInfo:Optional[Dict]=None,

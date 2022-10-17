@@ -3,14 +3,13 @@
 runs or to continue from previous state of experiment.
 - active_run: starts the experiment.
 """
-from tarfile import DEFAULT_FORMAT
 from psychopy import visual, core
 from psychopy.hardware.emulator import SyncGenerator
 import numpy as np
 import pandas as pd
 import os
 import gc
-from typing import Optional, Type, List
+from typing import Optional, List
 from .. import constants as con
 from .exp import ExperimentLogger, ActiveAutoPilot, WaitTime
 from .exp import active_report, get_frame_timings, DebugLogger
@@ -18,7 +17,7 @@ from ..utils import wealth_change
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import DEFAULT_FRACTALS, STIMULUSPATH, active_configs as acfg
 from typing import Optional, Dict
-from .exp.helper import format_wealth, gui_update_dict, DebugTimer, make_filename
+from .exp.helper import format_wealth, gui_update_dict,  make_filename
 
 
 def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) -> Dict:
