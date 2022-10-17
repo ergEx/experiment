@@ -181,10 +181,9 @@ if __name__ == '__main__':
             win.close()
             gc.collect()
 
-
-        win, frameDur, Break, _ = set_up_win(expInfo['fullScreen'], False)
-
         if nsess < len(SESSIONS) - 1:
+            win, frameDur, Break, _ = set_up_win(expInfo['fullScreen'], False)
+
             breakText = f"Thank you for completing session {nsess + 1} of {len(SESSIONS)}.\nPlease take a break and contact the experimenter.\nBreak:\n"
             Break.setText(breakText)
             Break.draw()
