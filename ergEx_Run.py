@@ -17,9 +17,9 @@ import gc
 ACTIVE_MODE = 3
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
-N_TRIALS_PASSIVE = 4 * 45 # Default 4 * 45
+N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 120 # Default 90
+N_TRIALS_ACTIVE = 160 # Default 90
 """ Number of trials in the active phaes"""
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
@@ -31,7 +31,7 @@ SIMULATE_MR = 'None'
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 4 # Defaults to 4
+MAX_RUN_PASSIVE = 3 # Defaults to 4
 """ Number of runs of the passive phase"""
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
@@ -44,7 +44,7 @@ SESSIONS = [1, 2]
 SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [30, 44, 45, 56]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
-GAMBLE_FILTER = False
+GAMBLE_FILTER = True
 """ Whether gambles are filtered in a given range. """
 BREAKLENGTH = 10
 """ Break duration between Sessions."""
