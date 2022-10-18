@@ -591,6 +591,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     MoneyBox.setAutoDraw(False)
     Logger.keyStrokes(win)
 
+    finalText = f'You finished the decision making task!\n\n Your final wealth is:\n\n{format_wealth(wealth)}'
+    Instructions.setText(finalText)
+    Instructions.draw()
+    win.flip()
+    core.wait(5)
+    win.flip()
+
     if expInfo['simulateMR'] in ['Simulate']:
         SyncGen.stop()
         del SyncGen
