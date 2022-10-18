@@ -1,4 +1,4 @@
-VERSION='v0.2.2a'
+VERSION='v0.2.2b'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -14,7 +14,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 3
+ACTIVE_MODE = 4
 """ Mode for the active phase 1 = DRCMR, 2 = LML """
 
 N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
@@ -41,7 +41,7 @@ MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
-SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [30, 44, 45, 56]}
+SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58, 72, 73, 81]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
 GAMBLE_FILTER = True
