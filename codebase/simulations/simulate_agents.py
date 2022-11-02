@@ -34,7 +34,8 @@ def simulate_agent(lambd:float=0.0,
     df = {kk : [] for kk in ['event_type', 'selected_side',
                                   'gamma_left_up','gamma_left_down',
                                   'gamma_right_up', 'gamma_right_down',
-                                  'track', 'wealth', 'realized_gamma', 'eta']}
+                                  'track', 'wealth', 'realized_gamma', 'eta',
+                                  'simulation_eta','trial']}
 
     wealth = 1000
     for trial in range(n_trials):
@@ -70,6 +71,9 @@ def simulate_agent(lambd:float=0.0,
             u = [isoelastic_utility(d_wealth,eta).item() for d_wealth in delta_wealths]
             choice = np.mean([u[0],u[1]]) > np.mean([u[2],u[3]])
 
+        #introduce some randomness
+        choice = not choice if np.random.rand() > 0.8 else choice
+
         if choice:
             response = 'left'
         else:
@@ -87,7 +91,7 @@ def simulate_agent(lambd:float=0.0,
         logDict.update({'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
                         'gamma_right_up': gamma3, 'gamma_right_down': gamma4,
                         'selected_side': response, 'wealth': wealth, 'event_type': 'WealthUpdate',
-                        'eta': eta})
+                        'eta': lambd, 'simulation_eta': eta, 'trial':trial})
 
         for ld in logDict.keys():
             df[ld].append(logDict[ld])
@@ -98,10 +102,10 @@ def simulate_agent(lambd:float=0.0,
 
 if __name__ == '__main__':
 
-    mode = 1
+    mode = 3
     n_agents = 10
 
-    save_path = os.path.join(os.path.join(os.path.dirname(__file__),),'..','..', 'data','outputs','simulations',f'version{str(mode)}')
+    save_path = os.path.join(os.path.join(os.path.dirname(__file__),),'..','..', 'data','outputs','simulations',f'version_{str(mode)}')
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
