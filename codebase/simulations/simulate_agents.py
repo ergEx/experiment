@@ -86,7 +86,7 @@ def simulate_agent(lambd:float=0.0,
             ch_gamma = current_gammas[2:][np.abs(coin_toss -1)]
             logDict.update({'realized_gamma': ch_gamma})
 
-        wealth = wealth_change(wealth, ch_gamma, eta).item()
+        wealth = wealth_change(wealth, ch_gamma, lambd).item()
 
         logDict.update({'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
                         'gamma_right_up': gamma3, 'gamma_right_down': gamma4,
