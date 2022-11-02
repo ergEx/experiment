@@ -88,7 +88,6 @@ def simulate_agent(lambd:float=0.0,
 
         wealth = wealth_change(wealth, ch_gamma, eta).item()
 
-        print(lambd, eta)
         logDict.update({'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
                         'gamma_right_up': gamma3, 'gamma_right_down': gamma4,
                         'selected_side': response, 'wealth': wealth, 'event_type': 'WealthUpdate',
@@ -113,5 +112,5 @@ if __name__ == '__main__':
     for lambd in [0.0,1.0]:
         for eta in [0.0,0.5,1.0]:
             for agent in range(n_agents):
-                df = simulate_agent(lambd, eta)
+                df = simulate_agent(lambd = lambd, eta = eta, mode = mode)
                 df.to_csv(os.path.join(save_path,f'sim_agent_{agent}_lambd_{lambd}_{eta}.csv'),sep='\t')
