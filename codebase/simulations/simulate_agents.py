@@ -58,7 +58,7 @@ def simulate_agent(lambd:float=0.0,
         if this_trial != None:
             gamma1, gamma2 = this_trial['gamma_left_up'], this_trial['gamma_left_down']
             gamma3, gamma4 = this_trial['gamma_right_up'], this_trial['gamma_right_down']
-            eta = this_trial['lambda']
+            lambd = this_trial['lambda']
             coin_toss = np.int32(this_trial['gamble_up'])
 
         current_gammas = [gamma1, gamma2, gamma3, gamma4]
@@ -88,6 +88,7 @@ def simulate_agent(lambd:float=0.0,
 
         wealth = wealth_change(wealth, ch_gamma, eta).item()
 
+        print(lambd, eta)
         logDict.update({'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
                         'gamma_right_up': gamma3, 'gamma_right_down': gamma4,
                         'selected_side': response, 'wealth': wealth, 'event_type': 'WealthUpdate',
