@@ -103,14 +103,16 @@ def simulate_agent(lambd:float=0.0,
 if __name__ == '__main__':
 
     mode = 3
-    n_agents = 10
+    n_agents = 15
+    etas = np.array([np.full(shape=5,fill_value=0.0,dtype=float),
+                     np.full(shape=5,fill_value=0.5,dtype=float),
+                     np.full(shape=5,fill_value=1.0,dtype=float),]).flatten()
 
     save_path = os.path.join(os.path.join(os.path.dirname(__file__),),'..','..', 'data','outputs','simulations',f'version_{str(mode)}')
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
     for lambd in [0.0,1.0]:
-        for eta in [0.0,0.5,1.0]:
-            for agent in range(n_agents):
-                df = simulate_agent(lambd = lambd, eta = eta, mode = mode)
-                df.to_csv(os.path.join(save_path,f'sim_agent_{agent}_lambd_{lambd}_{eta}.csv'),sep='\t')
+        for agent in range(n_agents):
+            df = simulate_agent(lambd = lambd, eta = etas[agent], mode = mode)
+            df.to_csv(os.path.join(save_path,f'sim_agent_{agent}_lambd_{lambd}.csv'),sep='\t')
