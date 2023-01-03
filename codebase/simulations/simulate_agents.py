@@ -8,14 +8,20 @@ from ..sequences import generate_dataframes
 from ..utils import isoelastic_utility, wealth_change
 
 
-def simulate_agent(lambd:float=0.0,
+def sigmoid(deu, beta):
+    sdeu = -1 * beta * deu
+    return 1 / (1 + np.exp(sdeu))
+
+def simulate_agent(agent:str='0.0x0.0',
+                   lambd:float=0.0,
                   eta:float=0.0,
                   mode:int=1,
                   c_dict=con.c_dict,
                   assymetry_dict=con.assymetry_dict,
-                  LIMITS:dict = con.LIMITS,
+                  LIMITS:dict=con.LIMITS,
                   filtering=False,
-                  n_trials:int=160):
+                  n_trials:int=1000,
+                  log_beta:dict={0.0: -2, 1.0: 4}):
 
     seqs = generate_dataframes(lambd=lambd,
                                mode=mode,
@@ -35,7 +41,7 @@ def simulate_agent(lambd:float=0.0,
                                   'gamma_left_up','gamma_left_down',
                                   'gamma_right_up', 'gamma_right_down',
                                   'track', 'wealth', 'realized_gamma', 'eta',
-                                  'simulation_eta','trial']}
+                                  'agent','trial']}
 
     wealth = 1000
     for trial in range(n_trials):
@@ -43,17 +49,16 @@ def simulate_agent(lambd:float=0.0,
         if mode == 3: #train_tracks
             if wealth  > LIMITS[lambd][1]:
                 this_trial = active['bad'].iloc[trial].to_dict()
-                logDict.update({'track': 'bad'})
+                track = 'bad'
             elif wealth < LIMITS[lambd][0]:
                 this_trial = active['good'].iloc[trial].to_dict()
-                logDict.update({'track': 'good'})
+                track = 'good'
             else:
                 this_trial= active['neutral'].iloc[trial].to_dict()
-                logDict.update({'track': 'neutral'})
+                track = 'neutral'
         else:
             this_trial= active['neutral'].iloc[trial].to_dict()
-            logDict.update({'track': 'neutral'})
-
+            track = 'neutral'
 
         if this_trial != None:
             gamma1, gamma2 = this_trial['gamma_left_up'], this_trial['gamma_left_down']
@@ -62,36 +67,31 @@ def simulate_agent(lambd:float=0.0,
             coin_toss = np.int32(this_trial['gamble_up'])
 
         current_gammas = [gamma1, gamma2, gamma3, gamma4]
-
         delta_wealths = [wealth_change(wealth,gamma,lambd).item() for gamma in current_gammas]
 
         if any(delta_wealths) < 0:
             choice = 0 #Dummy value that is deleted before inference is done
         else:
-            u = [isoelastic_utility(d_wealth,eta).item() for d_wealth in delta_wealths]
-            choice = np.mean([u[0],u[1]]) > np.mean([u[2],u[3]])
+            u_i = [isoelastic_utility(d_wealth,eta).item() for d_wealth in delta_wealths]
+            u = isoelastic_utility(wealth, eta)
+            du = [i - u for i in u_i]
+            deu = ((du[0] + du[1]) / 2) - ((du[2] + du[3]) / 2)
+            choice_probability = sigmoid(deu, np.exp(log_beta[eta]))
+            choice = 'left' if choice_probability > np.random.uniform(0,1) else 'right'
 
-        #introduce some randomness
-        choice = not choice if np.random.rand() > 0.8 else choice
-
-        if choice:
-            response = 'left'
-        else:
-            response = 'right'
-
-        if response == 'left':
+        if choice == 'left':
             ch_gamma = current_gammas[:2][np.abs(coin_toss -1)]
             logDict.update({'realized_gamma': ch_gamma})
-        elif response == 'right':
+        elif choice == 'right':
             ch_gamma = current_gammas[2:][np.abs(coin_toss -1)]
             logDict.update({'realized_gamma': ch_gamma})
 
         wealth = wealth_change(wealth, ch_gamma, lambd).item()
 
-        logDict.update({'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
+        logDict.update({'track': track, 'gamma_left_up': gamma1, 'gamma_left_down': gamma2,
                         'gamma_right_up': gamma3, 'gamma_right_down': gamma4,
-                        'selected_side': response, 'wealth': wealth, 'event_type': 'WealthUpdate',
-                        'eta': lambd, 'simulation_eta': eta, 'trial':trial})
+                        'selected_side': choice, 'wealth': wealth, 'event_type': 'WealthUpdate',
+                        'eta': lambd, 'agent': agent, 'trial':trial})
 
         for ld in logDict.keys():
             df[ld].append(logDict[ld])
@@ -102,17 +102,21 @@ def simulate_agent(lambd:float=0.0,
 
 if __name__ == '__main__':
 
+    log_beta = {0.0: -1, 0.5: 1, 1.0: 4}
     mode = 3
-    n_agents = 15
-    etas = np.array([np.full(shape=5,fill_value=0.0,dtype=float),
-                     np.full(shape=5,fill_value=0.5,dtype=float),
-                     np.full(shape=5,fill_value=1.0,dtype=float),]).flatten()
+    lambds = [0,1]
+    etas = [[0.0,0.0],[0.0,0.5],[0.0,1.0],
+            [0.5,0.0],[0.5,0.5],[0.5,1.0],
+            [1.0,0.0],[1.0,0.5],[1.0,1.0]]
 
     save_path = os.path.join(os.path.join(os.path.dirname(__file__),),'..','..', 'data','outputs','simulations',f'version_{str(mode)}')
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    for lambd in [0.0,1.0]:
-        for agent in range(n_agents):
-            df = simulate_agent(lambd = lambd, eta = etas[agent], mode = mode)
-            df.to_csv(os.path.join(save_path,f'sim_agent_{agent}_lambd_{lambd}.csv'),sep='\t')
+    for c, lambd in enumerate(lambds):
+        for i, agent in enumerate(etas):
+            eta = etas[i][c]
+            agent_type = f'{agent[0]}x{agent[1]}'
+
+            df = simulate_agent(agent = agent_type, lambd = lambd, eta = eta, mode = mode, log_beta = log_beta)
+            df.to_csv(os.path.join(save_path,f'sim_agent{agent_type}.csv'),sep='\t')
