@@ -119,4 +119,4 @@ if __name__ == '__main__':
             agent_type = f'{agent[0]}x{agent[1]}'
 
             df = simulate_agent(agent = agent_type, lambd = lambd, eta = eta, mode = mode, log_beta = log_beta)
-            df.to_csv(os.path.join(save_path,f'sim_agent{agent_type}.csv'),sep='\t')
+            df.to_csv(os.path.join(save_path,f'sim_agent_{agent_type}_lambd_{c}.csv'),sep='\t')
