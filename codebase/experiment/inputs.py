@@ -28,7 +28,8 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
                                             n_resets_passive=n_resets_passive,
                                             n_trials_passive_before_reset=n_trials_passive_before_reset,
                                             mode=mode,
-                                            speed_up=speed_up
+                                            speed_up=speed_up,
+                                            gamble_filter=gamble_filter
                                             )
 
         p_df.to_csv(save_path.replace('meta', 'passive').replace('txt', 'tsv').replace('_neutral', ''), index=False, sep='\t')
