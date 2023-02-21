@@ -1,3 +1,4 @@
+import itertools
 import os
 
 import numpy as np
@@ -134,23 +135,15 @@ if __name__ == "__main__":
     mode = 3
     lambds = [0, 1]
 
-    n_repeats = 2
+    n_repeats = 100
 
-    ns = [166]  # 1000]
+    ns = [160, 1000]
 
-    log_betas = [{0.0: -1, 0.5: 1, 1.0: 4}]  # , {0.0: -0, 0.5: 1.5, 1.0: 8}]
+    log_beta = {0.0: -1, 0.5: 1, 1.0: 4}
 
-    etas = [
-        [0.0, 0.0],
-        [0.0, 0.5],
-        [0.0, 1.0],
-        [0.5, 0.0],
-        [0.5, 0.5],
-        [0.5, 1.0],
-        [1.0, 0.0],
-        [1.0, 0.5],
-        [1.0, 1.0],
-    ]
+    eta = [-0.5, 0.0, 0.5, 1.0, 1.5]
+
+    etas = itertools.product(eta, eta)
 
     root_save_path = os.path.join(
         os.path.join(os.path.dirname(__file__),),
@@ -164,26 +157,24 @@ if __name__ == "__main__":
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
-    for b, log_beta in enumerate(log_betas):
-        for n, n_trials in enumerate(ns):
-            save_path = os.path.join(root_save_path, f"b_{b}_n_{n}")
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-            for j in range(n_repeats):
-                for c, lambd in enumerate(lambds):
-                    for i, agent in enumerate(etas):
-                        eta = etas[i][c]
-                        agent_type = f"{j}_{agent[0]}x{agent[1]}"
+    for n, n_trials in enumerate(ns):
+        save_path = os.path.join(root_save_path, f"n_{n_trials}")
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+        for j in range(n_repeats):
+            for c, lambd in enumerate(lambds):
+                for i, agent in enumerate(etas):
+                    eta = etas[i][c]
+                    agent_type = f"{j}_{agent[0]}x{agent[1]}"
 
-                        df = simulate_agent(
-                            agent=agent_type,
-                            lambd=lambd,
-                            eta=eta,
-                            mode=mode,
-                            log_beta=log_beta,
-                            n_trials=n_trials,
-                        )
-                        df.to_csv(
-                            os.path.join(save_path, f"sim_agent_{agent_type}_lambd_{c}.csv"),
-                            sep="\t",
-                        )
+                    df = simulate_agent(
+                        agent=agent_type,
+                        lambd=lambd,
+                        eta=eta,
+                        mode=mode,
+                        log_beta=log_beta,
+                        n_trials=n_trials,
+                    )
+                    df.to_csv(
+                        os.path.join(save_path, f"sim_agent_{agent_type}_lambd_{c}.csv"), sep="\t",
+                    )
