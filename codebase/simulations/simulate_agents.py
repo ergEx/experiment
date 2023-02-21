@@ -139,11 +139,11 @@ if __name__ == "__main__":
 
     ns = [160, 1000]
 
-    log_beta = {0.0: -1, 0.5: 1, 1.0: 4}
+    log_beta = {-0.5: -2, 0.0: -1, 0.5: 1, 1.0: 4, 1.5: 6}
 
     eta = [-0.5, 0.0, 0.5, 1.0, 1.5]
 
-    etas = itertools.product(eta, eta)
+    etas = list(itertools.product(eta, eta))
 
     root_save_path = os.path.join(
         os.path.join(os.path.dirname(__file__),),
@@ -157,6 +157,10 @@ if __name__ == "__main__":
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
+    print(len(ns))
+    print(n_repeats)
+    print(len(lambds))
+    print(len(list(etas)))
     for n, n_trials in enumerate(ns):
         save_path = os.path.join(root_save_path, f"n_{n_trials}")
         if not os.path.isdir(save_path):
@@ -164,7 +168,7 @@ if __name__ == "__main__":
         for j in range(n_repeats):
             for c, lambd in enumerate(lambds):
                 for i, agent in enumerate(etas):
-                    eta = etas[i][c]
+                    eta = agent[c]
                     agent_type = f"{j}_{agent[0]}x{agent[1]}"
 
                     df = simulate_agent(
