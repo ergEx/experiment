@@ -135,11 +135,11 @@ if __name__ == "__main__":
     mode = 3
     lambds = [0, 1]
 
-    n_repeats = 100
+    n_repeats = [10, 1]
 
     ns = [160, 1000]
 
-    log_beta = {-0.5: -2, 0.0: -1, 0.5: 1, 1.0: 4, 1.5: 6}
+    log_beta = {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8}
 
     eta = [-0.5, 0.0, 0.5, 1.0, 1.5]
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         save_path = os.path.join(root_save_path, f"n_{n_trials}")
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
-        for j in range(n_repeats):
+        for j in range(n_repeats[n]):
             for c, lambd in enumerate(lambds):
                 for i, agent in enumerate(etas):
                     eta = agent[c]
