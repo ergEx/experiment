@@ -44,7 +44,7 @@ SESSIONS = [1, 2]
 SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58, 72, 73, 81]}
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
-GAMBLE_FILTER = True
+GAMBLE_FILTER = False
 """ Whether gambles are filtered in a given range. """
 BREAKLENGTH = 10
 """ Break duration between Sessions."""
