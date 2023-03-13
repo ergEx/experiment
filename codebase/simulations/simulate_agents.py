@@ -15,7 +15,7 @@ def sigmoid(deu, beta):
 
 
 def simulate_agent(
-    agent: str = "0.0x0.0",
+    agent: str = "random",
     lambd: float = 0.0,
     eta: float = 0.0,
     mode: int = 1,
@@ -89,6 +89,8 @@ def simulate_agent(
 
         if any(delta_wealths) < 0:
             choice = 0  # Dummy value that is deleted before inference is done
+        elif "random" in agent_type:
+            choice = "left" if 0.5 > np.random.uniform(0, 1) else "right"
         else:
             u_i = [isoelastic_utility(d_wealth, eta).item() for d_wealth in delta_wealths]
             u = isoelastic_utility(wealth, eta)
@@ -136,13 +138,19 @@ if __name__ == "__main__":
     lambds = [0, 1]
 
     n_repeats = [10, 1]
-
     ns = [160, 1000]
 
-    log_beta = {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8}
+    phenotype = {
+        "random": {"n_types": 1, "eta": None, "log_beta": None},
+        "5x5": {
+            "n_types": 25,
+            "log_beta": {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8},
+            "eta": [-0.5, 0.0, 0.5, 1.0, 1.5],
+        },
+        "2x2": {"n_types": 4, "log_beta": {0.0: 0, 1.0: 4}, "eta": [0.0, 1.0]},
+    }
 
-    eta = [-0.5, 0.0, 0.5, 1.0, 1.5]
-
+    eta = [0.0, 1.0]
     etas = list(itertools.product(eta, eta))
 
     root_save_path = os.path.join(
@@ -157,24 +165,31 @@ if __name__ == "__main__":
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
-    for n, n_trials in enumerate(ns):
-        save_path = os.path.join(root_save_path, f"n_{n_trials}")
-        if not os.path.isdir(save_path):
-            os.makedirs(save_path)
-        for j in range(n_repeats[n]):
-            for c, lambd in enumerate(lambds):
-                for i, agent in enumerate(etas):
-                    eta = agent[c]
-                    agent_type = f"{j}_{agent[0]}x{agent[1]}"
+    for run_type in ["random", "5x5"]:
+        for n, n_trials in enumerate(ns):
+            save_path = os.path.join(root_save_path, f"n_{n_trials}")
+            if not os.path.isdir(save_path):
+                os.makedirs(save_path)
+            for j in range(n_repeats[n]):
+                for c, lambd in enumerate(lambds):
+                    for i in range(phenotype[run_type]["n_types"]):
+                        if run_type == "random":
+                            agent_type = f"{j}_random"
+                        else:
+                            eta_lst = phenotype[run_type]["eta"]
+                            etas = list(itertools.product(eta_lst, eta_lst))[i]
+                            eta = etas[c]
+                            agent_type = f"{j}_{etas[0]}x{etas[1]}"
 
-                    df = simulate_agent(
-                        agent=agent_type,
-                        lambd=lambd,
-                        eta=eta,
-                        mode=mode,
-                        log_beta=log_beta,
-                        n_trials=n_trials,
-                    )
-                    df.to_csv(
-                        os.path.join(save_path, f"sim_agent_{agent_type}_lambd_{c}.csv"), sep="\t",
-                    )
+                        df = simulate_agent(
+                            agent=agent_type,
+                            lambd=lambd,
+                            eta=eta,
+                            mode=mode,
+                            log_beta=phenotype[run_type]["log_beta"],
+                            n_trials=n_trials,
+                        )
+                        df.to_csv(
+                            os.path.join(save_path, f"sim_agent_{agent_type}_lambd_{c}.csv"),
+                            sep="\t",
+                        )
