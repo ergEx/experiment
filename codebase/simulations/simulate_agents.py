@@ -16,6 +16,7 @@ def sigmoid(deu, beta):
 
 def simulate_agent(
     agent: str = "random",
+    phenotype: str = "random",
     lambd: float = 0.0,
     eta: float = 0.0,
     mode: int = 1,
@@ -56,7 +57,8 @@ def simulate_agent(
             "wealth",
             "realized_gamma",
             "eta",
-            "agent",
+            "participant_id",
+            "phenotype",
             "trial",
         ]
     }
@@ -119,7 +121,8 @@ def simulate_agent(
                 "wealth": wealth,
                 "event_type": "WealthUpdate",
                 "eta": lambd,
-                "agent": agent,
+                "participant_id": agent,
+                "phenotype": phenotype,
                 "trial": trial,
             }
         )
@@ -140,14 +143,14 @@ if __name__ == "__main__":
     n_repeats = [10, 1]
     ns = [160, 1000]
 
-    phenotype = {
+    phenotypes = {
         "random": {"n_types": 1, "eta": None, "log_beta": None},
         "5x5": {
             "n_types": 25,
             "log_beta": {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8},
             "eta": [-0.5, 0.0, 0.5, 1.0, 1.5],
         },
-        "2x2": {"n_types": 4, "log_beta": {0.0: 0, 1.0: 4}, "eta": [0.0, 1.0]},
+        "2x2": {"n_types": 4, "log_beta": {0.0: -1, 1.0: 3}, "eta": [0.0, 1.0]},
     }
 
     eta = [0.0, 1.0]
@@ -165,28 +168,30 @@ if __name__ == "__main__":
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
-    for run_type in ["random", "5x5"]:
+    for run_type in ["random", "2x2"]:
         for n, n_trials in enumerate(ns):
             save_path = os.path.join(root_save_path, f"n_{n_trials}")
             if not os.path.isdir(save_path):
                 os.makedirs(save_path)
             for j in range(n_repeats[n]):
                 for c, lambd in enumerate(lambds):
-                    for i in range(phenotype[run_type]["n_types"]):
+                    for i in range(phenotypes[run_type]["n_types"]):
                         if run_type == "random":
                             agent_type = f"{j}_random"
+                            phenotype = "random"
                         else:
-                            eta_lst = phenotype[run_type]["eta"]
+                            eta_lst = phenotypes[run_type]["eta"]
                             etas = list(itertools.product(eta_lst, eta_lst))[i]
                             eta = etas[c]
                             agent_type = f"{j}_{etas[0]}x{etas[1]}"
-
+                            phenotype = f"{etas[0]}x{etas[1]}"
                         df = simulate_agent(
                             agent=agent_type,
+                            phenotype=phenotype,
                             lambd=lambd,
                             eta=eta,
                             mode=mode,
-                            log_beta=phenotype[run_type]["log_beta"],
+                            log_beta=phenotypes[run_type]["log_beta"],
                             n_trials=n_trials,
                         )
                         df.to_csv(
