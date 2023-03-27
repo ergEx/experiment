@@ -1,9 +1,11 @@
 # Experiment
 Experiment and analysis for the first behavioural experiment of ergEx
+
 This is a general list of what happens when the experiment is run without including the mathematical context (will be completed after all algorithms are ran through)
 
 "Press Run"
 Fill in:
+
 ![image](https://user-images.githubusercontent.com/122382899/227543168-c2256df1-ae09-4c91-b3cf-b063b3c22769.png)
 - Subject ID
 - Select whether this experiment is to be run in test-mode or not
