@@ -15,7 +15,7 @@ def sigmoid(deu, beta):
 
 
 def simulate_agent(
-    agent: str = "random",
+    participant_id: int = 0,
     phenotype: str = "random",
     lambd: float = 0.0,
     eta: float = 0.0,
@@ -91,7 +91,7 @@ def simulate_agent(
 
         if any(delta_wealths) < 0:
             choice = 0  # Dummy value that is deleted before inference is done
-        elif "random" in agent_type:
+        elif phenotype == "random":
             choice = "left" if 0.5 > np.random.uniform(0, 1) else "right"
         else:
             u_i = [isoelastic_utility(d_wealth, eta).item() for d_wealth in delta_wealths]
@@ -121,7 +121,7 @@ def simulate_agent(
                 "wealth": wealth,
                 "event_type": "WealthUpdate",
                 "eta": lambd,
-                "participant_id": agent,
+                "participant_id": participant_id,
                 "phenotype": phenotype,
                 "trial": trial,
             }
@@ -173,20 +173,19 @@ if __name__ == "__main__":
             save_path = os.path.join(root_save_path, f"n_{n_trials}")
             if not os.path.isdir(save_path):
                 os.makedirs(save_path)
-            for j in range(n_repeats[n]):
-                for c, lambd in enumerate(lambds):
-                    for i in range(phenotypes[run_type]["n_types"]):
+            for c, lambd in enumerate(lambds):
+                for i in range(phenotypes[run_type]["n_types"]):
+                    for j in range(n_repeats[n]):
+                        participant_id = j
                         if run_type == "random":
-                            agent_type = f"{j}_random"
                             phenotype = "random"
                         else:
                             eta_lst = phenotypes[run_type]["eta"]
                             etas = list(itertools.product(eta_lst, eta_lst))[i]
                             eta = etas[c]
-                            agent_type = f"{j}_{etas[0]}x{etas[1]}"
                             phenotype = f"{etas[0]}x{etas[1]}"
                         df = simulate_agent(
-                            agent=agent_type,
+                            participant_id=participant_id,
                             phenotype=phenotype,
                             lambd=lambd,
                             eta=eta,
@@ -195,6 +194,8 @@ if __name__ == "__main__":
                             n_trials=n_trials,
                         )
                         df.to_csv(
-                            os.path.join(save_path, f"sim_agent_{agent_type}_lambd_{c}.csv"),
+                            os.path.join(
+                                save_path, f"sim_agent_phenotype_{phenotype}_{j}_lambd_{c}.csv"
+                            ),
                             sep="\t",
                         )
