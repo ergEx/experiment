@@ -1,6 +1,8 @@
 # Experiment
 Experiment and analysis for the first behavioural experiment of ergEx
 
+_This experiment should be run using PsychoPy_
+
 This is a general list of what happens when the experiment is run without including the mathematical context (will be completed after all algorithms are ran through)
 
 "Press Run"
