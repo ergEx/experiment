@@ -140,8 +140,8 @@ if __name__ == "__main__":
     mode = 3
     lambds = [0, 1]
 
-    n_repeats = [10, 1]
-    ns = [160, 1000]
+    n_repeats = [100, 10]
+    ns = [160, 1600]
 
     phenotypes = {
         "random": {"n_types": 1, "eta": None, "log_beta": None},
@@ -152,9 +152,6 @@ if __name__ == "__main__":
         },
         "2x2": {"n_types": 4, "log_beta": {0.0: -1, 1.0: 3}, "eta": [0.0, 1.0]},
     }
-
-    eta = [0.0, 1.0]
-    etas = list(itertools.product(eta, eta))
 
     root_save_path = os.path.join(
         os.path.join(os.path.dirname(__file__),),
@@ -168,22 +165,29 @@ if __name__ == "__main__":
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
-    for run_type in ["random", "2x2"]:
+    for run_type in ["random", "5x5"]:
+        print(f"\nRun type: {run_type}")
         for n, n_trials in enumerate(ns):
             save_path = os.path.join(root_save_path, f"n_{n_trials}")
             if not os.path.isdir(save_path):
                 os.makedirs(save_path)
             for c, lambd in enumerate(lambds):
+                print(f"\nCondition: {lambd}")
                 for i in range(phenotypes[run_type]["n_types"]):
+                    if run_type == "random":
+                        phenotype = "random"
+                        eta = ""
+                    else:
+                        eta_lst = phenotypes[run_type]["eta"]
+                        etas = list(itertools.product(eta_lst, eta_lst))[i]
+                        eta = etas[c]
+                        phenotype = f"{etas[0]}x{etas[1]}"
+
+                    print(f"Phenotype: {phenotype}")
+
                     for j in range(n_repeats[n]):
                         participant_id = j
-                        if run_type == "random":
-                            phenotype = "random"
-                        else:
-                            eta_lst = phenotypes[run_type]["eta"]
-                            etas = list(itertools.product(eta_lst, eta_lst))[i]
-                            eta = etas[c]
-                            phenotype = f"{etas[0]}x{etas[1]}"
+
                         df = simulate_agent(
                             participant_id=participant_id,
                             phenotype=phenotype,
