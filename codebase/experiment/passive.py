@@ -358,6 +358,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             # Reduce spin duration by (right now) 1 s.
             spinDuration = pcfg.wheelSpinTime - (pcfg.timeResponseWindow - pcfg.timeToReminder)
 
+        if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+            spinDuration = pcfg.wheelSpinTime
+
         steps = int(np.rint(spinDuration / frameDur))
 
         wheelOnset = Logger.getTime()
@@ -378,6 +381,15 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                         "expected_duration": spinDuration,
                         **logDict},
                         onset=wheelOnset)
+
+        if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+            if RT is not None:
+                # Hard coded minimal time for now:
+                wtime = (pcfg.wheelSpinTime + pcfg.timeResponseWindow + 0.2) - RT
+            else:
+                wtime = 0.2
+
+            Wait.wait(wtime)
         ############################ Fractal Onset #################################
         fractals[fractal].setOpacity(1)
         logDict.update({'gamma': gamma, 'fractal': fractalList[fractal]})
