@@ -13,3 +13,10 @@ traintrack*
 .vscode
 .ipynb_*
 .pytest_cache
+*.zip
+*.pdf
+ergEx_Demo.py
+gridExperiment.py
+GrowthExp.ipynb
+summary.png
+groupReport.py

@@ -370,9 +370,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             Logger.keyStrokes(win)
             win.flip()
 
-            # if (Logger.getTime() - wheelOnset) >= spinDuration:
-            #    break
-
         Logger.keyStrokes(win)
         Logger.logEvent({"event_type": "WheelSpin",
                         "expected_duration": spinDuration,
@@ -383,8 +380,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         logDict.update({'gamma': gamma, 'fractal': fractalList[fractal]})
         win.flip()
         Logger.keyStrokes(win)
-
-        # MoneyBox.setText(format_wealth(exp_wealth-wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
 
         fractalOnset = Logger.getTime()
         Wait.wait(fractal_duration)
@@ -400,13 +395,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         old_wealth = wealth
         wealth = exp_wealth
 
-        # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
         MoneyBox.setText(format_wealth(wealth))
 
         moneyOnset = Logger.getTime()
 
         for ws in wealth_steps:
-            # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(ws) + '\n')
             MoneyBox.setText(format_wealth(ws))
 
             Logger.keyStrokes(win)
@@ -415,8 +408,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         Logger.keyStrokes(win)
 
         MoneyBox.setText(format_wealth(wealth))
-        # MoneyBox.setText(format_wealth(wealth-old_wealth, "0,.0f") + '\n' + format_wealth(wealth) + '\n')
-        # MoneyBox.setText('\n' + format_wealth(wealth) + f'\n {np.int(wealth-old_wealth)}')
         win.flip()
 
         Logger.logEvent({"event_type": "WealthUpdate",
