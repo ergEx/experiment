@@ -681,8 +681,19 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
                 Logger.logEvent({"event_type": "TrialEnd", **logDict})
 
+            wealth = con.x_0
+            MoneyBox.setText(format_wealth(wealth))
+            Logger.wealth = wealth
+            Logger.logEvent({"event_type": "NobrainerEnd", **logDict})
+
         if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
+        else:
+            Wheel.setAutoDraw(True)
+            Stopper.setAutoDraw(True)
+            MoneyFrame.setAutoDraw(True)
+            MoneyBox.setAutoDraw(True)
+            win.flip()
 
     ############################### Nobrainer over #################################
     if expInfo['simulateMR'] in ['Simulate']:
