@@ -519,7 +519,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                     gamma1, gamma2 = thisTrial['gamma1'], thisTrial['gamma2']
 
                 Logger.setTrialTime()
-                Logger.trial = nTrial
+                Logger.trial = nbTrial
                 Logger.part = 1
 
                 if thisTrial['gamma1'] > thisTrial['gamma2']:
