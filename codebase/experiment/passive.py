@@ -147,6 +147,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     # Autopilot:
     Agent = PassiveAutoPilot(0.5, 0.3, expInfo['agentActive'],
                             responseButton=expInfo['responseButton'])
+
+    nbAgent = ActiveAutoPilot(0.4, 0.1, active=expInfo['nbagentActive'],
+                            mode='random',
+                            buttonLeft=expInfo['responseLeft'],
+                            buttonRight=expInfo['responseRight'])
     # Waiting Tool
     Wait = WaitTime(win, Logger, frameDuration=frameDur)
 
@@ -166,6 +171,18 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                         image=os.path.join(STIMULUSPATH, 'fractals', fl + '.png'))
         fractals[nFl].pos += offset
         fractals[nFl].setAutoDraw(True)
+
+    # Setting up fractals for nobrainers:
+    imgLocation = ['leftUp', 'rightUp']
+    nob_fractals = {location: {} for location in imgLocation}
+
+    for imL in imgLocation:
+        for nFl, fl in enumerate(fractalList):
+            nob_fractals[imL][nFl] = visual.ImageStim(win=win, pos=[acfg.imgLocPos[imL][0], 0],
+                                                size=acfg.imgSize, opacity=0,
+                                                image=os.path.join(STIMULUSPATH, 'nob_fractals', fl + '.png'))
+            nob_fractals[imL][nFl].pos += offset
+            nob_fractals[imL][nFl].setAutoDraw(True)
 
 
     TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1, 0.1, 0.1], units='norm', opacity=1.0,
@@ -429,264 +446,251 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
 
-    ################################ Post Experiment clean up ######################
-    Wheel.setAutoDraw(False)
-    Stopper.setAutoDraw(False)
-    MoneyFrame.setAutoDraw(False)
-    MoneyBox.setAutoDraw(False)
-    Logger.keyStrokes(win)
-
-    ############################### Nobrainer about here ###########################
-
-    TimeLine.width = 0
-    win.flip()
-    Agent = ActiveAutoPilot(0.4, 0.1, active=expInfo['agentActive'],
-                            mode='random',
-                            buttonLeft=expInfo['responseLeft'],
-                            buttonRight=expInfo['responseRight'])
-
-    imgLocation = ['leftUp', 'rightUp']
-    fractals = {location: {} for location in imgLocation}
-
-    for imL in imgLocation:
-        for nFl, fl in enumerate(fractalList):
-            fractals[imL][nFl] = visual.ImageStim(win=win, pos=[acfg.imgLocPos[imL][0], 0],
-                                                size=acfg.imgSize, opacity=0,
-                                                image=os.path.join(STIMULUSPATH, 'fractals', fl + '.png'))
-            fractals[imL][nFl].pos += offset
-            fractals[imL][nFl].setAutoDraw(True)
-
-    Reminder.setText("press earlier")
-    fractalData = pd.read_csv(trialInfoPath, sep='\t')
-    # Create dataset:
-    trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer, expInfo['mode'])
-
-    TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
-                            fillColor='white', start=0, end=360)
-    TimerShape.pos += offset
-    TimerShape.setAutoDraw(False)
-    ###
-
-    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        Instructions.setText(f'Please wait to continue\n with the second part.\n'+
-                              'Choose the fractal you think is better for your wealth.')
-        Instructions.setAutoDraw(True)
-        win.flip()
-        Wait.wait(2)
-
-    elif expInfo['simulateMR'] == 'None':
-        Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\nwith the second part.\n' +
-                              'Choose the fractal you think is better for your wealth.')
-        Instructions.setAutoDraw(True)
-        win.flip()
-        startResp = True
-
-        if Agent.active:
-            Agent.start_timer(0, 0, [0, 0, 0, 0], 0.0)
-        # Wait for response
-        while startResp:
-            # Loop until response is received
-            if Agent.active and Logger.getTime() > Agent.press_time:
-                Agent.press()
-
-            response = Logger.keyStrokes(win, keyList=responseKeyList)
-
-            if response:
-                startResp = False
-
-    Instructions.setAutoDraw(False)
-    win.flip()
-    ############################ Setup Elements ####################################
-    if expInfo['feedback']:
-        MoneyBox.setAutoDraw(True)
-
-    win.flip()
-    ###################### This is were Nobrainers begins ######################
-    noTrials = trials_nb.shape[0]
-    iti = 1.0
-    eta = expInfo['eta']
-
-    logDict = {}
-    Logger.logEvent({"event_type": "BeginningNobrainers"})
-
-    for nbTrial in range(nTrial_noBrainer):
-
-        thisTrial = trials_nb.iloc[nbTrial].to_dict()
-
-        if thisTrial != None:
-            fractal1, fractal2 = thisTrial['fractal1'], thisTrial['fractal2']
-            gamma1, gamma2 = thisTrial['gamma1'], thisTrial['gamma2']
-
-        Logger.setTrialTime()
-        Logger.trial = nTrial
-        Logger.part = 1
-
-        if thisTrial['gamma1'] > thisTrial['gamma2']:
-            Logger.trial_type = 'left'
-        if thisTrial['gamma2'] > thisTrial['gamma1']:
-            Logger.trial_type = 'right'
-
-        currentFractals = [fractal1, fractal2]
-        currentGammas = [gamma1, gamma2]
-        # Logging dict - to include continuously updated info:
-        logDict = {}
-        ############################### ITI ########################################
-        itiOnset = Logger.getTime()
-
-        Wait.wait(iti)
-
-        Logger.logEvent({"event_type": "ITI", "expected_duration": iti},
-                        wealth=Logger.wealth, onset=itiOnset)
-        ########################### Gamble Left ####################################
-        fractals['leftUp'][fractal1].setOpacity(1)
-        fractals['rightUp'][fractal2].setOpacity(1)
-        TimerShape.setAutoDraw(True)
-
-        win.flip()
-        ########################### Gamble Right ###################################
+    # Nobrainer switch
+    if np.mod(curTrial, expInfo['maxTrial']) == 0:
+        ################################ Passive clean up ######################
+        Wheel.setAutoDraw(False)
+        Stopper.setAutoDraw(False)
+        MoneyFrame.setAutoDraw(False)
+        MoneyBox.setAutoDraw(False)
         Logger.keyStrokes(win)
 
-        logDict.update({'fractal_right': fractal2, 'fractal_left': fractal1,
-                        'gamma_right': gamma2, 'gamma_left': gamma1})
+        ############################### Nobrainer about here ###########################
 
-        Logger.logEvent({"event_type": "Decision", **logDict})
+        TimeLine.width = 0
+        win.flip()
 
-        Logger.keyStrokes(win)
-        ######################## Response Window ###################################
-        respOnset = Logger.getTime()
+        Reminder.setText("press earlier")
+        fractalData = pd.read_csv(trialInfoPath, sep='\t')
+        # Create dataset:
+        trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer, expInfo['mode'])
 
-        if Agent.active:
-            Agent.start_timer(respOnset, Logger.wealth, currentGammas, eta)
-
-        response = False
-        responseTo = 'n/a'
-
-        pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
-        pieCounter = 1
-
-        while (acfg.timeResponse + respOnset) > Logger.getTime() and not response:
-
-            if Agent.active and Logger.getTime() > Agent.press_time:
-                Agent.press()
-
-            presses = Logger.keyStrokes(win, keyList=responseKeyList)
-
-            if presses is not None:
-                if 'left' in responseMapping[presses[0]]:
-                    response = 'left'
-                    if currentGammas[0] >= currentGammas[1]:
-                        responseTo = True
-                    else:
-                        responseTo = False
-
-                if 'right' in responseMapping[presses[0]]:
-                    response = 'right'
-                    if currentGammas[1] >= currentGammas[0]:
-                        responseTo = True
-                    else:
-                        responseTo = False
-
-                # Response is last, currently not used...
-                Logger.logEvent({"event_type": "Response",
-                                'response_button': presses[0],
-                                'response_time': presses[1] - respOnset,
-                                'response_correct': responseTo,
-                                **logDict})
-
-            if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
-
-                try:
-                    TimerShape.setEnd(pieShapes[pieCounter])
-                    win.flip()
-                    pieCounter += 1
-                except IndexError:
-                    pass
-
-        TimerShape.setEnd(360)
+        TimerShape = visual.Pie(win=win, name='Timer', pos=acfg.timerPos, radius=10,
+                                fillColor='white', start=0, end=360)
+        TimerShape.pos += offset
         TimerShape.setAutoDraw(False)
-        ########################### Control Flow ###################################
-        # Control flow - given response (or not)
-        if response:
-            logDict.update({'no_response': False,
-                            'response_correct': responseTo,
-                            'selected_side': response})
+        ###
 
-            ######################### Side Selection ###############################
-            if response == 'left':
-                fractals['rightUp'][fractal2].setOpacity(0)
-                logDict.update({'chosen_gamma': currentGammas[0]})
-                ch_gamma = gamma1
-            elif response == 'right':
-                fractals['leftUp'][fractal1].setOpacity(0)
-                logDict.update({'chosen_gamma': currentGammas[1]})
-                ch_gamma = gamma2
-
+        if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+            Instructions.setText(f'Please wait to continue\n with the second part.\n'+
+                                'Choose the fractal you think is better for your wealth.')
+            Instructions.setAutoDraw(True)
             win.flip()
+            Wait.wait(2)
 
-            Logger.keyStrokes(win)
-            selectionOnset = Logger.getTime()
-
-            Logger.logEvent({"event_type": "SideSelection",
-                            "expected_duration": acfg.timeSideHighlight, **logDict},
-                            onset=selectionOnset)
-
-        else:
-            ############################# No Response ##############################
-            logDict.update({'no_response': True})
-            worst_fractal = np.argmin(currentGammas)
-
-            for kk, imL in enumerate(imgLocation):
-                fractals[imL][currentFractals[kk]].setOpacity(0)
-
-            Reminder.setAutoDraw(True)
+        elif expInfo['simulateMR'] == 'None':
+            Instructions.setText(f'Press {responseKeyList[0]} or {responseKeyList[1]} to continue\nwith the second part.\n' +
+                                'Choose the fractal you think is better for your wealth.')
+            Instructions.setAutoDraw(True)
             win.flip()
-            Logger.keyStrokes(win)
+            startResp = True
 
-            fractalOnset = Logger.getTime()
+            if nbAgent.active:
+                nbAgent.start_timer(0, 0, [0, 0, 0, 0], 0.0)
+            # Wait for response
+            while startResp:
+                # Loop until response is received
+                if nbAgent.active and Logger.getTime() > nbAgent.press_time:
+                    nbAgent.press()
 
-            ch_gamma = currentGammas[worst_fractal]
-            logDict.update({'chosen_gamma': ch_gamma})
+                response = Logger.keyStrokes(win, keyList=responseKeyList)
 
-            Logger.logEvent({"event_type": "FractalSelection",
-                            "expected_duration": acfg.timeNoResponse, **logDict},
-                            onset=fractalOnset)
+                if response:
+                    startResp = False
 
-        ################################# Wealth Update ############################
-
-        up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
-
-        wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
-
-        wealthOnset = Logger.getTime()
-
-        for ws in wealth_steps:
-            MoneyBox.setText('\n' + format_wealth(ws) + '\n')
-            Logger.keyStrokes(win)
-            win.flip()
-
-        Logger.keyStrokes(win)
-        MoneyBox.setText(format_wealth(wealth))
+        Instructions.setAutoDraw(False)
         win.flip()
+        ############################ Setup Elements ####################################
+        if expInfo['feedback']:
+            MoneyBox.setAutoDraw(True)
 
-        Logger.logEvent({"event_type": "WealthUpdate",
-                        "expected_duration": acfg.timeWealthUpdate, **logDict},
-                        onset=wealthOnset, wealth=wealth)
+        win.flip()
+        ###################### This is were Nobrainers begins ######################
+        noTrials = trials_nb.shape[0]
+        iti = 1.0
+        eta = expInfo['eta']
 
-        Wait.wait(acfg.timeFinalDisplay)
+        logDict = {}
+        Logger.logEvent({"event_type": "BeginningNobrainers"})
 
-        ################################# Trial Completion ##########################
-        for n, imL in enumerate(imgLocation):
-            fractals[imL][currentFractals[n]].setOpacity(0)
+        for nbTrial in range(nTrial_noBrainer):
+
+            thisTrial = trials_nb.iloc[nbTrial].to_dict()
+
+            if thisTrial != None:
+                fractal1, fractal2 = thisTrial['fractal1'], thisTrial['fractal2']
+                gamma1, gamma2 = thisTrial['gamma1'], thisTrial['gamma2']
+
+            Logger.setTrialTime()
+            Logger.trial = nTrial
+            Logger.part = 1
+
+            if thisTrial['gamma1'] > thisTrial['gamma2']:
+                Logger.trial_type = 'left'
+            if thisTrial['gamma2'] > thisTrial['gamma1']:
+                Logger.trial_type = 'right'
+
+            currentFractals = [fractal1, fractal2]
+            currentGammas = [gamma1, gamma2]
+            # Logging dict - to include continuously updated info:
+            logDict = {}
+            ############################### ITI ########################################
+            itiOnset = Logger.getTime()
+
+            Wait.wait(iti)
+
+            Logger.logEvent({"event_type": "ITI", "expected_duration": iti},
+                            wealth=Logger.wealth, onset=itiOnset)
+            ########################### Gamble Left ####################################
+            nob_fractals['leftUp'][fractal1].setOpacity(1)
+            nob_fractals['rightUp'][fractal2].setOpacity(1)
+            TimerShape.setAutoDraw(True)
+
+            win.flip()
+            ########################### Gamble Right ###################################
             Logger.keyStrokes(win)
 
-        Reminder.setAutoDraw(False)
-        TimeLine.width = ( (nbTrial + 1) / nTrial_noBrainer) * 4
-        win.flip()
-        Logger.keyStrokes(win)
+            logDict.update({'fractal_right': fractal2, 'fractal_left': fractal1,
+                            'gamma_right': gamma2, 'gamma_left': gamma1})
 
-        Logger.logEvent({"event_type": "TrialEnd", **logDict})
+            Logger.logEvent({"event_type": "Decision", **logDict})
 
-        nTrial += 1
+            Logger.keyStrokes(win)
+            ######################## Response Window ###################################
+            respOnset = Logger.getTime()
+
+            if nbAgent.active:
+                nbAgent.start_timer(respOnset, Logger.wealth, currentGammas, eta)
+
+            response = False
+            responseTo = 'n/a'
+
+            pieShapes = np.linspace(0, 360, int(acfg.timeResponse / 0.15))[::-1]
+            pieCounter = 1
+
+            while (acfg.timeResponse + respOnset) > Logger.getTime() and not response:
+
+                if nbAgent.active and Logger.getTime() > nbAgent.press_time:
+                    nbAgent.press()
+
+                presses = Logger.keyStrokes(win, keyList=responseKeyList)
+
+                if presses is not None:
+                    if 'left' in responseMapping[presses[0]]:
+                        response = 'left'
+                        if currentGammas[0] >= currentGammas[1]:
+                            responseTo = True
+                        else:
+                            responseTo = False
+
+                    if 'right' in responseMapping[presses[0]]:
+                        response = 'right'
+                        if currentGammas[1] >= currentGammas[0]:
+                            responseTo = True
+                        else:
+                            responseTo = False
+
+                    # Response is last, currently not used...
+                    Logger.logEvent({"event_type": "Response",
+                                    'response_button': presses[0],
+                                    'response_time': presses[1] - respOnset,
+                                    'response_correct': responseTo,
+                                    **logDict})
+
+                if np.isclose(Logger.getTime() - respOnset, pieCounter * 0.15, atol=0.01):
+
+                    try:
+                        TimerShape.setEnd(pieShapes[pieCounter])
+                        win.flip()
+                        pieCounter += 1
+                    except IndexError:
+                        pass
+
+            TimerShape.setEnd(360)
+            TimerShape.setAutoDraw(False)
+            ########################### Control Flow ###################################
+            # Control flow - given response (or not)
+            if response:
+                logDict.update({'no_response': False,
+                                'response_correct': responseTo,
+                                'selected_side': response})
+
+                ######################### Side Selection ###############################
+                if response == 'left':
+                    nob_fractals['rightUp'][fractal2].setOpacity(0)
+                    logDict.update({'chosen_gamma': currentGammas[0]})
+                    ch_gamma = gamma1
+                elif response == 'right':
+                    nob_fractals['leftUp'][fractal1].setOpacity(0)
+                    logDict.update({'chosen_gamma': currentGammas[1]})
+                    ch_gamma = gamma2
+
+                win.flip()
+
+                Logger.keyStrokes(win)
+                selectionOnset = Logger.getTime()
+
+                Logger.logEvent({"event_type": "SideSelection",
+                                "expected_duration": acfg.timeSideHighlight, **logDict},
+                                onset=selectionOnset)
+
+            else:
+                ############################# No Response ##############################
+                logDict.update({'no_response': True})
+                worst_fractal = np.argmin(currentGammas)
+
+                for kk, imL in enumerate(imgLocation):
+                    fractals[imL][currentFractals[kk]].setOpacity(0)
+
+                Reminder.setAutoDraw(True)
+                win.flip()
+                Logger.keyStrokes(win)
+
+                fractalOnset = Logger.getTime()
+
+                ch_gamma = currentGammas[worst_fractal]
+                logDict.update({'chosen_gamma': ch_gamma})
+
+                Logger.logEvent({"event_type": "FractalSelection",
+                                "expected_duration": acfg.timeNoResponse, **logDict},
+                                onset=fractalOnset)
+
+            ################################# Wealth Update ############################
+
+            up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
+
+            wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
+
+            wealthOnset = Logger.getTime()
+
+            for ws in wealth_steps:
+                MoneyBox.setText('\n' + format_wealth(ws) + '\n')
+                Logger.keyStrokes(win)
+                win.flip()
+
+            Logger.keyStrokes(win)
+            MoneyBox.setText(format_wealth(wealth))
+            win.flip()
+
+            Logger.logEvent({"event_type": "WealthUpdate",
+                            "expected_duration": acfg.timeWealthUpdate, **logDict},
+                            onset=wealthOnset, wealth=wealth)
+
+            Wait.wait(acfg.timeFinalDisplay)
+
+            ################################# Trial Completion ##########################
+            for n, imL in enumerate(imgLocation):
+                fractals[imL][currentFractals[n]].setOpacity(0)
+                Logger.keyStrokes(win)
+
+            Reminder.setAutoDraw(False)
+            TimeLine.width = ( (nbTrial + 1) / nTrial_noBrainer) * 4
+            win.flip()
+            Logger.keyStrokes(win)
+
+            Logger.logEvent({"event_type": "TrialEnd", **logDict})
+
+            nTrial += 1
 
     ############################### Nobrainer over #################################
     if expInfo['simulateMR'] in ['Simulate']:
