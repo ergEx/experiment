@@ -444,7 +444,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         nTrial += 1
 
         # Nobrainer switch
-        if np.mod(curTrial + 1, expInfo['maxTrial']) == 0:
+        if np.mod(curTrial + 1, expInfo['start_nobrainer']) == 0:
             ################################ Passive clean up ######################
             Wheel.setAutoDraw(False)
             Stopper.setAutoDraw(False)
@@ -677,7 +677,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
                 ################################# Trial Completion ##########################
                 for n, imL in enumerate(imgLocation):
-                    fractals[imL][currentFractals[n]].setOpacity(0)
+                    nob_fractals[imL][currentFractals[n]].setOpacity(0)
                     Logger.keyStrokes(win)
 
                 Reminder.setAutoDraw(False)
@@ -686,8 +686,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                 Logger.keyStrokes(win)
 
                 Logger.logEvent({"event_type": "TrialEnd", **logDict})
-
-                nTrial += 1
 
         if Logger.getTime() > expInfo['maxDuration'] - 10 or curTrial >= expInfo['maxTrial'] - 1:
             break
