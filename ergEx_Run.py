@@ -1,4 +1,4 @@
-VERSION='v0.3.0'
+VERSION='v0.3.1a'
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -33,6 +33,8 @@ fMRI = fMRI scanning mode, None = No TR logging / simulation
 
 MAX_RUN_PASSIVE = 3 # Defaults to 4
 """ Number of runs of the passive phase"""
+START_NOBRAINER = 45
+"""Starts N_TRIALS_NOBRAINER after np.mod(passive, START_NOBRAINER) == 0 Trials """
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
 MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
@@ -82,14 +84,14 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '000', # Participant ID
-               'test_mode': False, # Whether an agent automatically presses buttons
-               'fullScreen': True, # Whether to use a full screen
+               'test_mode': True, # Whether an agent automatically presses buttons
+               'fullScreen': False, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
-               'showQuestionnaires': True,
-               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
+               'showQuestionnaires': False,
+               'showInstructions': False} # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
@@ -104,9 +106,10 @@ if __name__ == '__main__':
         lambd = float(lambd)
 
         expInfo.update({
-            'n_resets_passive': MAX_RUN_PASSIVE,
-            'n_trials_passive_before_reset': MAX_TRIALS_PASSIVE,
+            'n_resets_passive': 3, # MAX_RUN_PASSIVE,
+            'n_trials_passive_before_reset': START_NOBRAINER, #MAX_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
+            'start_nobrainer': START_NOBRAINER,
             'mode': ACTIVE_MODE,
             'agentActive': expInfo['test_mode'],
             'TR': TR,
