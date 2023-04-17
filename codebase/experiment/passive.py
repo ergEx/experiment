@@ -145,10 +145,10 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                 eta=expInfo['eta'], mode='passive', seq_tr=expInfo['TR'], run=expInfo['run'])
         Logger.create(expInfo['writeMode'])
     # Autopilot:
-    Agent = PassiveAutoPilot(0.5, 0.3, expInfo['agentActive'],
+    Agent = PassiveAutoPilot(0.74, 1.16, expInfo['agentActive'],
                             responseButton=expInfo['responseButton'])
 
-    nbAgent = ActiveAutoPilot(0.4, 0.1, active=expInfo['agentActive'],
+    nbAgent = ActiveAutoPilot(1.16, 0.32, active=expInfo['agentActive'],
                             mode='random',
                             buttonLeft=expInfo['responseLeft'],
                             buttonRight=expInfo['responseRight'])
