@@ -15,7 +15,7 @@ class ExperimentLogger:
     def __init__(self, fileName:str, globalClock:core.Clock, wealth:float,
                  participant_id:str, eta:float, mode:str = 'active',
                  sep:str = '\t', na:str = 'n/a', killSwitch:str = 'q',
-                 mr_trigger:str = '5', seq_tr:float=0.752, run=1):
+                 mr_trigger:str = '5', seq_tr:float=0.752, run:int=1):
 
         self.fileName = fileName
         self.globalClock = globalClock
@@ -33,7 +33,7 @@ class ExperimentLogger:
         self.trial_type = self.na
         self.part = self.na
         self.tr = 0
-        self.run = 0
+        self.run = run
         self.track = na
         self.tmp_dict = {}
 
@@ -250,11 +250,11 @@ class DebugLogger(ExperimentLogger):
     def __init__(self, fileName:str, globalClock:core.Clock, wealth:float,
                  participant_id:str, eta:float, mode:str = 'active',
                  sep:str = '\t', na:str = 'n/a', killSwitch:str = 'q',
-                 mr_trigger:str = '5', seq_tr:float=0.752, text=visual.TextStim):
+                 mr_trigger:str = '5', seq_tr:float=0.752, text=visual.TextStim, run:int=0):
 
         self.text = text
         super().__init__(fileName, globalClock, wealth, participant_id, eta,
-                         mode, sep, na, killSwitch, mr_trigger, seq_tr)
+                         mode, sep, na, killSwitch, mr_trigger, seq_tr, run)
 
     def keyStrokes(self, win:visual.Window,
                    keyList:List[str] = []) -> Union[Tuple[str, float], None]:
