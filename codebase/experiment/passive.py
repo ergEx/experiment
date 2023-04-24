@@ -397,7 +397,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                         **logDict},
                         onset=fractalOnset)
         ########################### Wealth Update ##################################
-        up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur)) - 1
+        up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur))
 
         wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
         old_wealth = wealth
@@ -447,7 +447,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
 
             win.flip()
 
-            Reminder.setText("press earlier")
+            # Reminder.setText("press earlier")
             fractalData = pd.read_csv(trialInfoPath, sep='\t')
             # Create dataset:
             trials_nb = make_no_brainers(fractalData, nTrial, nTrial_noBrainer, expInfo['mode'])
