@@ -25,7 +25,7 @@ def simulate_agent(
     LIMITS: dict = con.LIMITS,
     filtering=False,
     n_trials: int = 1000,
-    log_beta: dict = {0.0: -2, 1.0: 4},
+    log_beta: int = 0,
 ):
 
     seqs = generate_dataframes(
@@ -98,7 +98,7 @@ def simulate_agent(
             u = isoelastic_utility(wealth, eta)
             du = [i - u for i in u_i]
             deu = ((du[0] + du[1]) / 2) - ((du[2] + du[3]) / 2)
-            choice_probability = sigmoid(deu, np.exp(log_beta[eta]))
+            choice_probability = sigmoid(deu, np.exp(log_beta))
             choice = "left" if choice_probability > np.random.uniform(0, 1) else "right"
 
         if choice == "left":
@@ -140,66 +140,70 @@ if __name__ == "__main__":
     mode = 3
     lambds = [0, 1]
 
-    n_repeats = [100, 10]
-    ns = [160, 1600]
+    n_trials = 160
+    n_agents = 10
 
-    phenotypes = {
-        "random": {"n_types": 1, "eta": None, "log_beta": None},
-        "5x5": {
-            "n_types": 25,
-            "log_beta": {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8},
-            "eta": [-0.5, 0.0, 0.5, 1.0, 1.5],
-        },
-        "2x2": {"n_types": 4, "log_beta": {0.0: -1, 1.0: 3}, "eta": [0.0, 1.0]},
-    }
-
+    sim_types = {"full_grid": {"etas": list(itertools.product([-0.5, 0.0, 0.5, 1.0, 1.5], [-0.5, 0.0, 0.5, 1.0, 1.5])),
+                              "log_beta": {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8}},
+                 "varying_variance": {"etas": [[0,1],[0,1]],
+                                     "log_beta": [[0,4],[-3, 2]]},
+                 "strong_weak_signal": {"etas": [[0,1],[0,0]],
+                                     "log_beta": [[0,4],[-3, -3]]},}
     root_save_path = os.path.join(
         os.path.join(os.path.dirname(__file__),),
         "..",
         "..",
         "data",
         "outputs",
-        "simulations",
-        f"version_{str(mode)}",
+        "simulations"
     )
     if not os.path.isdir(root_save_path):
         os.makedirs(root_save_path)
 
-    for run_type in ["random", "5x5"]:
-        print(f"\nRun type: {run_type}")
-        for n, n_trials in enumerate(ns):
-            save_path = os.path.join(root_save_path, f"n_{n_trials}")
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-            for c, lambd in enumerate(lambds):
-                print(f"\nCondition: {lambd}")
-                for i in range(phenotypes[run_type]["n_types"]):
-                    if run_type == "random":
-                        phenotype = "random"
-                        eta = ""
-                    else:
-                        eta_lst = phenotypes[run_type]["eta"]
-                        etas = list(itertools.product(eta_lst, eta_lst))[i]
-                        eta = etas[c]
-                        phenotype = f"{etas[0]}x{etas[1]}"
-
-                    print(f"Phenotype: {phenotype}")
-
-                    for j in range(n_repeats[n]):
-                        participant_id = j
-
-                        df = simulate_agent(
-                            participant_id=participant_id,
-                            phenotype=phenotype,
-                            lambd=lambd,
-                            eta=eta,
-                            mode=mode,
-                            log_beta=phenotypes[run_type]["log_beta"],
-                            n_trials=n_trials,
-                        )
-                        df.to_csv(
-                            os.path.join(
-                                save_path, f"sim_agent_phenotype_{phenotype}_{j}_lambd_{c}.csv"
-                            ),
-                            sep="\t",
-                        )
+    for sim_type in sim_types:
+        save_path = os.path.join(root_save_path, sim_type)
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+        for c, lambd in enumerate(lambds):
+            #Random agent
+            phenotype = "random"
+            for agent_id in range(n_agents):
+                id = agent_id + len(sim_types[sim_type]["etas"])* n_agents
+                print(id)
+                df = simulate_agent(
+                    participant_id=id,
+                    phenotype=phenotype,
+                    lambd=lambd,
+                    eta="random",
+                    mode=mode,
+                    log_beta="random",
+                    n_trials=n_trials,
+                )
+                df.to_csv(
+                    os.path.join(
+                        save_path, f"sim_agent_{id}_lambd_{c}.csv"
+                    ),
+                    sep="\t",
+                )
+            #Non random agents
+            for j, eta in enumerate(sim_types[sim_type]["etas"]):
+                phenotype = f"{eta[0]}x{eta[1]}"
+                log_beta = sim_types[sim_type]["log_beta"][eta[c]] if sim_type == "full_grid" else sim_types[sim_type]["log_beta"][j][c]
+                for agent_id in range(n_agents):
+                    id = agent_id + j * n_agents
+                    print(id)
+                    df = simulate_agent(
+                        participant_id=id,
+                        phenotype=phenotype,
+                        lambd=lambd,
+                        eta=eta[c],
+                        mode=mode,
+                        log_beta=log_beta,
+                        n_trials=n_trials,
+                    )
+                    df.to_csv(
+                        os.path.join(
+                            save_path, f"sim_agent_{id}_lambd_{c}.csv"
+                        ),
+                        sep="\t",
+                    )
