@@ -20,7 +20,7 @@ N_FRACTALS = 9
 
 LIMITS = {0.0: [-500, 2_500], 1.0: [64 , 15_589]}
 
-OUTPUT_EXTENSION = 'beh.csv'
+OUTPUT_EXTENSION = 'events.tsv'
 
-passive_iti_sd = 0
 passive_iti_mu = 2.0
+passive_iti_sd = 0
