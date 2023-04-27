@@ -24,20 +24,20 @@ N_TRIALS_ACTIVE = 160 # Default 90
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
 
-TR = 2.5
+TR = 1.61
 """ TR of the MR scanner (also for simulations) """
-SIMULATE_MR = 'None'
+SIMULATE_MR = 'Simulate'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 3 # Defaults to 4
+MAX_RUN_PASSIVE = 1 # Defaults to 4
 """ Number of runs of the passive phase"""
 START_NOBRAINER = 45
 """Starts N_TRIALS_NOBRAINER after np.mod(passive, START_NOBRAINER) == 0 Trials """
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
+MAX_TRIALS_PASSIVE = 135 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
 MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
@@ -48,7 +48,7 @@ SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58
 
 GAMBLE_FILTER = False
 """ Whether gambles are filtered in a given range. """
-BREAKLENGTH = 10
+BREAKLENGTH = 0.1
 """ Break duration between Sessions."""
 
 
@@ -84,14 +84,20 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '000', # Participant ID
-               'test_mode': True, # Whether an agent automatically presses buttons
-               'fullScreen': False, # Whether to use a full screen
+               'test_mode': False, # Whether an agent automatically presses buttons
+               'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
                'showQuestionnaires': False,
-               'showInstructions': False} # Which run of the active phase to start from (starts at 1)
+               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
+
+    if SIMULATE_MR in ['MRI', 'Simulate', 'MRIDebug']:
+        expInfo.update({
+            'responseLeft': '7',
+            'responseButton': '8',
+            'responseRight': '9'})
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
