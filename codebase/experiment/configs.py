@@ -180,7 +180,7 @@ def check_configs(config_dict:Dict, task='passive') -> Dict:
 
     type_dict_options = {
         'participant': str, 'eta': float, 'run': int,
-        'responseLeft': str, 'responseRight': str, 'responseButtion': str,
+        'responseLeft': str, 'responseRight': str, 'responseButton': str,
         'wealth': float, 'overwrite': bool, 'agentActive': bool, 'simulateMR': str,
         'TR': float, 'maxTrial': [int, float], 'maxDuration': [int, float]}
 
