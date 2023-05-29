@@ -143,8 +143,18 @@ if __name__ == "__main__":
     n_trials = 160
     n_agents = 10
 
-    sim_types = {"full_grid": {"etas": list(itertools.product([-0.5, 0.0, 0.5, 1.0, 1.5], [-0.5, 0.0, 0.5, 1.0, 1.5])),
-                              "log_beta": {-0.5: 0, 0.0: 0, 0.5: 1, 1.0: 4, 1.5: 8}},
+    sim_types = {"grid/eta_n05": {"etas":[[-0.5,-0.5]],
+                        "log_beta": [[-0.5,-0.5]] },
+                "grid/eta_00": {"etas":[[0.0,0.0]],
+                        "log_beta": [[0.0,0.0]]},
+                "grid/eta_05": {"etas":[[0.5,0.5]],
+                        "log_beta": [[1.0,1.0]]},
+                "grid/eta_10": {"etas":[[1.0,1.0]],
+                        "log_beta": [[4.0,4.0]] },
+                "grid/eta_15": {"etas":[[1.5,1.5]],
+                        "log_beta": [[8.0,8.0]] },
+                "grid/time_optimal": {"etas":[[0.0,1.0]],
+                        "log_beta": [[0.0, 4.0]]},
                  "varying_variance": {"etas": [[0,1],[0,1]],
                                      "log_beta": [[0,4],[-3, 2]]},
                  "strong_weak_signal": {"etas": [[0,1],[0,0]],
@@ -165,30 +175,9 @@ if __name__ == "__main__":
         if not os.path.isdir(save_path):
             os.makedirs(save_path)
         for c, lambd in enumerate(lambds):
-            #Random agent
-            phenotype = "random"
-            for agent_id in range(n_agents):
-                id = agent_id + len(sim_types[sim_type]["etas"])* n_agents
-                print(id)
-                df = simulate_agent(
-                    participant_id=id,
-                    phenotype=phenotype,
-                    lambd=lambd,
-                    eta="random",
-                    mode=mode,
-                    log_beta="random",
-                    n_trials=n_trials,
-                )
-                df.to_csv(
-                    os.path.join(
-                        save_path, f"sim_agent_{id}_lambd_{c}.csv"
-                    ),
-                    sep="\t",
-                )
-            #Non random agents
             for j, eta in enumerate(sim_types[sim_type]["etas"]):
                 phenotype = f"{eta[0]}x{eta[1]}"
-                log_beta = sim_types[sim_type]["log_beta"][eta[c]] if sim_type == "full_grid" else sim_types[sim_type]["log_beta"][j][c]
+                log_beta =  sim_types[sim_type]["log_beta"][j][c]
                 for agent_id in range(n_agents):
                     id = agent_id + j * n_agents
                     print(id)
