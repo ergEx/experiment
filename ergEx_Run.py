@@ -15,7 +15,7 @@ from codebase.file_handler import make_bids_dir
 import gc
 
 ACTIVE_MODE = 3
-""" Mode for the active phase 1 = DRCMR, 2 = LML """
+""" Mode for the active phase 1 = DRCMR, 2 = LML, 3 = TrainTracks, 4 = Hidden wealth """
 
 N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
@@ -26,18 +26,18 @@ N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 
 TR = 1.61
 """ TR of the MR scanner (also for simulations) """
-SIMULATE_MR = 'Simulate'
+SIMULATE_MR = 'None'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 1 # Defaults to 4
+MAX_RUN_PASSIVE = 3 # Defaults to 3
 """ Number of runs of the passive phase"""
 START_NOBRAINER = 45
 """Starts N_TRIALS_NOBRAINER after np.mod(passive, START_NOBRAINER) == 0 Trials """
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 135 # By default should be N_TRIALS_PASSIVE / 4
+MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
 """ Number of trials per run in the passive phase. """
 MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
@@ -48,7 +48,7 @@ SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58
 
 GAMBLE_FILTER = False
 """ Whether gambles are filtered in a given range. """
-BREAKLENGTH = 0.1
+BREAKLENGTH = 10
 """ Break duration between Sessions."""
 
 
