@@ -1,4 +1,4 @@
-VERSION='v0.4.0a' # 0.4.0a - fMRI pilot
+VERSION='v0.4.0a' # Registered Report
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -90,7 +90,7 @@ if __name__ == '__main__':
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
-               'showQuestionnaires': False,
+               'showQuestionnaires': True,
                'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
     if SIMULATE_MR in ['MRI', 'Simulate', 'MRIDebug']:
