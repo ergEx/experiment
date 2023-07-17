@@ -1,4 +1,4 @@
-VERSION='v0.3.0'
+VERSION='v0.4.0a' # Registered Report
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -15,7 +15,7 @@ from codebase.file_handler import make_bids_dir
 import gc
 
 ACTIVE_MODE = 3
-""" Mode for the active phase 1 = DRCMR, 2 = LML """
+""" Mode for the active phase 1 = DRCMR, 2 = LML, 3 = TrainTracks, 4 = Hidden wealth """
 
 N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
@@ -24,15 +24,17 @@ N_TRIALS_ACTIVE = 160 # Default 90
 N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
 """ Number of nobrainer trials after the passive phase ends."""
 
-TR = 2.5
+TR = 1.61
 """ TR of the MR scanner (also for simulations) """
 SIMULATE_MR = 'None'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
-MAX_RUN_PASSIVE = 3 # Defaults to 4
+MAX_RUN_PASSIVE = 3 # Defaults to 3
 """ Number of runs of the passive phase"""
+START_NOBRAINER = 45
+"""Starts N_TRIALS_NOBRAINER after np.mod(passive, START_NOBRAINER) == 0 Trials """
 MAX_RUN_ACTIVE = 1 # Defaults to 1
 """ Number of runs in the active phase"""
 MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
@@ -91,6 +93,12 @@ if __name__ == '__main__':
                'showQuestionnaires': True,
                'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
+    if SIMULATE_MR in ['MRI', 'Simulate', 'MRIDebug']:
+        expInfo.update({
+            'responseLeft': '7',
+            'responseButton': '8',
+            'responseRight': '9'})
+
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
     expInfo['gambleFilter'] = GAMBLE_FILTER
@@ -104,9 +112,10 @@ if __name__ == '__main__':
         lambd = float(lambd)
 
         expInfo.update({
-            'n_resets_passive': MAX_RUN_PASSIVE,
-            'n_trials_passive_before_reset': MAX_TRIALS_PASSIVE,
+            'n_resets_passive': 3, # MAX_RUN_PASSIVE,
+            'n_trials_passive_before_reset': START_NOBRAINER, #MAX_TRIALS_PASSIVE,
             'n_trials_active': N_TRIALS_ACTIVE,
+            'start_nobrainer': START_NOBRAINER,
             'mode': ACTIVE_MODE,
             'agentActive': expInfo['test_mode'],
             'TR': TR,

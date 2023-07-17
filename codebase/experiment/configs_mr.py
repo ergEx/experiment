@@ -51,11 +51,11 @@ passive_configs['timeToReminder'] = 1.0 # How much time until reminder is shown
 """ Time after which the press-earlier reminder is shown. """
 passive_configs['timeResponseWindow'] = 2.0 # time of the response window
 """ Maximal response time """
-passive_configs['wheelSpinTime'] = 2.0 # How long the wheel spins at base rate
+passive_configs['wheelSpinTime'] = 1.0 # How long the wheel spins at base rate
 """ How long the wheel should spin. """
 passive_configs['timeWealthUpdate'] = 0.5 # Rolling of the wealth display
 """ How long wealth does take to roll up or down. """
-passive_configs['timeFinalDisplay'] = 1.0 # How long wealth image is staying on
+passive_configs['timeFinalDisplay'] = 1.8 # How long wealth image is staying on
 """ How long the final display is shown (i.e. wealth and fractal before reset) """
 
 ############################### Active settings
