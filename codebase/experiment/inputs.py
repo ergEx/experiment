@@ -7,7 +7,7 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
         n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1,
         gamble_filter:bool = False):
 
-    if mode in [1, 2, 4]:
+    if mode == 1:
         p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                             n_trials_active=n_trials_active,
                                             n_resets_passive=n_resets_passive,
@@ -37,7 +37,7 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
             a_df[i].to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('neutral', name), index=False, sep='\t')
 
     else:
-        raise ValueError("Mode has to be 1, 2, 3 or 4")
+        raise ValueError("Mode has to be 1 or 3")
 
 
 def run_with_dict(expInfo):
