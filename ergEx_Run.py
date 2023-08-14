@@ -43,7 +43,7 @@ MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
 """ Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
-SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58, 72, 73, 81]}
+SLIDESET = [0, 14, 15, 26]
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
 GAMBLE_FILTER = False
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
         if not instruction_shown:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][0], stop_slide=SLIDESET[ACTIVE_MODE][1])
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[0], stop_slide=SLIDESET[1])
             win.close()
 
         for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
         if not instruction_shown:
             win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][2], stop_slide=SLIDESET[ACTIVE_MODE][3])
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[2], stop_slide=SLIDESET[3])
             win.close()
 
         instruction_shown = True

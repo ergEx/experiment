@@ -4,7 +4,7 @@ import os
 from glob import glob
 from psychopy import core, visual, event
 
-SLIDE_PATH = 'instructions/First_draft_of_visual_instructions'
+SLIDE_PATH = 'instructions/ergEx_instructions_slideshow/'
 
 # From https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort
 # helps with missing trailing zeros:
@@ -12,10 +12,10 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
     return [int(text) if text.isdigit() else text.lower()
             for text in _nsre.split(s)]
 
+
 def nat_sorted(ls):
     natsort = lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]
     return sorted(ls.copy(), key=natsort)
-
 
 
 def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None, win_size=[800, 600]):
