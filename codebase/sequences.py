@@ -167,7 +167,6 @@ def generate_dataframes(lambd:float,
                         n_trials_active:int=con.n_trials_active,
                         n_trials_passive_before_reset:int=con.n_trials_passive,
                         n_resets_passive:int=con.n_resets_passive,
-                        speed_up:float=1,
                         gamble_filter:bool = False,
                         c_dict=con.c_dict,
                         assymetry_dict=con.assymetry_dict
@@ -219,8 +218,8 @@ def generate_dataframes(lambd:float,
                               'lambda': [lambd] * n_trials_passive,
                               'gamma': p_seq_gamma,
                               'fractal': p_seq_fractals,
-                              'iti': (np.random.randn(n_trials_passive) * con.passive_iti_sd + con.passive_iti_mu) / speed_up, # to debug
-                              'fractal_duration': np.zeros(n_trials_passive) + 1.5 / speed_up, # to debug
+                              'iti': (np.random.randn(n_trials_passive) * con.passive_iti_sd + con.passive_iti_mu), # to debug
+                              'fractal_duration': np.zeros(n_trials_passive) + 1.5, # to debug
                               'p_seq_gamma': p_seq_part_sum,
                               'p_seq_wealth':p_seq_part_wealth_sum})
 
@@ -229,7 +228,7 @@ def generate_dataframes(lambd:float,
     a_df_misc = pd.DataFrame(data={'trial': range(n_trials_active),
                                     'lambda': [lambd]*n_trials_active})
 
-    a_df_timings = pd.DataFrame(a_seq_timings / speed_up, columns=['iti',
+    a_df_timings = pd.DataFrame(a_seq_timings, columns=['iti',
                                                             'onset_gamble_pair_left',
                                                             'onset_gamble_pair_right'])
     if mode == 1:
