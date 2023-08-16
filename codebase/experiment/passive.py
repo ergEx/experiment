@@ -49,7 +49,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
                        expInfo['responseRight']: 'right'}
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
-                              expInfo['eta'], 'passive', expInfo['run'])
+                              expInfo['eta'], 'passive', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
     offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
@@ -122,7 +122,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalList.append('grey100')
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
-                            expInfo['eta'], 'passive', expInfo['run'])
+                            expInfo['eta'], 'passive', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
                                   expInfo['eta'], 'passive', extension='input.tsv')

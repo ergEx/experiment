@@ -48,7 +48,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
                     expInfo['responseRight']: 'right'}
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
-                             'active', expInfo['run'])
+                             'active', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
                                                     expInfo['overwrite'])
@@ -126,7 +126,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
             trialInfoPath[input_ext] = tmpPath
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
-                             'active', expInfo['run'])
+                             'active', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     # Currently testing if the supposed ones are better.
     if frameDur is None:
