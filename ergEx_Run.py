@@ -9,7 +9,6 @@ from codebase.experiment.configs import active_configs as acfg
 from codebase.experiment.configs import check_configs
 import os
 from psychopy import visual, core, event
-import numpy as np
 from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
@@ -21,7 +20,7 @@ fMRI = fMRI scanning mode, None = No TR logging / simulation
 SESSIONS = [1, 2]
 
 BREAKLENGTH = 10
-""" Break duration between Sessions."""
+""" Break duration between Sessions. In minutes"""
 
 
 def set_up_win(fscreen, gui=True):
@@ -143,8 +142,7 @@ if __name__ == '__main__':
             win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
             run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[2], stop_slide=con.SLIDESET[3])
             win.close()
-
-        instruction_shown = True
+            instruction_shown = True
 
         for run in range(active_conf['run'],  con.max_run_active + 1):
 
