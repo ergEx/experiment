@@ -156,12 +156,14 @@ def check_attribute_type(config_dict:Dict, key_val:str, test_type=None) -> None:
         raise ValueError(f"{key_val} has to be of type: {test_type}")
 
 
-def check_configs(config_dict:Dict, task='passive') -> Dict:
+def check_configs(config_dict:Dict, task='passive', mode='None') -> Dict:
     """Checks configs, adds default values.
 
     Args:
         config_dict (Dict): Configs for the experiment.
         task (str, optional): The task to check for. Defaults to 'passive'.
+        mode(str, optional): What mode we are in, updates defaults according to
+                            measurement mode
 
     Returns:
         Dict: Changed config.
@@ -171,12 +173,19 @@ def check_configs(config_dict:Dict, task='passive') -> Dict:
                     'responseLeft': 'left', 'responseRight': 'right',
                     'wealth': con.x_0,  'overwrite': True, 'agentActive': False,
                     'simulateMR': 'Simulate', 'TR': 2.0, 'maxTrial': np.inf,
-                    'maxDuration': np.inf}
+                    'maxDuration': np.inf, 'OUT_EXTENSION': 'beh.tsv'}
 
     if task =='passive':
         default_dict.update({'nTrial_noBrainer': 10, 'responseButton': 'space'})
     elif task == 'config':
         default_dict.update({'responseUp': 'up', 'responseDown': 'down'})
+
+    if mode in ['MRI', 'Simulate', 'MRIDebug']:
+        default_dict.update({
+            'responseLeft': '7',
+            'responseButton': '8',
+            'responseRight': '9',
+            'OUT_EXTENSION': 'events.tsv'})
 
     type_dict_options = {
         'participant': str, 'eta': float, 'run': int,
@@ -192,3 +201,24 @@ def check_configs(config_dict:Dict, task='passive') -> Dict:
             check_attribute_type(config_dict, cd, type_dict_options[cd])
 
     return config_dict
+
+
+
+def update_configs_for_mr(config_file, task='passive'):
+    """Function to update the config file for MR (e.g. edit display size etc.)
+
+    Parameters
+    ----------
+    config_file : DotDict
+        The configs for the given task
+    task : str, optional
+        Which task we are in, by default 'passive'
+
+    Returns
+    -------
+    DotDict
+        Updated configs
+    """
+    config_file.update({})
+
+    return config_file

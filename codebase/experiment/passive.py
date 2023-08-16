@@ -14,7 +14,7 @@ from .exp import WaitTime, get_frame_timings, passive_report
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import passive_configs as pcfg
 from .configs import active_configs as acfg
-from .configs import DEFAULT_FRACTALS, STIMULUSPATH
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH, update_configs_for_mr
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
 from .exp.helper import gui_update_dict, make_filename, format_wealth, make_no_brainers
@@ -41,6 +41,9 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
     expInfo['responseLeft'] = str(expInfo['responseLeft'])
     expInfo['responseRight'] = str(expInfo['responseRight'])
 
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+        pcfg = update_configs_for_mr(pcfg, 'passive')
 
     keyList = [expInfo['responseButton']]
     responseKeyList = [expInfo['responseLeft'], expInfo['responseRight']]
@@ -98,6 +101,10 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     # Currently testing if the supposed ones are better.
     if frameDur is None:
         _, frameDur =  get_frame_timings(win)
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+        pcfg = update_configs_for_mr(pcfg, 'passive')
 
     wealth = expInfo['wealth']
     nTrial = expInfo['nTrial']

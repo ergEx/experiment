@@ -63,15 +63,8 @@ if __name__ == '__main__':
                'startActive': 1,
                'startSession': 1,
                'showQuestionnaires': True,
-               'showInstructions': True,
-               'OUT_EXTENSION': 'beh.tsv'} # Which run of the active phase to start from (starts at 1)
+               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
-    if SIMULATE_MR in ['MRI', 'Simulate', 'MRIDebug']:
-        expInfo.update({
-            'responseLeft': '7',
-            'responseButton': '8',
-            'responseRight': '9',
-            'OUT_EXTENSION': 'events.tsv'})
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
@@ -103,7 +96,7 @@ if __name__ == '__main__':
 
         if expInfo['calibration']:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            calib_conf = check_configs(expInfo.copy(), task='calibration')
+            calib_conf = check_configs(expInfo.copy(), task='calibration', mode=SIMULATE_MR)
             calibration_run(filePath, calib_conf, win=win)
             win.close()
 
@@ -115,7 +108,7 @@ if __name__ == '__main__':
                             'nTrial_noBrainer': con.n_trials_nobrainer,
                             'maxTrial': con.max_trials_passive})
 
-        passive_conf = check_configs(passive_conf, task='passive')
+        passive_conf = check_configs(passive_conf, task='passive', mode=SIMULATE_MR)
 
         if not instruction_shown:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
@@ -141,10 +134,10 @@ if __name__ == '__main__':
 
         active_conf.update(
             {'run': expInfo['startActive'],
-            'maxTrial': MAX_TRIALS_ACTIVE,
+            'maxTrial': con.max_trials_active,
             'agentMode': 'random'})
 
-        active_conf = check_configs(active_conf, task='active')
+        active_conf = check_configs(active_conf, task='active', mode=SIMULATE_MR)
 
         if not instruction_shown:
             win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)

@@ -15,7 +15,8 @@ from .exp import ExperimentLogger, ActiveAutoPilot, WaitTime
 from .exp import active_report, get_frame_timings, DebugLogger
 from ..utils import wealth_change
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
-from .configs import DEFAULT_FRACTALS, STIMULUSPATH, active_configs as acfg
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH, update_configs_for_mr
+from .configs import active_configs as acfg
 from typing import Optional, Dict
 from .exp.helper import format_wealth, gui_update_dict,  make_filename
 
@@ -69,6 +70,10 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
 
         trialFile = pd.read_csv(trialInfoPath['neutral'], sep='\t')
 
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+
+
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
                                     fixed_timings=[acfg.timeResponse,
                                                     acfg.timeSideHighlight,
@@ -112,6 +117,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     noTR = expInfo['noTR']
     responseKeyList = expInfo['responseKeyList']
     responseMapping = expInfo['responseMapping']
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
     # Rebuild paths
 
     if expInfo['mode'] != 3:
