@@ -166,7 +166,7 @@ def generate_dataframes(lambd:float,
                         mode:int,
                         n_trials_active:int=con.n_trials_active,
                         n_trials_passive_before_reset:int=con.n_trials_passive,
-                        n_resets_passive:int=con.n_resets_passive,
+                        n_resets_passive:int=con.max_run_passive,
                         gamble_filter:bool = False,
                         c_dict=con.c_dict,
                         assymetry_dict=con.assymetry_dict

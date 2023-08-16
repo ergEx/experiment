@@ -63,8 +63,7 @@ def run_with_dict(expInfo):
             n_trials_passive_before_reset=expInfo['n_trials_passive_before_reset'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
-            mode=expInfo['mode'],
-            gamble_filter=expInfo['gambleFilter'])
+            mode=expInfo['mode'])
 
     else:
         print(f"Not creating new inputs for participant {expInfo['participant']}")
