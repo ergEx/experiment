@@ -193,20 +193,3 @@ def check_configs(config_dict:Dict, task='passive') -> Dict:
 
     return config_dict
 
-
-def get_labels(config_dict:Dict) -> Dict:
-    """NOT IMPLEMENTED
-
-    Args:
-        config_dict (Dict): _description_
-
-    Returns:
-        Dict: _description_
-    """
-
-    label_dict_options = {
-        'participant': 'The participant ID.',
-        'eta': 'The dynamic of the experiment.'}
-
-    labels = {}
-    return labels
