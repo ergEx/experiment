@@ -21,7 +21,8 @@ from typing import Optional, Dict
 from .exp.helper import format_wealth, gui_update_dict,  make_filename
 
 
-def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) -> Dict:
+def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True,
+               acfg=acfg) -> Dict:
     """Creates and returns the dictionary necessary for the active run, for example
     looking up files from previous runs etc.
 
@@ -97,7 +98,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
 
 
 def active_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None) -> bool:
+               fractalList:List[str] = None, frameDur:float = None, acfg=acfg) -> bool:
     """Runs the active part of the experiment.
 
     Args:

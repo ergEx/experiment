@@ -5,7 +5,7 @@ import os
 import re
 import numpy as np
 from typing import List, Union, Tuple
-from .constants import OUTPUT_EXTENSION
+
 
 def lambd_to_bids(lambd:float) -> str:
     """Transforms lambda/eta into bids format (replacing "-" with "m" and
@@ -159,7 +159,7 @@ def make_bids_dir(sub:str, ses:Union[str, float]) -> str:
 
 
 def make_filename(file_path:str, sub:str, ses:Union[str, int], lambd:float,
-                  task:str, run:int = None, extension:str =OUTPUT_EXTENSION,
+                  task:str, run:int = None, extension:str ='beh.tsv',
                   add_dir:bool = True) -> str:
     """Creates whole filename, including directory.
 

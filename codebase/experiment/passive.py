@@ -20,7 +20,7 @@ from .exp.dashboard import nobrainer_report
 from .exp.helper import gui_update_dict, make_filename, format_wealth, make_no_brainers
 
 
-def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> Dict:
+def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True, pcfg=pcfg) -> Dict:
     """Creates and returns the dictionary necessary for the active run, for example
     looking up files from previous runs etc.
 
@@ -83,7 +83,8 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
 
 
 def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True):
+               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True,
+               pcfg=pcfg, acfg=acfg):
     """Runs the passive part of the experiment.
 
     Args:

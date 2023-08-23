@@ -8,7 +8,7 @@ from .exp.helper import make_filename
 ####################### Setup GUI ##############################################
 
 def calibration_run(filepath:str, expInfo:Optional[Dict]=None,
-                win:Optional[visual.Window]=None):
+                win:Optional[visual.Window]=None, acfg=acfg):
 
     responseKeys = ['responseUp', 'responseDown', 'responseButton',
                     'responseLeft', 'responseRight']
