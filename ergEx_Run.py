@@ -1,4 +1,4 @@
-VERSION='v0.4.0a' # Registered Report
+VERSION='v0.5.0' # pre-data collection
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
