@@ -15,12 +15,14 @@ from .exp import ExperimentLogger, ActiveAutoPilot, WaitTime
 from .exp import active_report, get_frame_timings, DebugLogger
 from ..utils import wealth_change
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
-from .configs import DEFAULT_FRACTALS, STIMULUSPATH, active_configs as acfg
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH, update_configs_for_mr
+from .configs import active_configs as acfg
 from typing import Optional, Dict
 from .exp.helper import format_wealth, gui_update_dict,  make_filename
 
 
-def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) -> Dict:
+def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True,
+               acfg=acfg) -> Dict:
     """Creates and returns the dictionary necessary for the active run, for example
     looking up files from previous runs etc.
 
@@ -48,7 +50,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
                     expInfo['responseRight']: 'right'}
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
-                             'active', expInfo['run'])
+                             'active', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
                                                     expInfo['overwrite'])
@@ -68,6 +70,10 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
             trialInfoPath[input_ext] = tmpPath
 
         trialFile = pd.read_csv(trialInfoPath['neutral'], sep='\t')
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+
 
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
                                     fixed_timings=[acfg.timeResponse,
@@ -92,7 +98,7 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True) 
 
 
 def active_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None) -> bool:
+               fractalList:List[str] = None, frameDur:float = None, acfg=acfg) -> bool:
     """Runs the active part of the experiment.
 
     Args:
@@ -112,6 +118,9 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     noTR = expInfo['noTR']
     responseKeyList = expInfo['responseKeyList']
     responseMapping = expInfo['responseMapping']
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
     # Rebuild paths
 
     if expInfo['mode'] != 3:
@@ -125,14 +134,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                                     'active', extension=f'input_{input_ext}.tsv')
             trialInfoPath[input_ext] = tmpPath
 
-    if expInfo['mode'] == 4:
-        # Overwrite some configs
-        acfg['timeFinalDisplay'] = 0.25
-        acfg['timeCoinToss'] = 0.0
-        acfg['timeFractalSelection'] = 0.0
-
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'],
-                             'active', expInfo['run'])
+                             'active', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     # Currently testing if the supposed ones are better.
     if frameDur is None:
@@ -189,12 +192,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     for imL in acfg.imgLocation:
         for nFl, fl in enumerate(fractalList):
 
-            if "right" in imL and expInfo['mode'] == 2:
-                pos = list(acfg.imgLocPos[imL])
-                pos[1] = 0
-            else:
-                pos = acfg.imgLocPos[imL]
-
+            pos = acfg.imgLocPos[imL]
             fractals[imL][nFl] = visual.ImageStim(win=win, pos=pos,
                                                 size=acfg.imgSize, opacity=0,
                                                 image=os.path.join(STIMULUSPATH, 'fractals', fl + '.png'))
@@ -204,9 +202,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         coins[imL] = visual.ImageStim(win=win, pos=acfg.imgLocPos[imL], size=acfg.coinSize, opacity=0,
                                     image=os.path.join(STIMULUSPATH, acfg.coinPos[imL] + '.png'))
         coins[imL].pos += offset
-
-        if expInfo['mode'] != 4:
-            coins[imL].setAutoDraw(True)
+        coins[imL].setAutoDraw(True)
 
     TimeLine = visual.Rect(win=win, name='TimeLine', fillColor=[0.1,0.1,0.1],
                            pos= [-1, -1], height=0.02, width=0, opacity=1.0, units='norm')
@@ -276,9 +272,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     Instructions.setAutoDraw(False)
 
     ############################ Setup Elements ####################################
-    if expInfo['mode'] != 4:
-        MoneyBox.setAutoDraw(True)
-        win.flip()
+    MoneyBox.setAutoDraw(True)
+    win.flip()
 
     ###################### This is were the experiment begins ######################
     if expInfo['mode'] != 3:
@@ -344,18 +339,15 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                         'gamma_left_up': gamma1,
                         'gamma_left_down': gamma2})
 
-        if expInfo['mode'] != 2:
-            win.flip()
-            Logger.keyStrokes(win)
-
-            Wait.wait(onset_gamble1, gambOnset)
-
-            Logger.logEvent({"event_type": "GambleLeft", "expected_duration": onset_gamble1,
-                            **logDict}, onset=gambOnset)
+        win.flip()
+        Logger.keyStrokes(win)
+        Wait.wait(onset_gamble1, gambOnset)
+        Logger.logEvent({"event_type": "GambleLeft", "expected_duration": onset_gamble1,
+                         **logDict}, onset=gambOnset)
 
         ########################### Gamble Right ###################################
         fractals['rightUp'][fractal3].setOpacity(1)
-        fractals['rightDown'][fractal4].setOpacity(1.0 * (expInfo['mode'] != 2))
+        fractals['rightDown'][fractal4].setOpacity(1)
         TimerShape.setAutoDraw(True)
         win.flip()
         Logger.keyStrokes(win)
@@ -459,17 +451,10 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                             onset=selectionOnset)
             ############################ Coin ######################################
             if coin_toss:
-                if (response=='right') and expInfo['mode'] == 2:
-                    pass
-                else:
-                    coins[response + 'Up'].setOpacity(1)
+                coins[response + 'Up'].setOpacity(1)
                 logDict.update({'gamble_up': 'up'})
             else:
-                if (response == 'right') and expInfo['mode'] == 2:
-                    pass
-                else:
-                    coins[response + 'Down'].setOpacity(1)
-
+                coins[response + 'Down'].setOpacity(1)
                 logDict.update({'gamble_up': 'down'})
 
             win.flip()
@@ -484,14 +469,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
                             "expected_duration": acfg.timeCoinToss,
                             **logDict}, onset=coinOnset)
             ############################ Fractal Selection #########################
-            if expInfo['mode'] != 4:
 
-                if coin_toss:
-                    fractals['leftDown'][fractal2].setOpacity(0)
-                    fractals['rightDown'][fractal4].setOpacity(0)
-                else:
-                    fractals['leftUp'][fractal1].setOpacity(0)
-                    fractals['rightUp'][fractal3].setOpacity(0)
+            if coin_toss:
+                fractals['leftDown'][fractal2].setOpacity(0)
+                fractals['rightDown'][fractal4].setOpacity(0)
+            else:
+                fractals['leftUp'][fractal1].setOpacity(0)
+                fractals['rightUp'][fractal3].setOpacity(0)
 
             if response == 'left':
                 ch_gamma = currentGammas[:2][np.abs(coin_toss -1)]

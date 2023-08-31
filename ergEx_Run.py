@@ -9,47 +9,18 @@ from codebase.experiment.configs import active_configs as acfg
 from codebase.experiment.configs import check_configs
 import os
 from psychopy import visual, core, event
-import numpy as np
 from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-ACTIVE_MODE = 3
-""" Mode for the active phase 1 = DRCMR, 2 = LML, 3 = TrainTracks, 4 = Hidden wealth """
-
-N_TRIALS_PASSIVE = 3 * 45 # Default 4 * 45
-""" How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-N_TRIALS_ACTIVE = 160 # Default 90
-""" Number of trials in the active phaes"""
-N_TRIALS_NOBRAINER = 15 # Default 15 (total number of permutations)
-""" Number of nobrainer trials after the passive phase ends."""
-
-TR = 1.61
-""" TR of the MR scanner (also for simulations) """
 SIMULATE_MR = 'None'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
-
-MAX_RUN_PASSIVE = 3 # Defaults to 3
-""" Number of runs of the passive phase"""
-START_NOBRAINER = 45
-"""Starts N_TRIALS_NOBRAINER after np.mod(passive, START_NOBRAINER) == 0 Trials """
-MAX_RUN_ACTIVE = 1 # Defaults to 1
-""" Number of runs in the active phase"""
-MAX_TRIALS_PASSIVE = 45 # By default should be N_TRIALS_PASSIVE / 4
-""" Number of trials per run in the passive phase. """
-MAX_TRIALS_ACTIVE =  np.inf # Default is np.inf
-""" Number of trials per run in he active phase. """
 SESSIONS = [1, 2]
 
-SLIDESET = {1: [30, 44, 45, 56], 2: [1, 16, 17, 28], 3: [30, 44, 45, 56], 4: [58, 72, 73, 81]}
-""" The 2 sets of start and stop slides for the instructions depending on mode. """
-
-GAMBLE_FILTER = False
-""" Whether gambles are filtered in a given range. """
 BREAKLENGTH = 10
-""" Break duration between Sessions."""
+""" Break duration between Sessions. In minutes"""
 
 
 def set_up_win(fscreen, gui=True):
@@ -93,15 +64,9 @@ if __name__ == '__main__':
                'showQuestionnaires': True,
                'showInstructions': True} # Which run of the active phase to start from (starts at 1)
 
-    if SIMULATE_MR in ['MRI', 'Simulate', 'MRIDebug']:
-        expInfo.update({
-            'responseLeft': '7',
-            'responseButton': '8',
-            'responseRight': '9'})
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
-    expInfo['gambleFilter'] = GAMBLE_FILTER
     instruction_shown = not expInfo['showInstructions']
 
     SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
@@ -112,13 +77,13 @@ if __name__ == '__main__':
         lambd = float(lambd)
 
         expInfo.update({
-            'n_resets_passive': 3, # MAX_RUN_PASSIVE,
-            'n_trials_passive_before_reset': START_NOBRAINER, #MAX_TRIALS_PASSIVE,
-            'n_trials_active': N_TRIALS_ACTIVE,
-            'start_nobrainer': START_NOBRAINER,
-            'mode': ACTIVE_MODE,
+            'n_resets_passive': con.max_run_passive, # MAX_RUN_PASSIVE,
+            'n_trials_passive_before_reset': con.start_nobrainer, #MAX_TRIALS_PASSIVE,
+            'n_trials_active': con.n_trials_active,
+            'start_nobrainer': con.start_nobrainer,
+            'mode': 3,
             'agentActive': expInfo['test_mode'],
-            'TR': TR,
+            'TR': con.TR,
             'session': sess,
             'eta': lambd,
             'simulateMR': SIMULATE_MR})
@@ -130,7 +95,7 @@ if __name__ == '__main__':
 
         if expInfo['calibration']:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            calib_conf = check_configs(expInfo.copy(), task='calibration')
+            calib_conf = check_configs(expInfo.copy(), task='calibration', mode=SIMULATE_MR)
             calibration_run(filePath, calib_conf, win=win)
             win.close()
 
@@ -139,17 +104,17 @@ if __name__ == '__main__':
         passive_conf.update({'run' : expInfo['startPassive'],
                             'agentMode': 'random',
                             'feedback': False,
-                            'nTrial_noBrainer': N_TRIALS_NOBRAINER,
-                            'maxTrial': MAX_TRIALS_PASSIVE})
+                            'nTrial_noBrainer': con.n_trials_nobrainer,
+                            'maxTrial': con.max_trials_passive})
 
-        passive_conf = check_configs(passive_conf, task='passive')
+        passive_conf = check_configs(passive_conf, task='passive', mode=SIMULATE_MR)
 
         if not instruction_shown:
             win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][0], stop_slide=SLIDESET[ACTIVE_MODE][1])
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[0], stop_slide=con.SLIDESET[1])
             win.close()
 
-        for run in range(passive_conf['run'],  MAX_RUN_PASSIVE + 1):
+        for run in range(passive_conf['run'],  con.max_run_passive + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
             passive_conf['run'] = run
@@ -168,19 +133,18 @@ if __name__ == '__main__':
 
         active_conf.update(
             {'run': expInfo['startActive'],
-            'maxTrial': MAX_TRIALS_ACTIVE,
+            'maxTrial': con.max_trials_active,
             'agentMode': 'random'})
 
-        active_conf = check_configs(active_conf, task='active')
+        active_conf = check_configs(active_conf, task='active', mode=SIMULATE_MR)
 
         if not instruction_shown:
             win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=SLIDESET[ACTIVE_MODE][2], stop_slide=SLIDESET[ACTIVE_MODE][3])
+            run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[2], stop_slide=con.SLIDESET[3])
             win.close()
+            instruction_shown = True
 
-        instruction_shown = True
-
-        for run in range(active_conf['run'],  MAX_RUN_ACTIVE + 1):
+        for run in range(active_conf['run'],  con.max_run_active + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
             active_conf['run'] = run

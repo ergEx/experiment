@@ -14,13 +14,13 @@ from .exp import WaitTime, get_frame_timings, passive_report
 from .exp import continue_from_previous, load_calibration, calculate_number_of_images
 from .configs import passive_configs as pcfg
 from .configs import active_configs as acfg
-from .configs import DEFAULT_FRACTALS, STIMULUSPATH
+from .configs import DEFAULT_FRACTALS, STIMULUSPATH, update_configs_for_mr
 from typing import Optional, Dict
 from .exp.dashboard import nobrainer_report
 from .exp.helper import gui_update_dict, make_filename, format_wealth, make_no_brainers
 
 
-def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> Dict:
+def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True, pcfg=pcfg) -> Dict:
     """Creates and returns the dictionary necessary for the active run, for example
     looking up files from previous runs etc.
 
@@ -41,6 +41,9 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
     expInfo['responseLeft'] = str(expInfo['responseLeft'])
     expInfo['responseRight'] = str(expInfo['responseRight'])
 
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+        pcfg = update_configs_for_mr(pcfg, 'passive')
 
     keyList = [expInfo['responseButton']]
     responseKeyList = [expInfo['responseLeft'], expInfo['responseRight']]
@@ -49,7 +52,7 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
                        expInfo['responseRight']: 'right'}
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
-                              expInfo['eta'], 'passive', expInfo['run'])
+                              expInfo['eta'], 'passive', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
     offset = load_calibration(filePath, expInfo['participant'], expInfo['session'], expInfo['eta'])
 
     wealth, nTrial, writeMode = continue_from_previous(fileName, expInfo['wealth'],
@@ -80,7 +83,8 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True) -> D
 
 
 def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
-               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True):
+               fractalList:List[str] = None, frameDur:float = None, waitForSpace=True,
+               pcfg=pcfg, acfg=acfg):
     """Runs the passive part of the experiment.
 
     Args:
@@ -98,6 +102,10 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     # Currently testing if the supposed ones are better.
     if frameDur is None:
         _, frameDur =  get_frame_timings(win)
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
+        pcfg = update_configs_for_mr(pcfg, 'passive')
 
     wealth = expInfo['wealth']
     nTrial = expInfo['nTrial']
@@ -122,7 +130,7 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     fractalList.append('grey100')
 
     fileName = make_filename(filePath, expInfo['participant'], expInfo['session'],
-                            expInfo['eta'], 'passive', expInfo['run'])
+                            expInfo['eta'], 'passive', expInfo['run'], extension=expInfo['OUT_EXTENSION'])
 
     trialInfoPath = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
                                   expInfo['eta'], 'passive', extension='input.tsv')
@@ -400,7 +408,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         up_steps = int(np.rint(pcfg.timeWealthUpdate / frameDur))
 
         wealth_steps = np.linspace(wealth, exp_wealth, up_steps)
-        old_wealth = wealth
         wealth = exp_wealth
 
         MoneyBox.setText(format_wealth(wealth))
@@ -446,7 +453,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
             ############################### Nobrainer about here ###########################
 
             win.flip()
-
             # Reminder.setText("press earlier")
             fractalData = pd.read_csv(trialInfoPath, sep='\t')
             # Create dataset:
@@ -486,11 +492,6 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                         startResp = False
 
             Instructions.setAutoDraw(False)
-            win.flip()
-            ############################ Setup Elements ####################################
-            if expInfo['feedback']:
-                MoneyBox.setAutoDraw(True)
-
             win.flip()
             ###################### This is were Nobrainers begins ######################
             noTrials = trials_nb.shape[0]
@@ -643,25 +644,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
                                     onset=fractalOnset)
 
                 ################################# Wealth Update ############################
-
-                up_steps = int(np.rint(acfg.timeWealthUpdate / frameDur)) - 1
-
-                wealth_steps = np.linspace(wealth, ch_gamma, up_steps)
-
-                wealthOnset = Logger.getTime()
-
-                for ws in wealth_steps:
-                    MoneyBox.setText('\n' + format_wealth(ws) + '\n')
-                    Logger.keyStrokes(win)
-                    win.flip()
-
+                Wait.wait(acfg.timeWealthUpdate)
                 Logger.keyStrokes(win)
-                MoneyBox.setText(format_wealth(wealth))
                 win.flip()
-
-                Logger.logEvent({"event_type": "WealthUpdate",
-                                "expected_duration": acfg.timeWealthUpdate, **logDict},
-                                onset=wealthOnset, wealth=wealth)
 
                 Wait.wait(acfg.timeFinalDisplay)
 

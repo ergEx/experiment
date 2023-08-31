@@ -1,14 +1,14 @@
 from .exp import ExperimentLogger
 from psychopy import core, visual
 from .configs import active_configs as acfg
-from .configs import STIMULUSPATH, DEFAULT_FRACTALS
+from .configs import STIMULUSPATH, DEFAULT_FRACTALS, update_configs_for_mr
 import os
 from typing import Optional, Dict
 from .exp.helper import make_filename
 ####################### Setup GUI ##############################################
 
 def calibration_run(filepath:str, expInfo:Optional[Dict]=None,
-                win:Optional[visual.Window]=None):
+                win:Optional[visual.Window]=None, acfg=acfg):
 
     responseKeys = ['responseUp', 'responseDown', 'responseButton',
                     'responseLeft', 'responseRight']
@@ -20,6 +20,9 @@ def calibration_run(filepath:str, expInfo:Optional[Dict]=None,
                             expInfo['eta'], 'calibration', 1)
 
     responseKeyList = [expInfo[rK] for rK in responseKeys]
+
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        acfg = update_configs_for_mr(acfg, 'active')
 
     responseMapping = {expInfo['responseUp'] : 'up',
                     expInfo['responseDown']: 'down',

@@ -184,22 +184,6 @@ def calculate_growth_rates(indifference_etas:np.array, lambd:float, dx2:int, x:n
     return gamma_list, gamma1_list, gamma2_list, fractal_dict
 
 
-def create_gambles_one_gamble(gamma1_list:np.array, gamma2_list:np.array) -> np.ndarray:
-    """Create list of all gambles.
-
-    Args:
-        gamma1_list (array):
-            Array of positive growth-rates.
-        gamma2_list (float):
-            Array of negative growth-rates.
-    Returns:
-        List of arrays. Each gamble is represented as (2, ) array with growth
-        rates.
-    """
-
-    return np.array(list(itertools.product(gamma1_list, gamma2_list)))
-
-
 def create_gambles_two_gambles(gamma_range:np.array) -> np.ndarray:
     """Create list of all gambles.
     Args:
@@ -217,23 +201,6 @@ def create_gambles_two_gambles(gamma_range:np.array) -> np.ndarray:
         for gamma_1, gamma_2
         in itertools.combinations_with_replacement(gamma_range, 2)
     ]
-
-
-def create_gamble_pairs_one_gamble(gambles:np.array) -> np.ndarray:
-    """Pair each gamble with the null-gamble
-
-    Args:
-        gamble (list of arrays):
-            List of gambles.
-
-    Returns:
-        List of arrays. Each gamble pair is represented as (2, 2) array with
-        four growth rates, but where growth rates of gamble 2 is always 0.
-        """
-    return [
-        np.concatenate((gamble_1[np.newaxis], np.array([[0, 0]])), axis=0)
-        for gamble_1 in gambles
-        ]
 
 
 def create_gamble_pairs_two_gambles(gambles:np.array) -> np.ndarray:
@@ -315,6 +282,7 @@ def is_statewise_dominated(gamble_pair:np.array) -> bool:
     """Decision if a gamble is strictly statewise dominated by the other gamble in a gamble pair"""
     return (np.greater(max(gamble_pair[0]), max(gamble_pair[1])) and np.greater(min(gamble_pair[0]), min(gamble_pair[1])) or
            np.greater(max(gamble_pair[1]), max(gamble_pair[0])) and np.greater(min(gamble_pair[1]), min(gamble_pair[0])) )
+
 
 def indiference_eta(x1:float, x2:float, x3:float, x4:float) -> list:
     """Calculates indiference_etas for gamble pairs, ie. at which riskaversion is an agent indifferent between the choices

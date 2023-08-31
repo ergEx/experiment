@@ -4,16 +4,15 @@ from ..sequences import generate_dataframes
 
 
 def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
-        n_trials_active:int, save_path:str, mode:int = 1, speed_up:int = 1,
+        n_trials_active:int, save_path:str, mode:int = 1,
         gamble_filter:bool = False):
 
-    if mode in [1, 2, 4]:
+    if mode == 1:
         p_df, a_df, meta = generate_dataframes(lambd=lambd,
                                             n_trials_active=n_trials_active,
                                             n_resets_passive=n_resets_passive,
                                             n_trials_passive_before_reset=n_trials_passive_before_reset,
                                             mode=mode,
-                                            speed_up=speed_up,
                                             gamble_filter=gamble_filter
                                             )
 
@@ -28,7 +27,6 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
                                             n_resets_passive=n_resets_passive,
                                             n_trials_passive_before_reset=n_trials_passive_before_reset,
                                             mode=mode,
-                                            speed_up=speed_up,
                                             gamble_filter=gamble_filter
                                             )
 
@@ -37,16 +35,10 @@ def run(lambd:float, n_resets_passive:int, n_trials_passive_before_reset:int,
             a_df[i].to_csv(save_path.replace('meta', 'active').replace('txt', 'tsv').replace('neutral', name), index=False, sep='\t')
 
     else:
-        raise ValueError("Mode has to be 1, 2, 3 or 4")
+        raise ValueError("Mode has to be 1 or 3")
 
 
 def run_with_dict(expInfo):
-
-    try:
-        speed_up = expInfo['speed_up']
-    except KeyError:
-        speed_up = 1
-        print("No speed up")
 
     save_path = make_filename('data/inputs/', expInfo['participant'], expInfo['session'],
                               expInfo['eta'], 'meta', None, 'input_neutral.txt')
@@ -71,9 +63,7 @@ def run_with_dict(expInfo):
             n_trials_passive_before_reset=expInfo['n_trials_passive_before_reset'],
             n_trials_active=expInfo['n_trials_active'],
             save_path=save_path,
-            mode=expInfo['mode'],
-            gamble_filter=expInfo['gambleFilter'],
-            speed_up=speed_up)
+            mode=expInfo['mode'])
 
     else:
         print(f"Not creating new inputs for participant {expInfo['participant']}")
