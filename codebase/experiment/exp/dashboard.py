@@ -85,7 +85,11 @@ def plot_type_bar(dataframe, ax, ex_type='Event'):
 
 
 def plot_expected_gamma(dataframe, ax, direction='horizontal'):
-    gammas = dataframe.query('event_type=="WealthUpdate"')
+
+    if direction == 'nobrainer':
+        gammas = dataframe.query('event_type=="TrialEnd"')
+    else:
+        gammas = dataframe.query('event_type=="WealthUpdate"')
 
     if direction == 'horizontal':
         gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
@@ -97,7 +101,7 @@ def plot_expected_gamma(dataframe, ax, direction='horizontal'):
         gammas_1 = gammas['gamma_left']
         gammas_2 = gammas['gamma_right']
     else:
-        raise ValueError('Diretion must be in ["horizontal", "vertical"]')
+        raise ValueError('Direction must be in ["horizontal", "vertical"]')
 
     ax.hist(gammas_1.values, alpha=0.5, density=True, color='b', bins=10)
     ax.hist(gammas_2.values, alpha=0.5, density=True, color='orange', bins=10)
@@ -368,12 +372,13 @@ def plot_rt_versus_difficulty(dataframe, ax, task='active'):
     reaction = dataframe.query('event_type == "Response"')
 
     reaction = reaction.response_time.values
-    gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
 
     if task == 'active':
+        gammas = dataframe.query('event_type=="WealthUpdate" and no_response == False')
         gammas_1 = gammas[['gamma_left_up', 'gamma_left_down']].mean(1)
         gammas_2 = gammas[['gamma_right_up', 'gamma_right_down']].mean(1)
     elif task=='nobrainer':
+        gammas = dataframe.query('event_type=="TrialEnd" and no_response == False')
         gammas_1 = gammas['gamma_left']
         gammas_2 = gammas['gamma_right']
 
@@ -697,7 +702,7 @@ def nobrainer_report(fname, target_dir='data/reports'):
     ii += 1
     ax = plot_event_duration_error(dataframe, axes[ii], event='ITI')
     ii += 1
-    ax = plot_event_duration_error(dataframe, axes[ii], event='WealthUpdate')
+    # ax = plot_event_duration_error(dataframe, axes[ii], event='WealthUpdate')
     ii += 1
     ax = plot_expected_gamma(dataframe, axes[ii], direction='nobrainer')
     ii += 1
