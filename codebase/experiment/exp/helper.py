@@ -284,7 +284,7 @@ def format_wealth(wealth:float, fstring:str = "7,.0f") -> str:
     return format(wealth, fstring)
 
 
-def make_no_brainers(trial_df, current_trial, ntrials, mode=2):
+def make_no_brainers(trial_df, current_trial, ntrials):
     import itertools
     from ... import constants as con
 
@@ -298,20 +298,6 @@ def make_no_brainers(trial_df, current_trial, ntrials, mode=2):
 
     for kk in unqFractals.ravel():
             fractalGammaDict[kk] = trial_df.query('fractal == @kk')['gamma'].values[0].item()
-
-    if mode == 1:
-        gammaCombs = np.array([[fractalGammaDict[i[0]], fractalGammaDict[i[1]]] for i in fractalCombination])
-        gammaSort = np.argsort(np.abs(gammaCombs[:, 0] - gammaCombs[:, 1]))
-
-        min_gamma = np.sort(np.unique(trial_df.gamma))[:3]
-        max_gamma = np.sort(np.unique(trial_df.gamma))[-3:]
-
-        gammaMin = np.isin(gammaCombs, min_gamma) * 1
-        gammaMax = np.isin(gammaCombs, max_gamma) * 2
-
-        gammaSelect = np.sum(gammaMin + gammaMax, 1) == 3
-
-        fractalCombination = fractalCombination[gammaSelect == False, :]
 
     randomIdx = np.random.choice(len(fractalCombination), len(fractalCombination), replace=False)
 
