@@ -56,14 +56,17 @@ if __name__ == '__main__':
 
     expInfo = {'participant': '000', # Participant ID
                'test_mode': False, # Whether an agent automatically presses buttons
+               } # Which run of the active phase to start from (starts at 1)
+
+    expInfo.update({
                'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
                'showQuestionnaires': True,
-               'showInstructions': True} # Which run of the active phase to start from (starts at 1)
-
+               'showInstructions': True
+    })
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
