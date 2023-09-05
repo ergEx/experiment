@@ -1,4 +1,4 @@
-VERSION='v0.5.1' # pre-data collection
+VERSION='v0.5.2' # pre-data collection
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -151,8 +151,13 @@ if __name__ == '__main__':
         for run in range(active_conf['run'],  con.max_run_active + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            active_conf['run'] = conseq_run + run
+
+            if run > 1:
+                active_conf['run'] = conseq_run + run
+
             active_conf = active_gui(filePath, active_conf, False)
+
+            active_conf['run'] = conseq_run + run
             event.clearEvents()
             wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
             win.close()
