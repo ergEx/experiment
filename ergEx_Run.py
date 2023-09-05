@@ -120,7 +120,7 @@ if __name__ == '__main__':
         for run in range(passive_conf['run'],  con.max_run_passive + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            passive_conf['run'] = run
+            passive_conf['run'] = conseq_run
 
             passive_conf = passive_gui(filePath, passive_conf, False)
             passive_conf['wealth'] = con.x_0
@@ -147,10 +147,11 @@ if __name__ == '__main__':
             win.close()
             instruction_shown = True
 
+        conseq_run = con.max_run_passive
         for run in range(active_conf['run'],  con.max_run_active + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            active_conf['run'] = run
+            active_conf['run'] = conseq_run + run
             active_conf = active_gui(filePath, active_conf, False)
             event.clearEvents()
             wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
