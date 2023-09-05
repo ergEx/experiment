@@ -120,7 +120,7 @@ if __name__ == '__main__':
         for run in range(passive_conf['run'],  con.max_run_passive + 1):
 
             win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            passive_conf['run'] = conseq_run
+            passive_conf['run'] = run
 
             passive_conf = passive_gui(filePath, passive_conf, False)
             passive_conf['wealth'] = con.x_0
