@@ -58,6 +58,8 @@ if __name__ == '__main__':
                'test_mode': False, # Whether an agent automatically presses buttons
                } # Which run of the active phase to start from (starts at 1)
 
+    expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
+
     expInfo.update({
                'fullScreen': True, # Whether to use a full screen
                'calibration': False, # Whether to run calibrations before.
@@ -67,8 +69,6 @@ if __name__ == '__main__':
                'showQuestionnaires': True,
                'showInstructions': True
     })
-
-    expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
 
     instruction_shown = not expInfo['showInstructions']
 
