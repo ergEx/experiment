@@ -3,7 +3,7 @@ import numpy as np
 # Trial numbers
 n_trials_passive = 45 * 3
 """ How often fractals are shown in the Passive Phase (defines trials as N_REPEATS_PASSIVE * N_FRACTALS"""
-n_trials_active= 165
+n_trials_active = 160
 """ Number of trials in the active phase"""
 n_trials_nobrainer = 15
 """ Number of nobrainer trials after the passive phase ends."""
