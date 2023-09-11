@@ -154,7 +154,9 @@ def active_sequence_two_gambles_train_tracks(lambd:float,
         fractals =  np.empty([n_trials, 4], dtype=float)
 
         for ii, trial in enumerate(trial_order):
-            tmp = experiment[:,:,trial].flatten()
+            tmp = experiment[:,:,trial]
+            tmp = random_reorder_axis(tmp, 0)
+            tmp = tmp.flatten()
             fractals[ii, :] =  [fractal_dict[g] for g in tmp]
             gamma_array[ii, :] = tmp
 
