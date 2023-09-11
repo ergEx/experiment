@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
+
 from . import constants as con
-from .utils import create_experiment, \
-    create_gamble_pairs_two_gambles, create_gambles_two_gambles, create_trial_order, \
+from .utils import create_experiment, create_gamble_pairs_two_gambles, create_gambles_two_gambles, create_trial_order, \
     indiference_eta, inverse_isoelastic_utility, is_g_deterministic, is_nobrainer, is_statewise_dominated, \
-    isoelastic_utility, shuffle_along_axis, wealth_change
+    isoelastic_utility, random_reorder_axis, shuffle_along_axis, wealth_change
 
 
 def passive_sequence_two_gambles(lambd:float,
@@ -52,6 +52,7 @@ def active_sequence_two_gambles(lambd:float,
         if not is_statewise_dominated(gamble_pair)
         and not is_nobrainer(gamble_pair)
         ]
+    gamble_pairs = random_reorder_axis(np.array(gamble_pairs),0)
 
     if filtering:
         tmp = list()
