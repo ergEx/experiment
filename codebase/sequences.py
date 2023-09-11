@@ -52,7 +52,6 @@ def active_sequence_two_gambles(lambd:float,
         if not is_statewise_dominated(gamble_pair)
         and not is_nobrainer(gamble_pair)
         ]
-    gamble_pairs = random_reorder_axis(np.array(gamble_pairs),0)
 
     if filtering:
         tmp = list()
@@ -88,7 +87,9 @@ def active_sequence_two_gambles(lambd:float,
     timings = shuffle_along_axis(timings, 0)
 
     for ii, trial in enumerate(trial_order):
-        tmp = experiment[:,:,trial].flatten()
+        tmp = experiment[:,:,trial]
+        tmp = random_reorder_axis(tmp, 0)
+        tmp = tmp.flatten()
         fractals[ii, :] =  [fractal_dict[g] for g in tmp]
         gamma_array[ii, :] = tmp
 
