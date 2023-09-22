@@ -44,7 +44,7 @@ passive_configs['stopperPos'] = (0, 750 // 2)
 """ Position of above triangle. """
 
 # Timings
-passive_configs['waitTR'] = 1 # How many TRs to wait
+passive_configs['waitTR'] = 5 # How many TRs to wait
 """ How many TRs to wait before the experiment begins"""
 
 passive_configs['timeToReminder'] = 1.0 # How much time until reminder is shown
@@ -88,7 +88,7 @@ active_configs['timerPos'] = (CENTER_POS[0], -25)
 """ Size of the timer"""
 
 # Timings
-active_configs['waitTR'] = 1
+active_configs['waitTR'] = 5
 """ How many TRs to wait before the experiment begins"""
 active_configs['timeResponse'] = 2.2 # Response Window
 """ Maximal response time """
