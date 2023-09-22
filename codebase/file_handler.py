@@ -191,7 +191,7 @@ def make_filename(file_path:str, sub:str, ses:Union[str, int], lambd:float,
     return fullname
 
 
-def extract_from_fname(filename:str) -> Tuple[str, str, str, float, str, int]:
+def extract_from_fname(filename:str) -> Tuple[str, str, str, float, str, int, str]:
     """Extract parts from BIDS filename.
 
     Args:
@@ -207,6 +207,7 @@ def extract_from_fname(filename:str) -> Tuple[str, str, str, float, str, int]:
     lambd = bids_to_lambd(re.search(lambda_regex, filename)[0][9:])
     sub = re.search(r'sub-[^_\/\\]{1,}', filename)[0].split('-')[-1]
     task = re.search(r'task-[^_]{1,}', filename)[0].split('-')[-1]
-    filepath, _ = os.path.split(filename)
+    filepath, fname = os.path.split(filename)
+    extension = '.' + fname.split('.')[-1]
 
-    return filepath, sub, ses, lambd, task, run
+    return filepath, sub, ses, lambd, task, run, extension

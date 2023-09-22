@@ -111,10 +111,10 @@ def continue_from_previous(filename:str, wealth:float,
     trial = 0
 
     # Extract run no from filename:
-    fpath, sub, ses, eta, task, run = extract_from_fname(filename)
+    fpath, sub, ses, eta, task, run, ext = extract_from_fname(filename)
 
     if int(run) > 1:
-        fname = make_filename(fpath, sub, ses, eta, task, run - 1, add_dir=False)
+        fname = make_filename(fpath, sub, ses, eta, task, run - 1, ext, add_dir=False)
 
         if os.path.exists(fname):
             try:
