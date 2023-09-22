@@ -208,6 +208,6 @@ def extract_from_fname(filename:str) -> Tuple[str, str, str, float, str, int, st
     sub = re.search(r'sub-[^_\/\\]{1,}', filename)[0].split('-')[-1]
     task = re.search(r'task-[^_]{1,}', filename)[0].split('-')[-1]
     filepath, fname = os.path.split(filename)
-    extension = '.' + fname.split('.')[-1]
+    extension = '_' +  fname.split('_')[-1]
 
     return filepath, sub, ses, lambd, task, run, extension
