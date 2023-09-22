@@ -41,9 +41,9 @@ def passive_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui=True, pcfg
     expInfo['responseLeft'] = str(expInfo['responseLeft'])
     expInfo['responseRight'] = str(expInfo['responseRight'])
 
-    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        acfg = update_configs_for_mr(acfg, 'active')
-        pcfg = update_configs_for_mr(pcfg, 'passive')
+    #if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+    #    acfg = update_configs_for_mr(acfg, 'active')
+    #    pcfg = update_configs_for_mr(pcfg, 'passive')
 
     keyList = [expInfo['responseButton']]
     responseKeyList = [expInfo['responseLeft'], expInfo['responseRight']]
@@ -103,9 +103,9 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
     if frameDur is None:
         _, frameDur =  get_frame_timings(win)
 
-    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        acfg = update_configs_for_mr(acfg, 'active')
-        pcfg = update_configs_for_mr(pcfg, 'passive')
+    #if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+    #    acfg = update_configs_for_mr(acfg, 'active')
+    #    pcfg = update_configs_for_mr(pcfg, 'passive')
 
     wealth = expInfo['wealth']
     nTrial = expInfo['nTrial']

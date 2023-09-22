@@ -71,8 +71,8 @@ def active_gui(filePath:str, expInfo:Optional[Dict] = None, spawnGui:bool=True,
 
         trialFile = pd.read_csv(trialInfoPath['neutral'], sep='\t')
 
-    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        acfg = update_configs_for_mr(acfg, 'active')
+    #if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+    #    acfg = update_configs_for_mr(acfg, 'active')
 
 
     noTR = calculate_number_of_images(trialFile[['iti', 'onset_gamble_pair_left']],
@@ -119,8 +119,8 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     responseKeyList = expInfo['responseKeyList']
     responseMapping = expInfo['responseMapping']
 
-    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        acfg = update_configs_for_mr(acfg, 'active')
+    #if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+    #    acfg = update_configs_for_mr(acfg, 'active')
     # Rebuild paths
 
     if expInfo['mode'] != 3:

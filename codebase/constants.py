@@ -29,7 +29,7 @@ SLIDESET = [0, 14, 15, 26]
 """ The 2 sets of start and stop slides for the instructions depending on mode. """
 
 # For MR test: the TR
-TR = 1.61
+TR = 1.699
 """ TR of the MR scanner (also for simulations) """
 
 # Gamble creation
