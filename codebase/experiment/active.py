@@ -240,15 +240,23 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     Instructions.pos += offset
     Instructions.setAutoDraw(True)
 
+
     if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
-        Instructions.setText('Starting soon')
+        inst_text = 'Please Wait'
+        Instructions.setText(inst_text + f'\nStart in {acfg.waitTR}')
         win.flip()
-        # Start simulator
+            # Start simulator
         if expInfo['simulateMR'] in ['Simulate']:
             SyncGen.start()
+
+        previousTR = Logger.tr
         # Wait for triggers here:
         while Logger.tr < acfg.waitTR:
             Logger.keyStrokes(win)
+            if previousTR < Logger.tr:
+                Instructions.setText(inst_text + f'\nStart in {acfg.waitTR - Logger.tr}')
+                win.flip()
+                previousTR = Logger.tr
 
     elif expInfo['simulateMR'] == 'None':
         win.flip()
