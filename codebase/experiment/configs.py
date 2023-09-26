@@ -182,9 +182,9 @@ def check_configs(config_dict:Dict, task='passive', mode='None') -> Dict:
 
     if mode in ['MRI', 'Simulate', 'MRIDebug']:
         default_dict.update({
-            'responseLeft': '7',
+            'responseLeft': '9',
             'responseButton': '8',
-            'responseRight': '9',
+            'responseRight': '7',
             'OUT_EXTENSION': 'events.tsv'})
 
     type_dict_options = {
