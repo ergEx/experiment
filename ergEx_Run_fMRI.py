@@ -60,6 +60,8 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
     place_holder_path = os.path.join(thisDir, 'data', 'stimuli',
                                      'Wide-sky-over-green-fields-in-Harz-region.jpg')
+    # image url:
+    # https://cc0.photo/2017/08/24/wide-sky-green-fields-harz-region/
 
     expInfo = {'participant': '000', # Participant ID
                'test_mode': False,
