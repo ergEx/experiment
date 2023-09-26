@@ -1,4 +1,4 @@
-VERSION='v0.6.0-fmri' # pre-data collection
+VERSION='v0.6.1-fmri' # pre-data collection
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -13,7 +13,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-SIMULATE_MR = 'Simulate'
+SIMULATE_MR = 'MRIDebug'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
@@ -43,11 +43,23 @@ def set_up_win(fscreen, gui=True):
     return win, frameDur, Between, win_size
 
 
+def show_place_holder(win, path, wait_for_press=True):
+    image = visual.ImageStim(win, path, size=win.size)
+    image.setAutoDraw(wait_for_press==False)
+    image.draw()
+    win.flip()
+    if wait_for_press:
+        event.waitKeys(keyList=['space'])
+        win.flip()
+
+
 if __name__ == '__main__':
 
     thisDir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(thisDir)
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
+    place_holder_path = os.path.join(thisDir, 'data', 'stimuli',
+                                     'Wide-sky-over-green-fields-in-Harz-region.jpg')
 
     expInfo = {'participant': '000', # Participant ID
                'test_mode': False,
@@ -114,9 +126,8 @@ if __name__ == '__main__':
     for run in range(passive_conf['run'],  con.max_run_passive + 1):
 
         win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-        event.waitKeys(keyList=['space'])
         passive_conf['run'] = run
-
+        show_place_holder(win, place_holder_path)
         passive_conf = passive_gui(filePath, passive_conf, False)
         passive_conf['wealth'] = con.x_0
         event.clearEvents()
@@ -146,7 +157,7 @@ if __name__ == '__main__':
     for run in range(active_conf['run'],  con.max_run_active + 1):
 
         win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-        event.waitKeys(keyList=['space'])
+        show_place_holder(win, place_holder_path)
 
         if run > 1:
             active_conf['run'] = conseq_run + run
@@ -187,7 +198,8 @@ if __name__ == '__main__':
         expInfo['showQuestionnaires'] = False
 
     win, frameDur, screenText, _ = set_up_win(expInfo['fullScreen'], False)
-    screenText.setText("Thank you!\nYou completed the experiment.\nPlease contact the experimenters.")
+    show_place_holder(win, place_holder_path, wait_for_press=False)
+    screenText.setText("Thank you!")
     screenText.draw()
     win.flip()
     event.waitKeys(keyList=['q'])
