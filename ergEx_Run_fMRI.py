@@ -17,7 +17,6 @@ SIMULATE_MR = 'Simulate'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 fMRI = fMRI scanning mode, None = No TR logging / simulation
 """
-SESSIONS = [1, 2]
 
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
@@ -51,7 +50,8 @@ if __name__ == '__main__':
     filePath = os.path.join(thisDir, 'data', 'outputs') + os.sep
 
     expInfo = {'participant': '000', # Participant ID
-               'test_mode': False, # Whether an agent automatically presses buttons
+               'test_mode': False,
+                'SESSION': [1, 2] # Whether an agent automatically presses buttons
                } # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
@@ -68,98 +68,96 @@ if __name__ == '__main__':
 
     instruction_shown = not expInfo['showInstructions']
 
-    SESSIONS = SESSIONS[expInfo['startSession'] - 1 : ]
+    sess = expInfo['SESSION']
 
-    for nsess, sess in enumerate(SESSIONS):
+    lambd, fractalList =  assign_fractals(expInfo['participant'], sess)
+    lambd = float(lambd)
 
-        lambd, fractalList =  assign_fractals(expInfo['participant'], sess)
-        lambd = float(lambd)
+    expInfo.update({
+        'n_resets_passive': con.max_run_passive, # MAX_RUN_PASSIVE,
+        'n_trials_passive_before_reset': con.start_nobrainer, #MAX_TRIALS_PASSIVE,
+        'n_trials_active': con.n_trials_active,
+        'start_nobrainer': con.start_nobrainer,
+        'mode': 3,
+        'agentActive': expInfo['test_mode'],
+        'TR': con.TR,
+        'session': sess,
+        'eta': lambd,
+        'simulateMR': SIMULATE_MR})
 
-        expInfo.update({
-            'n_resets_passive': con.max_run_passive, # MAX_RUN_PASSIVE,
-            'n_trials_passive_before_reset': con.start_nobrainer, #MAX_TRIALS_PASSIVE,
-            'n_trials_active': con.n_trials_active,
-            'start_nobrainer': con.start_nobrainer,
-            'mode': 3,
-            'agentActive': expInfo['test_mode'],
-            'TR': con.TR,
-            'session': sess,
-            'eta': lambd,
-            'simulateMR': SIMULATE_MR})
+    os.makedirs(filePath + make_bids_dir(expInfo['participant'], expInfo['session']),
+                exist_ok=True)
 
-        os.makedirs(filePath + make_bids_dir(expInfo['participant'], expInfo['session']),
-                    exist_ok=True)
+    run_with_dict(expInfo=expInfo)
 
-        run_with_dict(expInfo=expInfo)
+    if expInfo['calibration']:
+        win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
+        calib_conf = check_configs(expInfo.copy(), task='calibration', mode=SIMULATE_MR)
+        calibration_run(filePath, calib_conf, win=win)
+        win.close()
 
-        if expInfo['calibration']:
-            win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            calib_conf = check_configs(expInfo.copy(), task='calibration', mode=SIMULATE_MR)
-            calibration_run(filePath, calib_conf, win=win)
-            win.close()
+    passive_conf = expInfo.copy()
 
-        passive_conf = expInfo.copy()
+    passive_conf.update({'run' : expInfo['startPassive'],
+                        'agentMode': 'random',
+                        'feedback': False,
+                        'nTrial_noBrainer': con.n_trials_nobrainer,
+                        'maxTrial': con.max_trials_passive})
 
-        passive_conf.update({'run' : expInfo['startPassive'],
-                            'agentMode': 'random',
-                            'feedback': False,
-                            'nTrial_noBrainer': con.n_trials_nobrainer,
-                            'maxTrial': con.max_trials_passive})
+    passive_conf = check_configs(passive_conf, task='passive', mode=SIMULATE_MR)
 
-        passive_conf = check_configs(passive_conf, task='passive', mode=SIMULATE_MR)
+    if not instruction_shown:
+        win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
+        run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[0], stop_slide=con.SLIDESET[1])
+        win.close()
 
-        if not instruction_shown:
-            win, frameDur, _, win_size = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[0], stop_slide=con.SLIDESET[1])
-            win.close()
+    for run in range(passive_conf['run'],  con.max_run_passive + 1):
 
-        for run in range(passive_conf['run'],  con.max_run_passive + 1):
+        win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
+        event.waitKeys(keyList=['space'])
+        passive_conf['run'] = run
 
-            win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            event.waitKeys(keyList=['space'])
-            passive_conf['run'] = run
+        passive_conf = passive_gui(filePath, passive_conf, False)
+        passive_conf['wealth'] = con.x_0
+        event.clearEvents()
+        wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
+        gc.collect()
+        win.close()
 
-            passive_conf = passive_gui(filePath, passive_conf, False)
-            passive_conf['wealth'] = con.x_0
-            event.clearEvents()
-            wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
-            gc.collect()
-            win.close()
+    expInfo.update({'wealth' : con.x_0})
 
-        expInfo.update({'wealth' : con.x_0})
+    # Reset run
+    active_conf = expInfo.copy()
 
-        # Reset run
-        active_conf = expInfo.copy()
+    active_conf.update(
+        {'run': expInfo['startActive'],
+        'maxTrial': con.max_trials_active,
+        'agentMode': 'random'})
 
-        active_conf.update(
-            {'run': expInfo['startActive'],
-            'maxTrial': con.max_trials_active,
-            'agentMode': 'random'})
+    active_conf = check_configs(active_conf, task='active', mode=SIMULATE_MR)
 
-        active_conf = check_configs(active_conf, task='active', mode=SIMULATE_MR)
+    if not instruction_shown:
+        win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
+        run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[2], stop_slide=con.SLIDESET[3])
+        win.close()
+        instruction_shown = True
 
-        if not instruction_shown:
-            win, frameDur, Between, _ = set_up_win(expInfo['fullScreen'], False)
-            run_slideshow(win, passive_conf, win_size=win_size, start_slide=con.SLIDESET[2], stop_slide=con.SLIDESET[3])
-            win.close()
-            instruction_shown = True
+    conseq_run = con.max_run_passive
+    for run in range(active_conf['run'],  con.max_run_active + 1):
 
-        conseq_run = con.max_run_passive
-        for run in range(active_conf['run'],  con.max_run_active + 1):
+        win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
+        event.waitKeys(keyList=['space'])
 
-            win, frameDur, _, _ = set_up_win(expInfo['fullScreen'], False)
-            event.waitKeys(keyList=['space'])
-
-            if run > 1:
-                active_conf['run'] = conseq_run + run
-
-            active_conf = active_gui(filePath, active_conf, False)
-
+        if run > 1:
             active_conf['run'] = conseq_run + run
-            event.clearEvents()
-            wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
-            win.close()
-            gc.collect()
+
+        active_conf = active_gui(filePath, active_conf, False)
+
+        active_conf['run'] = conseq_run + run
+        event.clearEvents()
+        wealh = active_run(active_conf, filePath, win, fractalList, frameDur)
+        win.close()
+        gc.collect()
 
 
     if expInfo['showQuestionnaires']:
