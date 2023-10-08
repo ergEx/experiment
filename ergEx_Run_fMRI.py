@@ -21,7 +21,7 @@ fMRI = fMRI scanning mode, None = No TR logging / simulation
 def set_up_win(fscreen, gui=True):
     win = visual.Window(size=[3072 // 2, 1920 // 2], fullscr=fscreen,
                     screen=0, winType='pyglet', allowGUI=gui, monitor=None,
-                    color=[-1,-1,-1], colorSpace='rgb', units='pix',
+                    color=[-0.75,-0.75,-0.75], colorSpace='rgb', units='pix',
                     waitBlanking=False, useFBO=False)
 
     if not fscreen and gui:
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         passive_conf = passive_gui(filePath, passive_conf, False)
         passive_conf['wealth'] = con.x_0
         event.clearEvents()
-        wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur)
+        wealh = passive_run(passive_conf, filePath, win, fractalList, frameDur, waitForSpace=False)
         gc.collect()
         win.close()
 
