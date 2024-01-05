@@ -290,6 +290,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         noTrials = trials['neutral'].shape[0] - nTrial
 
     terminateNormally = True
+    respChange = 0 # Initializing respChange for first ITI
 
     for curTrial in range(noTrials):
 
@@ -330,10 +331,13 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ############################### ITI ########################################
         itiOnset = Logger.getTime()
 
-        Wait.wait(iti)
+        Wait.wait(iti + respChange)
 
-        Logger.logEvent({"event_type": "ITI", "expected_duration": iti},
+        Logger.logEvent({"event_type": "ITI", "expected_duration": iti + respChange},
                         wealth=Logger.wealth, onset=itiOnset)
+
+        respChange = 0 # Variable to increase ITI if response are too fast, so
+        # MRI experiment has constant length
         ########################### Gamble Left ####################################
         fractals['leftUp'][fractal1].setOpacity(1)
         fractals['leftDown'][fractal2].setOpacity(1)
@@ -433,6 +437,11 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         ########################### Control Flow ###################################
         # Control flow - given response (or not)
         if response:
+
+            # Collecting time to max response time, to add to ITI
+            if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+                respChange = acfg.timeResponse - (presses[1] - respOnset)
+
             ######################### Side Selection ###############################
             logDict.update({'no_response': False,
                             'response_time_optimal': responseTo,
