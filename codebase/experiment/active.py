@@ -586,6 +586,24 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         if Logger.getTime() > (expInfo['maxDuration'] - 10) or curTrial >= expInfo['maxTrial']:
             break
 
+        if curTrial == (noTrials // 2):
+            win.flip()
+            timer = core.CountdownTimer(60)
+            breakText = f'You are half-way through, have a little break.\nContinuing in:\n'
+            breakOnset = Logger.getTime()
+            MoneyBox.setAutoDraw(False)
+
+            while timer.getTime() > 0: #until the timer is negative, after which time has elapsed
+                time_left = timer.getTime()
+                minutes = int(time_left / 60)
+                seconds = int(time_left - minutes * 60)
+                Instructions.setText(breakText + f'{seconds:02d} seconds')
+                Instructions.draw()
+                win.flip()
+
+            Logger.logEvent({"event_type": "Break", **logDict}, onset=breakOnset)
+            MoneyBox.setAutoDraw(True)
+
         nTrial += 1
 
     ################################ Post Experiment clean up ######################
@@ -617,4 +635,3 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
     win.flip()
 
     return terminateNormally
-
