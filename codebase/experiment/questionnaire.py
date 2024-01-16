@@ -24,7 +24,7 @@ def run_questionnaire(win, fname, participant, leftKey, rightKey, acceptKey, out
 
     text1 = visual.TextStim(win, '', pos=(-0.7, 0.8), units='norm', wrapWidth=1.4, alignText='left', height=0.05,  anchorHoriz='left')
     text2 = visual.TextStim(win, '', pos=(-0.7, 0.4), units='norm', wrapWidth=1.4, alignText='center', height=0.075,  anchorHoriz='left')
-    text3 = visual.TextStim(win, f'Press {leftKey} to move left and {rightKey} to move right.\nPress {acceptKey} to select your response.',
+    text3 = visual.TextStim(win, f'Press LEFT to move left and RIGHT to move right.\nPress MIDDLE to select your response.',
             pos=(-0.7, -0.5), units='norm', wrapWidth=1.4, alignText='center', height=0.04,  anchorHoriz='left')
     text3.setAutoDraw(True)
 
