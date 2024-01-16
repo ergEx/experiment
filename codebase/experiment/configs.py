@@ -176,7 +176,7 @@ def check_configs(config_dict:Dict, task='passive', mode='None') -> Dict:
                     'maxDuration': np.inf, 'OUT_EXTENSION': 'beh.tsv'}
 
     if task =='passive':
-        default_dict.update({'nTrial_noBrainer': 10, 'responseButton': 'space'})
+        default_dict.update({'nTrial_noBrainer': 15, 'responseButton': 'space'})
     elif task == 'config':
         default_dict.update({'responseUp': 'up', 'responseDown': 'down'})
 
