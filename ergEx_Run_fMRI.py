@@ -1,4 +1,4 @@
-VERSION='v0.6.3-fmri' # pre-data collection
+VERSION='v0.7.0-fmri' # data collection
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -15,7 +15,7 @@ import gc
 
 SIMULATE_MR = 'MRIDebug'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
-fMRI = fMRI scanning mode, None = No TR logging / simulation
+MRI = fMRI scanning mode, None = No TR logging / simulation
 """
 
 def set_up_win(fscreen, gui=True):
@@ -64,8 +64,9 @@ if __name__ == '__main__':
     # https://cc0.photo/2017/08/24/wide-sky-green-fields-harz-region/
 
     expInfo = {'participant': '000', # Participant ID
+               'showQuestionnaires': True,
                'test_mode': False,
-                'SESSION': [1, 2] # Whether an agent automatically presses buttons
+               'SESSION': [1, 2]
                } # Which run of the active phase to start from (starts at 1)
 
     expInfo = gui_update_dict(expInfo, f'Running Version: {VERSION}')
@@ -76,7 +77,6 @@ if __name__ == '__main__':
                'startPassive': 1, # Which run of the passive phase to start (starts at 1), if larger than MAX_RUN_PASSIVE, skips passive phase.
                'startActive': 1,
                'startSession': 1,
-               'showQuestionnaires': True,
                'showInstructions': True
     })
 
