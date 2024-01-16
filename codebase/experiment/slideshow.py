@@ -22,6 +22,9 @@ def run_slideshow(win, expInfo, path=SLIDE_PATH, start_slide=0, stop_slide=None,
 
     responseKeys = ['responseButton', 'responseLeft', 'responseRight']
 
+    if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
+        path = 'instructions/ergEx_instructions_fmri/'
+
     responseKeyList = [expInfo[rK] for rK in responseKeys]
     responseKeyList.append('q')
 
