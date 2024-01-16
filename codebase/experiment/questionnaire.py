@@ -14,7 +14,7 @@ def run_questionnaire(win, fname, participant, leftKey, rightKey, acceptKey, out
 
     intro = ('In the following we will present you with a questionnaire.\n' +
             'Please pay close attention to the instructions at the top of the screen and below the rating scale.\n\n\n' +
-            f'Press {acceptKey} to continue.')
+            f'Press MIDDLE to continue.')
 
     textIntro = visual.TextStim(win, intro, pos=(-0.7, 0), units='norm', wrapWidth=1.4, alignText='center', height=0.075,  anchorHoriz='left')
     textIntro.draw()

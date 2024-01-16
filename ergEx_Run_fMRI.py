@@ -1,4 +1,4 @@
-VERSION='v0.7.0-fmri' # data collection
+VERSION='v0.7.1-fmri' # data collection
 from codebase.experiment import passive_gui, passive_run, run_with_dict, run_slideshow
 from codebase.experiment.active import active_gui, active_run
 from codebase.experiment import run_questionnaire
@@ -13,7 +13,7 @@ from codebase.experiment.exp.helper import get_frame_timings
 from codebase.file_handler import make_bids_dir
 import gc
 
-SIMULATE_MR = 'MRIDebug'
+SIMULATE_MR = 'MRI'
 """ Mode of the MR: Simulate = simulates scanner, MRIDebug = shows a counter for received triggers,
 MRI = fMRI scanning mode, None = No TR logging / simulation
 """

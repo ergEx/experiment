@@ -586,7 +586,7 @@ def active_run(expInfo:Dict, filePath:str, win:visual.Window,
         if Logger.getTime() > (expInfo['maxDuration'] - 10) or curTrial >= expInfo['maxTrial']:
             break
 
-        if curTrial == (noTrials // 2):
+        if curTrial == ((noTrials // 2) - 1):
             win.flip()
             timer = core.CountdownTimer(60)
             breakText = f'You are half-way through, have a little break.\nContinuing in:\n'
