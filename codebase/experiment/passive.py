@@ -386,10 +386,11 @@ def passive_run(expInfo:Dict, filePath:str, win:visual.Window,
         if expInfo['simulateMR'] in ['MRI', 'Simulate', 'MRIDebug']:
             if RT is not None:
                 # Hard coded minimal time for now:
-                wtime = np.max([pcfg.timeResponseWindow - RT, 0.2])
+                wtime = np.max([pcfg.timeResponseWindow - RT, 0.1])
             else:
-                wtime = 0.2
-            Wait.wait(wtime / 2)
+                wtime = 0.1
+
+            Wait.wait(wtime)
         ############################ Fractal Onset #################################
         fractals[fractal].setOpacity(1)
         logDict.update({'gamma': gamma, 'fractal': fractalList[fractal]})
